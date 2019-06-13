@@ -1,9 +1,10 @@
 ---
 ## Amazon Aurora Labs for MySQL
-## Infrastructure template for lab exercises
+## Infrastructure template with an Aurora cluster for lab exercises
 ##
 ## Changelog:
 ## 2019-05-13 - Initial release
+## 2019-05-29 - Changed how AZ selection works
 ##
 ## Dependencies:
 ## none
@@ -16,10 +17,16 @@ Description: Amazon Aurora Labs for MySQL
 
 ## Parameters
 Parameters:
+  vpcAZs:
+    Type: "List<AWS::EC2::AvailabilityZone::Name>"
+    Description: List of Availability Zones to use for the subnets in the VPC. Must pick 3 AZs in regions with 3 or more AZs.
   ec2KeyPair:
     Type: AWS::EC2::KeyPair::KeyName
     Description: EC2 key pair for instance access
 
+## Conditions
+Conditions:
+  cond3AZs: !Equals [ !FindInMap [ RegionalSettings, !Ref "AWS::Region", azs ], "3" ]
 
 ## Mappings
 Mappings:
@@ -29,76 +36,85 @@ Mappings:
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ohio
+      azs: "3"
     us-east-2:
       bastionAmi: ami-0c55b159cbfafe1f0
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
+      azs: "3"
     us-west-1:
       bastionAmi: ami-06397100adf427136
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. California
+      azs: "2"
     us-west-2:
       bastionAmi: ami-005bdb005fb00e791
       bastionType: m5.large
       nodeType: db.r5.large
       name: Oregon
+      azs: "3"
     ca-central-1:
       bastionAmi: ami-01b60a3259250381b
       bastionType: m5.large
       nodeType: db.r5.large
       name: Montreal
+      azs: "2"
     eu-central-1:
       bastionAmi: ami-090f10efc254eaf55
       bastionType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
+      azs: "3"
     eu-west-1:
       bastionAmi: ami-08d658f84a6d84a80
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
+      azs: "3"
     eu-west-2:
       bastionAmi: ami-07dc734dc14746eab
       bastionType: m5.large
       nodeType: db.r5.large
       name: London
+      azs: "3"
     eu-west-3:
       bastionAmi: ami-03bca18cb3dc173c9
       bastionType: m5.large
       nodeType: db.r5.large
       name: Paris
-    eu-north-1:
-      bastionAmi: ami-5e9c1520
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Stockholm
+      azs: "3"
     ap-southeast-1:
       bastionAmi: ami-0dad20bd1b9c8c004
       bastionType: m5.large
       nodeType: db.r5.large
       name: Singapore
+      azs: "3"
     ap-southeast-2:
       bastionAmi: ami-0b76c3b150c6b1423
       bastionType: m5.large
       nodeType: db.r5.large
       name: Sydney
+      azs: "3"
     ap-south-1:
       bastionAmi: ami-007d5db58754fa284
       bastionType: m5.large
       nodeType: db.r5.large
       name: Mumbai
+      azs: "3"
     ap-northeast-1:
       bastionAmi: ami-0eb48a19a8d81e20b
       bastionType: m5.large
       nodeType: db.r5.large
       name: Tokyo
+      azs: "3"
     ap-northeast-2:
       bastionAmi: ami-078e96948945fc2c9
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
+      azs: "2"
   NetworkSettings:
     global:
       vpcCidr: 172.31.0.0/16
@@ -111,8 +127,6 @@ Mappings:
       sshSourceCidr: 0.0.0.0/0
   ClusterSettings:
     global:
-      masterUser: masteruser
-      masterPassword: Password1
       dbSchema: mylab
       dbDriver: mysql
     scaling:
@@ -161,7 +175,7 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !FindInMap [ NetworkSettings, global, subPub1Cidr ]
-      AvailabilityZone: !Sub ${AWS::Region}a
+      AvailabilityZone: !Select [0, !Ref vpcAZs ]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -171,17 +185,18 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !FindInMap [ NetworkSettings, global, subPub2Cidr ]
-      AvailabilityZone: !Sub ${AWS::Region}b
+      AvailabilityZone: !Select [1, !Ref vpcAZs ]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-pub-sub-2
   sub3Public:
     Type: AWS::EC2::Subnet
+    Condition: cond3AZs
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !FindInMap [ NetworkSettings, global, subPub3Cidr ]
-      AvailabilityZone: !Sub ${AWS::Region}c
+      AvailabilityZone: !Select [2, !Ref vpcAZs ]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -214,6 +229,7 @@ Resources:
       RouteTableId: !Ref rtbPublic
   srta3Public:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: cond3AZs
     Properties:
       SubnetId: !Ref sub3Public
       RouteTableId: !Ref rtbPublic
@@ -224,7 +240,7 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !FindInMap [ NetworkSettings, global, subPrv1Cidr ]
-      AvailabilityZone: !Sub ${AWS::Region}a
+      AvailabilityZone: !Select [0, !Ref vpcAZs ]
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -234,17 +250,18 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !FindInMap [ NetworkSettings, global, subPrv2Cidr ]
-      AvailabilityZone: !Sub ${AWS::Region}b
+      AvailabilityZone: !Select [1, !Ref vpcAZs ]
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-prv-sub-2
   sub3Private:
     Type: AWS::EC2::Subnet
+    Condition: cond3AZs
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !FindInMap [ NetworkSettings, global, subPrv3Cidr ]
-      AvailabilityZone: !Sub ${AWS::Region}c
+      AvailabilityZone: !Select [2, !Ref vpcAZs ]
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -272,7 +289,6 @@ Resources:
           Value: !Sub ${AWS::StackName}-nat-rtb
   rteToNgw:
     Type: AWS::EC2::Route
-    DependsOn: vpcNgw
     Properties:
       RouteTableId: !Ref rtbNat
       DestinationCidrBlock: 0.0.0.0/0
@@ -289,6 +305,7 @@ Resources:
       RouteTableId: !Ref rtbNat
   srta3Ngw:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: cond3AZs
     Properties:
       SubnetId: !Ref sub3Private
       RouteTableId: !Ref rtbNat
@@ -315,7 +332,7 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
-      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
+      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !If [ cond3AZs, !Ref sub3Private, !Ref "AWS::NoValue" ] ]
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-db-subnet-group
@@ -400,8 +417,8 @@ Resources:
                   - s3:ListMultipartUploadParts
                   - s3:PutObject
                 Resource:
-                  - !Sub arn:aws:s3:::*/*
-                  - !Sub arn:aws:s3:::*
+                  - arn:aws:s3:::*/*
+                  - arn:aws:s3:::*
 
 ## Create role for bastion host
   roleBastionHost:
@@ -431,6 +448,7 @@ Resources:
                   - s3:*
                   - ssm:*
                   - kms:*
+                  - secretsmanager:*
                 Resource: "*"
   profileBastionHost:
     Type: AWS::IAM::InstanceProfile
@@ -460,7 +478,7 @@ Resources:
       ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionAmi ]
       IamInstanceProfile: !Ref profileBastionHost
       UserData:
-        Fn::Base64: !Sub |
+        Fn::Base64: |
           #!/bin/bash -xe
 
           # update & upgrade packages
@@ -512,9 +530,9 @@ Resources:
       Description: !Sub ${AWS::StackName}-node-params
       Family: aurora5.6
       Parameters:
-        innodb_stats_persistent_sample_pages: 256
-        slow_query_log: 1
-        long_query_time: 10
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "10"
         log_output: FILE
       Tags:
         - Key: Name
@@ -532,6 +550,20 @@ Resources:
         - Key: Name
           Value: !Sub ${AWS::StackName}-cluster-params
 
+## Create a random generated password and store it as a secret
+  secretClusterMasterUser:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: !Sub "Master user credentials for ${AWS::StackName}-cluster"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "masteruser"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-secret
+
 ## Create Aurora cluster
   dbCluster:
     Type: AWS::RDS::DBCluster
@@ -541,8 +573,8 @@ Resources:
       DBClusterParameterGroupName: !Ref cpgClusterParams
       DBClusterIdentifier: !Sub ${AWS::StackName}-cluster
       BackupRetentionPeriod: 7
-      MasterUsername: !FindInMap [ ClusterSettings, global, masterUser ]
-      MasterUserPassword: !FindInMap [ ClusterSettings, global, masterPassword ]
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
       DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
       StorageEncrypted: true
       VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
@@ -556,7 +588,7 @@ Resources:
   roleClusterEnhancements:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-cluster-changes-${AWS::Region}
+      RoleName: !Sub ${AWS::StackName}-change-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -755,9 +787,9 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: [ dbNodeSecondary ]
     Properties:
-      ServiceNamespace: rds
-      ScalableDimension: rds:cluster:ReadReplicaCount
-      ResourceId: !Sub cluster:${dbCluster}
+      ServiceNamespace: 'rds'
+      ScalableDimension: 'rds:cluster:ReadReplicaCount'
+      ResourceId: !Sub 'cluster:${dbCluster}'
       MaxCapacity: !FindInMap [ ClusterSettings, scaling, maxCapacity ]
       MinCapacity: !FindInMap [ ClusterSettings, scaling, minCapacity ]
       RoleARN: !GetAtt roleScalableTarget.Arn
@@ -795,11 +827,11 @@ Resources:
           dbUser:
             type: String
             description: DB User
-            default: !FindInMap [ ClusterSettings, global, masterUser ]
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
           dbPassword:
             type: String
             description: DB Password
-            default: !FindInMap [ ClusterSettings, global, masterPassword ]
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
           dbSchema:
             type: String
             description: DB Schema

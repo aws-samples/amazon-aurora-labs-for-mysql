@@ -1,0 +1,60 @@
+# Site information
+site_name: Amazon Aurora Labs for MySQL
+site_description: Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features.
+site_author: 'vladv@amazon.com'
+site_url: 'https://quackynature.com'
+
+# Repository
+repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
+repo_url: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
+
+# Copyright
+copyright: '&copy; 2019, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
+
+# Theme
+theme:
+  name: 'material'
+  logo: 'assets/images/aws_smile_logo.png'
+  favicon: 'assets/images/aws-favicon.ico'
+  feature:
+    tabs: true
+  custom_dir: 'docs/theme'
+
+# Customization
+extra_css:
+  - 'assets/css/custom.css'
+#extra_javascript:
+#  - 'javascripts/extra.js'
+#extra:
+#  social:
+#    - type: 'home'
+#      link: 'https://awssecworkshops.com'
+#    - type: 'shield'
+#      link: 'https://aws.amazon.com/security/'
+#    - type: 'twitter'
+#      link: 'https://twitter.com/awssecurityinfo?lang=en'
+#    - type: 'rss'
+#      link: 'https://aws.amazon.com/blogs/security/'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.mark
+
+# Navigation
+nav:
+  - Home: 'index.md'
+  - Getting Started: 'modules/index.md'
+  - Modules:
+    - Prerequisites: 'modules/prerequisites/index.md'
+    - Creating a New Aurora Cluster: 'modules/create/index.md'
+    - Connecting, Loading Data and Auto Scaling: 'modules/connect/index.md'
+    - Cloning Clusters: 'modules/clone/index.md'
+    - Backtracking a Cluster: 'modules/backtrack/index.md'
+    - Using Performance Insights: 'modules/perf-insights/index.md'
+  - Contributing: 'contribute.md'
+  - License: 'license.md'

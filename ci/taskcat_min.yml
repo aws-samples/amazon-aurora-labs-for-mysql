@@ -1,0 +1,9 @@
+global:
+  owner: vladv@amazon.com
+  qsname: amazon-aurora-labs-for-mysql
+  regions:
+    - us-west-2
+tests:
+  w-cls-3az:
+    template_file: lab-with-cluster.yml
+    parameter_input: lab-no-cluster-3az.json

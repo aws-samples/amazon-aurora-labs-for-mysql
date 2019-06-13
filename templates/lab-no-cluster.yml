@@ -85,12 +85,6 @@ Mappings:
       nodeType: db.r5.large
       name: Paris
       azs: "3"
-    eu-north-1:
-      bastionAmi: ami-5e9c1520
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Stockholm
-      azs: "3"
     ap-southeast-1:
       bastionAmi: ami-0dad20bd1b9c8c004
       bastionType: m5.large
@@ -440,6 +434,7 @@ Resources:
                   - s3:*
                   - ssm:*
                   - kms:*
+                  - secretsmanager:*
                 Resource: "*"
   profileBastionHost:
     Type: AWS::IAM::InstanceProfile
