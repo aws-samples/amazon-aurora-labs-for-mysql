@@ -5,6 +5,10 @@
 ## Changelog:
 ## 2019-05-13 - Initial release
 ## 2019-05-29 - Changed how AZ selection works
+## 2019-06-12 - Changed template to use Secrets MAnager for DB credentials
+## 2019-06-13 - Preconfigured aws cli
+## 2019-06-14 - Preconfigured DB credentials as ENV variables
+## 2019-06-14 - Fixed issue with Scalable Target and uppercase cluster identifiers
 ##
 ## Dependencies:
 ## none
@@ -478,7 +482,7 @@ Resources:
       ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionAmi ]
       IamInstanceProfile: !Ref profileBastionHost
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/bash -xe
 
           # update & upgrade packages
@@ -509,15 +513,30 @@ Resources:
           echo "* cloned test databases repo" >> /debug.log
 
           # install python pip and aws cli
-          apt-get -y install python-pip
-          pip install mysql-connector
-          pip install awscli
+          apt-get -y install python3-pip
+          pip3 install pymysql
+          pip3 install awscli
           cd /home/ubuntu
           curl -O https://s3-us-west-2.amazonaws.com/auroraworkshopassets/labs/aurora_mysql_dev_test/scripts/loadtest.py
-          curl -O https://s3-us-west-2.amazonaws.com/auroraworkshopassets/labs/aurora_mysql_dev_test/scripts/ImportFromS3.sql
           chown -R ubuntu:ubuntu /home/ubuntu/loadtest.py
-          chown -R ubuntu:ubuntu /home/ubuntu/ImportFromS3.sql
           echo "* pulled load test script" >> /debug.log
+
+          # configure AWS CLI
+          mkdir /home/ubuntu/.aws
+          touch /home/ubuntu/.aws/config
+          echo "[default]" >> /home/ubuntu/.aws/config
+          echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
+          chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
+          echo "* configured aws cli" >> /debug.log
+
+          # set DB cluster user and password as env variables
+          apt-get -y install jq
+          export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --region ${AWS::Region} | jq -r '.SecretString'`
+          export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
+          export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
+          echo "export DBPASS='$DBPASS'" >> /home/ubuntu/.profile
+          echo "export DBUSER=$DBUSER" >> /home/ubuntu/.profile
+          echo "* db credentials initialized" >> /debug.log
 
           # reboot
           echo "* bootstrap complete, rebooting" >> /debug.log
@@ -702,6 +721,8 @@ Resources:
                           print("[INFO]", "Added role %s to cluster %s" % (arn, aurora_cluster))
 
                   # if we got here, set response to success
+                  response_data["DBClusterId"] = response["DBClusters"][0]["DBClusterIdentifier"]
+                  response_data["DBClusterScalableTarget"] = "cluster:%s" % response["DBClusters"][0]["DBClusterIdentifier"]
                   response_status = cfnresponse.SUCCESS
               except Exception as e:
                   print("[ERROR]", e)
@@ -783,13 +804,16 @@ Resources:
                 - rds.application-autoscaling.amazonaws.com
 
 ## Register the scalable target
+## Big fix: when the stack name contains uppercase letters,
+## the DB cluster identifier is actually lowercased, but the resource ID
+## still contains uppercase, so you get a mismatch on the scalable target ResourceId
   dbScalableTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: [ dbNodeSecondary ]
     Properties:
       ServiceNamespace: 'rds'
       ScalableDimension: 'rds:cluster:ReadReplicaCount'
-      ResourceId: !Sub 'cluster:${dbCluster}'
+      ResourceId: !GetAtt resClusterEnhancements.DBClusterScalableTarget
       MaxCapacity: !FindInMap [ ClusterSettings, scaling, maxCapacity ]
       MinCapacity: !FindInMap [ ClusterSettings, scaling, minCapacity ]
       RoleARN: !GetAtt roleScalableTarget.Arn
@@ -883,7 +907,7 @@ Outputs:
     Value: !Ref bastionHost
   clusterName:
     Description: Cluster Name
-    Value: !Ref dbCluster
+    Value: !GetAtt resClusterEnhancements.DBClusterId
   clusterEndpoint:
     Description: Aurora Cluster Endpoint
     Value: !GetAtt dbCluster.Endpoint.Address
@@ -899,3 +923,6 @@ Outputs:
   dbSecurityGroup:
     Description: Database Security Group
     Value: !Ref dbSecGroupCluster
+  secretArn:
+    Description: Database Credentials Secret ARN
+    Value: !Ref secretClusterMasterUser

@@ -464,7 +464,7 @@ Resources:
       ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionAmi ]
       IamInstanceProfile: !Ref profileBastionHost
       UserData:
-        Fn::Base64: |
+        Fn::Base64: !Sub |
           #!/bin/bash -xe
 
           # update & upgrade packages
@@ -495,15 +495,21 @@ Resources:
           echo "* cloned test databases repo" >> /debug.log
 
           # install python pip and aws cli
-          apt-get -y install python-pip
-          pip install mysql-connector
-          pip install awscli
+          apt-get -y install python3-pip
+          pip3 install pymysql
+          pip3 install awscli
           cd /home/ubuntu
           curl -O https://s3-us-west-2.amazonaws.com/auroraworkshopassets/labs/aurora_mysql_dev_test/scripts/loadtest.py
-          curl -O https://s3-us-west-2.amazonaws.com/auroraworkshopassets/labs/aurora_mysql_dev_test/scripts/ImportFromS3.sql
           chown -R ubuntu:ubuntu /home/ubuntu/loadtest.py
-          chown -R ubuntu:ubuntu /home/ubuntu/ImportFromS3.sql
           echo "* pulled load test script" >> /debug.log
+
+          # configure AWS CLI
+          mkdir /home/ubuntu/.aws
+          touch /home/ubuntu/.aws/config
+          echo "[default]" >> /home/ubuntu/.aws/config
+          echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
+          chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
+          echo "* configured aws cli" >> /debug.log
 
           # reboot
           echo "* bootstrap complete, rebooting" >> /debug.log
