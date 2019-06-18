@@ -28,9 +28,11 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: EC2 key pair for instance access
 
+
 ## Conditions
 Conditions:
   cond3AZs: !Equals [ !FindInMap [ RegionalSettings, !Ref "AWS::Region", azs ], "3" ]
+
 
 ## Mappings
 Mappings:
@@ -118,7 +120,7 @@ Mappings:
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
-      azs: "2"
+      azs: "3"
   NetworkSettings:
     global:
       vpcCidr: 172.31.0.0/16
@@ -804,7 +806,7 @@ Resources:
                 - rds.application-autoscaling.amazonaws.com
 
 ## Register the scalable target
-## Big fix: when the stack name contains uppercase letters,
+## Bug fix: when the stack name contains uppercase letters,
 ## the DB cluster identifier is actually lowercased, but the resource ID
 ## still contains uppercase, so you get a mismatch on the scalable target ResourceId
   dbScalableTarget:

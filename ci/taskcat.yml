@@ -32,13 +32,13 @@ tests:
       - ap-southeast-2
       - ap-south-1
       - ap-northeast-1
+      - ap-northeast-2
   no-cls-2az:
     template_file: lab-no-cluster.yml
     parameter_input: lab-no-cluster-2az.json
     regions:
       - us-west-1
       - ca-central-1
-      - ap-northeast-2
   w-cls-3az:
     template_file: lab-with-cluster.yml
     parameter_input: lab-no-cluster-3az.json
@@ -54,10 +54,10 @@ tests:
       - ap-southeast-2
       - ap-south-1
       - ap-northeast-1
+      - ap-northeast-2
   w-cls-2az:
     template_file: lab-with-cluster.yml
     parameter_input: lab-no-cluster-2az.json
     regions:
       - us-west-1
       - ca-central-1
-      - ap-northeast-2
