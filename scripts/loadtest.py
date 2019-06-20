@@ -4,6 +4,7 @@ Read load generator using multiple threads
 
 Changelog:
 2019-06-14 - Initial release
+2019-06-20 - Changed threading, added CPU heavy queries to boost load
 
 Dependencies:
 none
@@ -28,7 +29,7 @@ parser.add_argument('-e', '--endpoint', help="The database endpoint")
 parser.add_argument('-p', '--password', help="The database user password")
 parser.add_argument('-u', '--username', help="The database user name")
 parser.add_argument('-d', '--database', help="The schema (database) to use")
-parser.add_argument('-t', '--threads', help="The number of threads to use", type=int, default=24)
+parser.add_argument('-t', '--threads', help="The number of threads to use", type=int, default=64)
 args = parser.parse_args()
 
 # Global variables
@@ -55,8 +56,28 @@ def thread_func(endpoint, username, password, schema, max_id, iterations):
             # Run multiple queries per connection
             for iter in range(iterations):
                 # Generate a random number to use as the lookup value
-                key_value = str(random.randrange(1, max_id))
-                sql_command = "SELECT * FROM sbtest1 WHERE id={0};".format(key_value)
+                # we will arbitrarily switch between a few query types
+                key_value = random.randrange(1, max_id)
+                key_offset = random.randrange(1, 1000)
+                query_type = random.randrange(0,5)
+
+                # queries of multiple types
+                if query_type == 0:
+                    # Point query
+                    sql_command = "SELECT SQL_NO_CACHE * FROM sbtest1 WHERE id= %d;" % key_value
+                elif query_type == 1:
+                    # Range query
+                    sql_command = "SELECT SQL_NO_CACHE *, SHA2(c, 512), SQRT(k) FROM sbtest1 WHERE id BETWEEN %d AND %d ORDER BY id DESC LIMIT 10;" % (key_value, key_value + key_offset)
+                elif query_type == 2:
+                    # Aggregation
+                    sql_command = "SELECT SQL_NO_CACHE k, COUNT(k), SQRT(SUM(k)), SQRT(AVG(k)) FROM sbtest1 WHERE id BETWEEN %d AND %d GROUP BY k ORDER BY k;" % (key_value, key_value + key_offset)
+                elif query_type == 3:
+                    # Point query with hashing
+                    sql_command = "SELECT SQL_NO_CACHE id, SHA2(c, 512) AS token FROM sbtest1 WHERE id= %d;" % key_value
+                elif query_type == 4:
+                    # Point query with hashing
+                    sql_command = "CALL minute_rollup(%d);" % (key_offset * 10)
+
 
                 # run query
                 with conn.cursor() as cursor:
