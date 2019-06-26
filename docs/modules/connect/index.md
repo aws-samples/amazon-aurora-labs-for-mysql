@@ -1,6 +1,8 @@
 # Connecting, Loading Data and Auto Scaling
 
-This lab will walk you through the process of connecting to the DB cluster you have just created, and using the cluster for the first time. At the end you will test out in practice how Aurora read replica auto scaling works in practice using a load generator script. This lab contains the following tasks:
+This lab will walk you through the process of connecting to the DB cluster you have just created, and using the cluster for the first time. At the end you will test out in practice how Aurora read replica auto scaling works in practice using a load generator script.
+
+This lab contains the following tasks:
 
 1. Connecting to your workstation EC2 instance
 2. Connecting to the DB cluster
@@ -39,12 +41,12 @@ mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS [database]
 
 **Command parameter values at a glance:**
 
-Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually
---- | --- | --- | ---
--h | [clusterEndpoint] | See CloudFormation stack output | See previous lab
--u | [username] | `$DBUSER` | `masteruser` or manually set
--p | [password] | `$DBPASS` | Manually set
-| [database] | `mylab` | `mylab` or manually set
+Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
+--- | --- | --- | --- | ---
+-h | [clusterEndpoint] | See CloudFormation stack output | See previous lab | The cluster endpoint of the Aurora DB cluster.
+-u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+-p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+| [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 !!! note
     You can view and retrieve the credentials stored in the secret using the following command:
@@ -52,6 +54,24 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
     ```
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
+
+Once connected to the database, use the code below to create a stored procedure we'll use later in the labs, to generate load on the DB cluster. Run the following SQL queries:
+
+```
+DELIMITER $$
+DROP PROCEDURE IF EXISTS minute_rollup$$
+CREATE PROCEDURE minute_rollup(input_number INT)
+BEGIN
+ DECLARE counter int;
+ DECLARE out_number float;
+ set counter=0;
+ WHILE counter <= input_number DO
+ SET out_number=SQRT(rand());
+ SET counter = counter + 1;
+END WHILE;
+END$$
+DELIMITER ;
+```
 
 
 ## 3. Loading an initial data set from S3
@@ -93,37 +113,43 @@ quit;
 
 Once the data load completes successfully, you can run a read-only workload to generate load on the cluster. You will also observe the effects on the DB cluster topology. For this step you will use the **Reader Endpoint** of the cluster. If you created the cluster manually, you can find the endpoint value as indicated at the end of that lab. If the DB cluster was created automatically for you the value can be found in your CloudFormation stack outputs.
 
-1. Run the load generation script from the EC2 instance command line:
+Run the load generation script from the EC2 instance command line:
 
-    ```
-    python3 loadtest.py -e [readerEndpoint] -u [username] -p [password] -d [schema]
-    ```
+```
+python3 loadtest.py -e [readerEndpoint] -u [username] -p [password] -d [schema]
+```
 
-    Or, if the cluster was created automatically:
+Or, if the cluster was created automatically:
 
-    ```
-    python3 loadtest.py -h [readerEndpoint] -u $DBUSER -p $DBPASS -d mylab
-    ```
+```
+python3 loadtest.py -h [readerEndpoint] -u $DBUSER -p $DBPASS -d mylab
+```
 
-    **Command parameter values at a glance:**
+**Command parameter values at a glance:**
 
-    Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually
-    --- | --- | --- | ---
-    -e | [readerEndpoint] | See CloudFormation stack output | See previous lab
-    -u | [username] | `$DBUSER` | `masteruser` or manually set
-    -p | [password] | `$DBPASS` | Manually set
-    -d | [database] | `mylab` | `mylab` or manually set
-    -t |  | 24 (default) | 24 (default)
+Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
+--- | --- | --- | --- | ---
+-e | [readerEndpoint] | See CloudFormation stack output | See previous lab | The reader endpoint of the Aurora DB cluster.
+-u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+-p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+-d | [database] | `mylab` | `mylab` or manually set | The schema (database) to generate load against.
+-t |  | 64 (default) | 64 (default) | The number of client connections (threads) to use concurrently.
 
-2.	Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
+Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
 
-    !!! warning "Region Check"
-        Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+!!! warning "Region Check"
+    Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
 
-3.	Take note that the reader node is currently receiving load. It may take a minute or more for the metrics to fully reflect the incoming load.
+Take note that the reader node is currently receiving load. It may take a minute or more for the metrics to fully reflect the incoming load.
 
-4.	After several minutes return to the list of instances and notice that a new reader is being provisioned to your cluster.
+<span class="image">![Reader Load](./4-read-load.png?raw=true)</span>
 
-5.	Once the new replica becomes available, note that the load distributes and stabilizes (it may take a few minutes to stabilize).
+After several minutes return to the list of instances and notice that a new reader is being provisioned to your cluster.
 
-6.	You can now type `CTRL+C` at the EC2 instance command line to quit the load generator, if you wish to. After a while the additional reader will be removed automatically.
+<span class="image">![Application Auto Scaling Creating Reader](./4-aas-create-reader.png?raw=true)</span>
+
+Once the new replica becomes available, note that the load distributes and stabilizes (it may take a few minutes to stabilize).
+
+<span class="image">![Application Auto Scaling Creating Reader](./4-read-load-balanced.png?raw=true)</span>
+
+You can now type `CTRL+C` at the EC2 instance command line to quit the load generator, if you wish to. After a while the additional reader will be removed automatically.

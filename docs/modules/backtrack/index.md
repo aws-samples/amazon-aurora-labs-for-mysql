@@ -2,34 +2,41 @@
 
 ::TODO:: Insert overview description here
 
-1.	Reconnect to the cloned cluster using:
+1.	Connect to the DB cluster endpoint using the MySQL client, if you are not already connected from completing the previous lab:
 
     ```
-    quit;
-
-    mysql -h [cluster endpoint of clone cluster] -u masteruser -p mylab
+    mysql -h [clusterEndpoint] -u [username] -p [password] [database]
     ```
+
+    **Command parameter values at a glance:**
+
+    Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
+    --- | --- | --- | --- | ---
+    -h | [clusterEndpoint] | See CloudFormation stack output | See previous lab | The cluster endpoint of the Aurora DB cluster.
+    -u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+    -p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+    | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 2.	Drop the `sbtest1` table:
 
     Note: Consider executing the commands below one at a time, waiting a few seconds between each one. This will make it easier to determine a good point in time for testing backtrack.
 
     ```
-    select current_timestamp();
+    SELECT current_timestamp();
 
-    drop table sbtest1;
+    DROP TABLE sbtest1;
 
-    select current_timestamp();
+    SELECT current_timestamp();
 
     quit;
     ```
 
-3.	Remember or save the time markers displayed above, you will use them as references later.
+    Remember or save the time markers displayed above, you will use them as references later, to simplify determining the right point in time to backtrack to, for demonstration purposes.
 
-4.	Run the following command to replace the dropped table using the sysbench command:
+3.	Run the following command to replace the dropped table using the sysbench command, from your EC2-based workstation command line:
 
     ```
-    sysbench oltp_write_only --threads=1 --mysql-host=[cluster endpoint of clone cluster] --mysql-user=masteruser --mysql-password=Password1 --mysql-port=3306 --tables=1 --mysql-db=mylab --table-size=1000000 prepare
+    sysbench oltp_write_only --threads=1 --mysql-host=[cluster endpoint of clone cluster] --mysql-user=[username] --mysql-password=[password] --mysql-port=3306 --tables=1 --mysql-db=[database] --table-size=1000000 prepare
     ```
 
 5.	Reconnect to the cloned cluster, and checksum the table again, the checksum value should be different than both the original clone value and source cluster:
