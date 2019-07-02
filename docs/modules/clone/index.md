@@ -71,8 +71,9 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 !!! note
     The database credentials you use to connect are the same as for the source DB cluster, as this is an exact clone of the source.
 
+## 2. Verifying that the data set is identical
 
-Next you should verify that the data set is identical on both the source and cloned DB clusters, before we make any changes to the data. You can verify by performing a checksum operation on the **sbtest1** table.
+Verify that the data set is identical on both the source and cloned DB clusters, before we make any changes to the data. You can verify by performing a checksum operation on the **sbtest1** table.
 
 Since you are already connected to the cloned DB cluster, issue the following command there first:
 
@@ -82,30 +83,60 @@ checksum table sbtest1;
 
 The output of your commands should look similar to the example below. Please take note of the value for your specific clone cluster.
 
-    ::TODO::
+<span class="image">![Checksum on clone](./2-checksum-clone.png?raw=true)</span>
 
-2.	Next, disconnect from the clone and connect to the original cluster with the following sequence:
+Now disconnect from the clone and connect to the source cluster with the following sequence:
 
-    ```
-    quit;
+```
+quit;
 
-    mysql -h [clusterEndpoint] -u [username] -p [password] [database]
-    ```
+mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+```
 
-3.	Execute the same checksum command that you ran on the clone:
+Execute the same checksum command that you ran on the clone:
 
-    ```
-    checksum table sbtest1;
-    ```
+```
+checksum table sbtest1;
+```
 
-    Please take note of the value for your specific source cluster. The checksum value should be the same as in step 2.2 above.
-
-    ::TODO::
+Please take note of the value for your specific source cluster. The checksum value should be the same as for the cloned cluster above.
 
 ## 3. Changing data on the clone
 
-::TODO::
+Disconnect from the original cluster (if you are still connected to it) and connect to the clone cluster with the following sequence:
+
+```
+quit;
+
+mysql -h [cluster endpoint of clone] -u [username] -p [password] [database]
+```
+
+Delete a row of data and execute the checksum command again:
+
+```
+delete from sbtest1 where id = 1;
+
+checksum table sbtest1;
+```
+
+The output of your commands should look similar to the example below. Notice that the checksum value changed, and is no longer the same as calculated in section 2 above.
+
+<span class="image">![Checksum on clone changed](./3-checksum-clone-changed.png?raw=true)</span>
 
 ## 4. Verifying that the data diverges
 
-::TODO::
+Verify that the checksum value did not change on the source cluster as a result of the delete operation on the clone. Disconnect from the clone (if you are still connected) and connect to the source cluster with the following sequence:
+
+```
+quit;
+
+mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+```
+
+Execute the same checksum command that you ran on the clone:
+
+```
+checksum table sbtest1;
+```
+
+Please take note of the value for your specific source cluster. The checksum value should be the same as calculated for the source cluster above in section 2.
