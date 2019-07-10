@@ -183,4 +183,10 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# NodeJS
+node_modules/
+
+# CloudFormation
+*.packaged
+
 # End of https://www.gitignore.io/api/macos,python,windows

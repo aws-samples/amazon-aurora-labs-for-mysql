@@ -1,0 +1,20 @@
+{
+  "name": "ipcheck-function",
+  "version": "0.1.0",
+  "description": "Verifies the request IP address againsts a whitelist and rejects requests if the source IP does not match",
+  "main": "function.js",
+  "dependencies": {
+    "ipcheck": "latest"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-aws-lambda": "latest",
+    "grunt-pack": "latest",
+    "standard": "latest",
+    "npm": "latest"
+  },
+  "bundledDependencies": [
+    "ipcheck"
+  ],
+  "license": "MIT-0"
+}

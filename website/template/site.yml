@@ -1,0 +1,118 @@
+---
+## Amazon Aurora Labs for MySQL
+## Infrastructure template for the documentation website
+##
+## Changelog:
+## 2019-07-03 - Initial release
+##
+## Dependencies:
+## none
+##
+## License:
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Amazon Aurora Labs for MySQL
+
+## Parameters
+Parameters:
+  tagEnvironment:
+    Type: String
+    Description: What is this environment tagged as?
+    AllowedValues: [ Production, Development, Testing, Staging ]
+    Default: Testing
+
+## Conditions
+# Conditions:
+
+
+## Mappings
+# Mappings:
+
+
+## Resources
+Resources:
+  ## OAI for CloudFront
+  oaiWebsite:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub ${AWS::StackName}-oai
+
+  ## S3 bucket to host content
+  s3Website:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-content-${AWS::Region}-${AWS::AccountId}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-content-${AWS::Region}-${AWS::AccountId}
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  ## S3 bucket policy for OAI
+  bucketPolicyWebsite:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref s3Website
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${s3Website}/*'
+            Action:
+              - 's3:GetObject'
+            Principal:
+              CanonicalUser:
+                - !GetAtt oaiWebsite.S3CanonicalUserId
+
+  ## CloudFront distribution
+  cfWebsite:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${AWS::StackName}-cdn
+        DefaultRootObject: index.html
+        Enabled: true
+        IPV6Enabled: true
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: blacklist
+            Locations: [ AF, IR, IQ, LY, SY ]
+        DefaultCacheBehavior:
+          AllowedMethods: [ GET, HEAD ]
+          CachedMethods: [ GET, HEAD ]
+          Compress: true
+          MaxTTL: 86400
+          MinTTL: 0
+          DefaultTTL: 3600
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          TargetOriginId: !Ref s3Website
+          ViewerProtocolPolicy: redirect-to-https
+        Origins:
+          - Id: !Ref s3Website
+            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
+            OriginPath: /website/build
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-cdn-${AWS::Region}-${AWS::AccountId}
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+## Outputs
+# Outputs:

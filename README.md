@@ -10,6 +10,16 @@ brew install mkdocs
 pip3 install mkdocs-material
 pip3 install pymdown-extensions
 pip3 install taskcat
+
+brew install node
+npm install -g npm
+npm install -g grunt-cli
+```
+
+For functions (each):
+```
+npm install
+grunt lambda_package
 ```
 
 ## License Summary
