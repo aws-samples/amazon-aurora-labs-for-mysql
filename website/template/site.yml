@@ -11,46 +11,46 @@
 ## License:
 ## This sample code is made available under the MIT-0 license. See the LICENSE file.
 
+# Transformations
 AWSTemplateFormatVersion: 2010-09-09
-Description: Amazon Aurora Labs for MySQL
+Description: 'Amazon Aurora Labs for MySQL'
+Transform: 'AWS::Serverless-2016-10-31'
 
 ## Parameters
 Parameters:
   tagEnvironment:
     Type: String
-    Description: What is this environment tagged as?
-    AllowedValues: [ Production, Development, Testing, Staging ]
-    Default: Testing
+    Description: 'What is this environment tagged as?'
+    AllowedValues: [ prod, dev, test, stage ]
+    Default: dev
 
 ## Conditions
 # Conditions:
 
-
 ## Mappings
 # Mappings:
-
 
 ## Resources
 Resources:
   ## OAI for CloudFront
   oaiWebsite:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub ${AWS::StackName}-oai
+        Comment: !Sub '${AWS::StackName}-oai'
 
   ## S3 bucket to host content
   s3Website:
-    Type: AWS::S3::Bucket
+    Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub ${AWS::StackName}-content-${AWS::Region}-${AWS::AccountId}
+      BucketName: !Sub '${AWS::StackName}-content-${AWS::Region}'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-content-${AWS::Region}-${AWS::AccountId}
+          Value: !Sub '${AWS::StackName}-content-${AWS::Region}'
         - Key: Environment
           Value: !Ref tagEnvironment
         - Key: Workload
@@ -58,7 +58,7 @@ Resources:
 
   ## S3 bucket policy for OAI
   bucketPolicyWebsite:
-    Type: AWS::S3::BucketPolicy
+    Type: 'AWS::S3::BucketPolicy'
     Properties:
       Bucket: !Ref s3Website
       PolicyDocument:
@@ -71,12 +71,63 @@ Resources:
               CanonicalUser:
                 - !GetAtt oaiWebsite.S3CanonicalUserId
 
+## Create execution role for IpCheck function
+  roleIpCheck:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-ipcheck-${AWS::Region}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+                - 'edgelambda.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+
+  ## IP filtering function
+  funcIpCheck:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-ipcheck-${AWS::Region}'
+      Runtime: nodejs10.x
+      Handler: function.handler
+      CodeUri: ../lambda/ipcheck-function/dist/ipcheck-function_latest.zip
+      Description: 'Request IP address verification function for CloudFront distribution'
+      MemorySize: 128
+      Timeout: 5
+      Role: !GetAtt roleIpCheck.Arn
+      Tags:
+        Name: !Sub '${AWS::StackName}-ipcheck-${AWS::Region}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
+  ## IP filtering function version
+  funcIpCheckVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      Description: 'Request IP address verification function for CloudFront distribution'
+      FunctionName: !Ref funcIpCheck
+
   ## CloudFront distribution
   cfWebsite:
-    Type: AWS::CloudFront::Distribution
+    Type: 'AWS::CloudFront::Distribution'
     Properties:
       DistributionConfig:
-        Comment: !Sub ${AWS::StackName}-cdn
+        Comment: !Sub '${AWS::StackName}-cdn'
         DefaultRootObject: index.html
         Enabled: true
         IPV6Enabled: true
@@ -94,25 +145,36 @@ Resources:
           MaxTTL: 86400
           MinTTL: 0
           DefaultTTL: 3600
+          TargetOriginId: !Ref s3Website
+          ViewerProtocolPolicy: redirect-to-https
           ForwardedValues:
             QueryString: false
             Cookies:
               Forward: none
-          TargetOriginId: !Ref s3Website
-          ViewerProtocolPolicy: redirect-to-https
+          LambdaFunctionAssociations:
+            - EventType: viewer-request
+              LambdaFunctionARN: !Ref funcIpCheckVersion
         Origins:
           - Id: !Ref s3Website
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
-            OriginPath: /website/build
+            OriginPath: /website
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-cdn-${AWS::Region}-${AWS::AccountId}
+          Value: !Sub '${AWS::StackName}-cdn-${AWS::Region}'
         - Key: Environment
           Value: !Ref tagEnvironment
         - Key: Workload
           Value: !Ref 'AWS::StackName'
 
 ## Outputs
-# Outputs:
+Outputs:
+  Environment:
+    Value: !Ref tagEnvironment
+  ContentBucket:
+    Value: !Ref s3Website
+  DistroEndpoint:
+    Value: !GetAtt cfWebsite.DomainName
+  Region:
+    Value: !Ref 'AWS::Region'

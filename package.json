@@ -1,0 +1,12 @@
+{
+  "name": "amazon-aurora-labs-for-mysql",
+  "version": "1.0.0",
+  "description": "Verifies the request IP address againsts a whitelist and rejects requests if the source IP does not match",
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-exec": "latest",
+    "npm": "latest",
+    "standard": "latest"
+  },
+  "license": "MIT-0"
+}
