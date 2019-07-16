@@ -49,8 +49,8 @@ The environment deployed using CloudFormation includes several components, as li
 
 Please download the most appropriate CloudFormation template based on the labs you want to run:
 
-* [**lab-no-cluster.yml**](../../templates/lab-no-cluster.yml?raw=true) - use when you wish to provision the initial cluster manually by following [Lab 1. - Creating a New Aurora Cluster](../create/)
-* [**lab-with-cluster.yml**](../../templates/lab-with-cluster.yml?raw=true) - use when you wish to skip the initial cluster creation lab, and have it provisioned for you, so you can continue from [Lab 2. - Cluster Endpoints and Read Replica Auto Scaling](../connect/)
+* [**lab-no-cluster.yml**](https://[[website]]/templates/lab-no-cluster.yml) - use when you wish to provision the initial cluster manually by following [Lab 1. - Creating a New Aurora Cluster](../create/)
+* [**lab-with-cluster.yml**](https://[[website]]/templates/lab-with-cluster.yml) - use when you wish to skip the initial cluster creation lab, and have it provisioned for you, so you can continue from [Lab 2. - Cluster Endpoints and Read Replica Auto Scaling](../connect/)
 
 Save it in a memorable location such as your desktop, you will need to reference it later.
 

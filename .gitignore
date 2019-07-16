@@ -188,5 +188,6 @@ node_modules/
 
 # CloudFormation
 *.packaged
+temp/
 
 # End of https://www.gitignore.io/api/macos,python,windows

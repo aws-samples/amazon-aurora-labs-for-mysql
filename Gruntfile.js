@@ -18,7 +18,7 @@ grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
   exec: {
     clearBuild: {
-      cmd: 'rm -rf ./build && mkdir ./build && mkdir ./build/website && mkdir ./build/infra'
+      cmd: 'rm -rf ./build && rm -rf ./temp && mkdir ./build && mkdir ./build/infra && mkdir ./build/templates && mkdir ./temp'
     },
     pkgInfra: {
       cmd: 'aws cloudformation package --template-file ./website/template/site.yml --s3-bucket ' + bucket + ' --output-template-file ./build/infra/site.yml.packaged --region ' + region
@@ -27,13 +27,25 @@ grunt.initConfig({
       cmd: 'aws cloudformation deploy --template-file ./build/infra/site.yml.packaged --stack-name ' + stack  + ' --parameter-overrides tagEnvironment=' + env + ' --capabilities CAPABILITY_NAMED_IAM --region ' + region
     },
     buildSite: {
-      cmd: 'mkdocs build -c -d ./build/website'
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && DISTRO=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "DistroEndpoint" then .OutputValue else "" end\' | tr -d "\\n") && mkdir ./temp/website && mkdocs build -c -d ./temp/website && find ./temp/website -type f -name "*.html" -exec sed -i "" "s/\\[\\[bucket\\]\\]/$BUCKET/g" {} + && find ./temp/website -type f -name "*.html" -exec sed -i "" "s/\\[\\[website\\]\\]/$DISTRO/g" {} + && mv ./temp/website ./build/website'
     },
     copySite: {
-      cmd: 'aws s3 cp ./build/website s3://$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d \'\\n\')/website/ --recursive'
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./build/website s3://$BUCKET/website/ --recursive'
+    },
+    buildTemplates: {
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && DISTRO=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "DistroEndpoint" then .OutputValue else "" end\' | tr -d "\\n") && cp ./templates/*.yml ./temp/ && sed -i "" "s/\\[\\[website\\]\\]/$DISTRO/g" ./temp/*.yml && sed -i "" "s/\\[\\[bucket\\]\\]/$BUCKET/g" ./temp/*.yml && mv ./temp/*.yml ./build/templates/'
+    },
+    copyTemplates: {
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./build/templates s3://$BUCKET/templates/ --recursive'
+    },
+    copyScripts: {
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./scripts s3://$BUCKET/scripts/ --recursive'
     }
   }
 })
 
 // register tasks
-grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:pkgInfra' , 'exec:buildInfra', 'exec:buildSite', 'exec:copySite' ])
+grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+
+// register tasks
+grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])

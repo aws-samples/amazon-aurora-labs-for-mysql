@@ -499,7 +499,7 @@ Resources:
           pip3 install pymysql
           pip3 install awscli
           cd /home/ubuntu
-          curl -O https://s3-us-west-2.amazonaws.com/auroraworkshopassets/labs/aurora_mysql_dev_test/scripts/loadtest.py
+          curl -O https://[[website]]/scripts/loadtest.py
           chown -R ubuntu:ubuntu /home/ubuntu/loadtest.py
           echo "* pulled load test script" >> /debug.log
 
