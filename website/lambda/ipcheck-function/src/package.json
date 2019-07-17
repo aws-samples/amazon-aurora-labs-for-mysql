@@ -10,8 +10,8 @@
     "grunt": "latest",
     "grunt-aws-lambda": "latest",
     "grunt-pack": "latest",
-    "standard": "latest",
-    "npm": "latest"
+    "npm": "^6.10.1",
+    "standard": "^13.0.2"
   },
   "bundledDependencies": [
     "ipcheck"

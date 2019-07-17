@@ -98,6 +98,33 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource: 'arn:aws:logs:*:*:*'
 
+## Create execution role for IndexDoc function
+  roleIndexDoc:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-indexdoc-${AWS::Region}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+                - 'edgelambda.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+
   ## IP filtering function
   funcIpCheck:
     Type: 'AWS::Serverless::Function'
@@ -115,12 +142,36 @@ Resources:
         Environment: !Ref tagEnvironment
         Workload: !Ref 'AWS::StackName'
 
+  ## Index dodcument function
+  funcIndexDoc:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-indexdoc-${AWS::Region}'
+      Runtime: nodejs10.x
+      Handler: function.handler
+      CodeUri: ../lambda/indexdoc-function/dist/indexdoc-function_latest.zip
+      Description: 'Injects index.html into any URI equest for subfolders in the path'
+      MemorySize: 128
+      Timeout: 5
+      Role: !GetAtt roleIndexDoc.Arn
+      Tags:
+        Name: !Sub '${AWS::StackName}-indexdoc-${AWS::Region}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
   ## IP filtering function version
   funcIpCheckVersion:
     Type: AWS::Lambda::Version
     Properties:
       Description: 'Request IP address verification function for CloudFront distribution'
       FunctionName: !Ref funcIpCheck
+
+  ## Index document function version
+  funcIndexDocVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      Description: 'Injects index.html into any URI equest for subfolders in the path'
+      FunctionName: !Ref funcIndexDoc
 
   ## CloudFront distribution
   cfWebsite:
@@ -145,7 +196,7 @@ Resources:
           MaxTTL: 86400
           MinTTL: 0
           DefaultTTL: 3600
-          TargetOriginId: !Ref s3Website
+          TargetOriginId: !Sub ${s3Website}-site
           ViewerProtocolPolicy: redirect-to-https
           ForwardedValues:
             QueryString: false
@@ -154,10 +205,55 @@ Resources:
           LambdaFunctionAssociations:
             - EventType: viewer-request
               LambdaFunctionARN: !Ref funcIpCheckVersion
+            - EventType: origin-request
+              LambdaFunctionARN: !Ref funcIndexDocVersion
+        CacheBehaviors:
+            - AllowedMethods: [ GET, HEAD ]
+              CachedMethods: [ GET, HEAD ]
+              Compress: true
+              MaxTTL: 86400
+              MinTTL: 0
+              DefaultTTL: 3600
+              TargetOriginId: !Sub ${s3Website}-templates
+              PathPattern: /templates/*
+              ViewerProtocolPolicy: redirect-to-https
+              ForwardedValues:
+                QueryString: false
+                Cookies:
+                  Forward: none
+              LambdaFunctionAssociations:
+                - EventType: viewer-request
+                  LambdaFunctionARN: !Ref funcIpCheckVersion
+            - AllowedMethods: [ GET, HEAD ]
+              CachedMethods: [ GET, HEAD ]
+              Compress: true
+              MaxTTL: 86400
+              MinTTL: 0
+              DefaultTTL: 3600
+              TargetOriginId: !Sub ${s3Website}-scripts
+              PathPattern: /scripts/*
+              ViewerProtocolPolicy: redirect-to-https
+              ForwardedValues:
+                QueryString: false
+                Cookies:
+                  Forward: none
+              LambdaFunctionAssociations:
+                - EventType: viewer-request
+                  LambdaFunctionARN: !Ref funcIpCheckVersion
         Origins:
-          - Id: !Ref s3Website
+          - Id: !Sub ${s3Website}-site
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
             OriginPath: /website
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
+          - Id: !Sub ${s3Website}-templates
+            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
+            OriginPath: /templates
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
+          - Id: !Sub ${s3Website}-scripts
+            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
+            OriginPath: /scripts
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
       Tags:

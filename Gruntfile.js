@@ -20,6 +20,14 @@ grunt.initConfig({
     clearBuild: {
       cmd: 'rm -rf ./build && rm -rf ./temp && mkdir ./build && mkdir ./build/infra && mkdir ./build/templates && mkdir ./temp'
     },
+    buildIndexDocFunction: {
+      cwd: './website/lambda/indexdoc-function/src',
+      cmd: 'npm update && grunt lambda_package'
+    },
+    buildIpCheckFunction: {
+      cwd: './website/lambda/ipcheck-function/src',
+      cmd: 'npm update && grunt lambda_package'
+    },
     pkgInfra: {
       cmd: 'aws cloudformation package --template-file ./website/template/site.yml --s3-bucket ' + bucket + ' --output-template-file ./build/infra/site.yml.packaged --region ' + region
     },
@@ -45,7 +53,6 @@ grunt.initConfig({
 })
 
 // register tasks
-grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
-
-// register tasks
-grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+grunt.registerTask('build-functions', [ 'exec:buildIndexDocFunction', 'exec:buildIpCheckFunction' ])
+grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'build-functions', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'build-functions', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])

@@ -1,0 +1,16 @@
+{
+  "name": "indexdoc-function",
+  "version": "0.1.0",
+  "description": "Injects index.html into any URI equest for subfolders in the path",
+  "main": "function.js",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-aws-lambda": "latest",
+    "grunt-pack": "latest",
+    "standard": "latest",
+    "npm": "latest"
+  },
+  "bundledDependencies": [],
+  "license": "MIT-0"
+}
