@@ -248,12 +248,10 @@ Resources:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
           - Id: !Sub ${s3Website}-templates
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
-            OriginPath: /templates
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
           - Id: !Sub ${s3Website}-scripts
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
-            OriginPath: /scripts
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
       Tags:

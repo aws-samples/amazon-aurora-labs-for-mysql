@@ -14,6 +14,7 @@ pip3 install taskcat
 brew install node
 npm install -g npm
 npm install -g grunt-cli
+grunt deploy-all --region=us-east-1 --bucket=<your-s3-bucket>
 ```
 
 For functions (each):
