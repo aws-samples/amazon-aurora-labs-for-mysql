@@ -43,14 +43,14 @@ Resources:
   s3Website:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${AWS::StackName}-content-${AWS::Region}-${AWS::AccountId}'
+      BucketName: !Sub '${AWS::StackName}-content-${AWS::Region}'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-content-${AWS::Region}-${AWS::AccountId}'
+          Value: !Sub '${AWS::StackName}-content-${AWS::Region}'
         - Key: Environment
           Value: !Ref tagEnvironment
         - Key: Workload
