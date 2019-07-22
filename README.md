@@ -12,9 +12,10 @@ pip3 install pymdown-extensions
 pip3 install taskcat
 
 brew install node
+brew install jq
 npm install -g npm
 npm install -g grunt-cli
-grunt deploy-all --region=us-east-1 --bucket=<your-s3-bucket>
+grunt deploy-all --region-us-east-1 --bucket=<your_bucket> --cfnstack=<your_name_letters_and_dashes_only>
 ```
 
 For functions (each):
