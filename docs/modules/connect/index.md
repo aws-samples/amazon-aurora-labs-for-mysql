@@ -122,7 +122,7 @@ python3 loadtest.py -e [readerEndpoint] -u [username] -p [password] -d [schema]
 Or, if the cluster was created automatically:
 
 ```
-python3 loadtest.py -h [readerEndpoint] -u $DBUSER -p $DBPASS -d mylab
+python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p $DBPASS -d mylab
 ```
 
 **Command parameter values at a glance:**
