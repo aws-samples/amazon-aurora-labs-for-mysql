@@ -8,8 +8,8 @@
     "grunt": "latest",
     "grunt-aws-lambda": "latest",
     "grunt-pack": "latest",
-    "standard": "latest",
-    "npm": "latest"
+    "npm": "^6.10.2",
+    "standard": "^13.1.0"
   },
   "bundledDependencies": [],
   "license": "MIT-0"

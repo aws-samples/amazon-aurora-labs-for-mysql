@@ -1,6 +1,9 @@
 * Prerequisites: screenshots for PuTTY setup
 * Create New Cluster: walkthrough
-* Connect to Cluster: steps plus updated screenshots, fix load script that goes wonky after a long time
-* Clone: steps plus updated screenshots
-* Backtrack: steps plus updated screenshots
-* Perf Ins: steps plus updated screenshots
+* Deployment of prod
+* Update licensing info
+* Performance insights module
+* Global DB module
+* Add taskcat testing to grunt
+* Website content and overview
+* Template CFN links
