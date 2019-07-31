@@ -1,6 +1,17 @@
 /* jslint node: true */
 'use strict'
 
+/*
+Amazon Aurora Labs for MySQL
+AWS Lambda function to restrict access to the site based on IP addresses
+
+Dependencies:
+ipcheck module
+
+License:
+This sample code is made available under the MIT-0 license. See the LICENSE file.
+*/
+
 // init module
 var ipcheck = require('./node_modules/ipcheck')
 

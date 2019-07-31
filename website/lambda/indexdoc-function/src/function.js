@@ -1,6 +1,17 @@
 /* jslint node: true */
 'use strict'
 
+/*
+Amazon Aurora Labs for MySQL
+AWS Lambda function to expand directory requests to an index.html file for CloudFront
+
+Dependencies:
+none
+
+License:
+This sample code is made available under the MIT-0 license. See the LICENSE file.
+*/
+
 // lambda function handler
 exports.handler = (event, context, callback) => {
 

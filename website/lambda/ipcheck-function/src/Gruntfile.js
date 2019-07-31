@@ -1,6 +1,17 @@
 /* jslint node: true */
 'use strict'
 
+/*
+Amazon Aurora Labs for MySQL
+Grunt build specification for the ipcheck function
+
+Dependencies:
+grunt, grunt-exec
+
+License:
+This sample code is made available under the MIT-0 license. See the LICENSE file.
+*/
+
 // init grunt
 var grunt = require('grunt')
 

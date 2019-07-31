@@ -1,3 +1,13 @@
+---
+## Amazon Aurora Labs for MySQL
+## Template testing configuration file
+##
+## Dependencies:
+## taskcat
+##
+## License:
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
 global:
   owner: vladv@amazon.com
   qsname: amazon-aurora-labs-for-mysql
