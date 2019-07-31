@@ -44,7 +44,7 @@ grunt.initConfig({
       cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && DISTRO=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "DistroEndpoint" then .OutputValue else "" end\' | tr -d "\\n") && cp ./templates/*.yml ./temp/ && sed -i "" "s/\\[\\[website\\]\\]/$DISTRO/g" ./temp/*.yml && sed -i "" "s/\\[\\[bucket\\]\\]/$BUCKET/g" ./temp/*.yml && mv ./temp/*.yml ./build/templates/'
     },
     copyTemplates: {
-      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./build/templates s3://$BUCKET/templates/ --recursive'
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./build/templates s3://$BUCKET/templates/ --recursive --acl public-read'
     },
     copyScripts: {
       cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./scripts s3://$BUCKET/scripts/ --recursive'
