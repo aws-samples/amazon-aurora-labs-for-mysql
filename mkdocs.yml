@@ -1,8 +1,8 @@
 # Site information
 site_name: Amazon Aurora Labs for MySQL
 site_description: Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features.
-site_author: 'vladv@amazon.com'
-site_url: 'https://quackynature.com'
+site_author: 'amazon-aurora-labs-for-mysql@amazon.com'
+site_url: 'https://awsauroralabsmysql.com'
 
 # Repository
 repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
@@ -25,16 +25,14 @@ extra_css:
   - 'assets/css/custom.css'
 #extra_javascript:
 #  - 'javascripts/extra.js'
-#extra:
-#  social:
-#    - type: 'home'
-#      link: 'https://awssecworkshops.com'
-#    - type: 'shield'
-#      link: 'https://aws.amazon.com/security/'
-#    - type: 'twitter'
-#      link: 'https://twitter.com/awssecurityinfo?lang=en'
-#    - type: 'rss'
-#      link: 'https://aws.amazon.com/blogs/security/'
+extra:
+  social:
+    - type: 'home'
+      link: 'https://awsauroralabsmysql.com'
+    - type: 'amazon'
+      link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
+    - type: 'github'
+      link: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Extensions
 markdown_extensions:
