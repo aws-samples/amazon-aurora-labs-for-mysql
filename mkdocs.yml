@@ -64,5 +64,7 @@ nav:
     - Cloning Clusters: 'modules/clone/index.md'
     - Backtracking a Cluster: 'modules/backtrack/index.md'
     - Using Performance Insights: 'modules/perf-insights/index.md'
+  - Related:
+    - Labs and Workshops: 'related/labs/index.md' 
   - Contributing: 'contribute.md'
   - License: 'license.md'
