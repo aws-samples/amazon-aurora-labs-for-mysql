@@ -22,7 +22,7 @@ exports.handler = (event, context, callback) => {
 	const foundItem = allowedIpRanges.find(function (item) { return ipcheck.match(clientIp, item) })
 
   // if the IP address is not found, mark as forbidden
-  if (foundItem === undefined and !requestedUri.startsWith('/scripts/')) {
+  if (foundItem === undefined && !requestedUri.startsWith('/scripts/')) {
     response = {
 			status: '403',
 			statusDescription: 'Forbidden'
