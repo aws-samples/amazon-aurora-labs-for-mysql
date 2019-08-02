@@ -1,6 +1,6 @@
 # Connecting, Loading Data and Auto Scaling
 
-This lab will walk you through the process of connecting to the DB cluster you have just created, and using the cluster for the first time. At the end you will test out in practice how Aurora read replica auto scaling works in practice using a load generator script.
+This lab will walk you through the process of connecting to the DB cluster you have just created, and using the cluster for the first time. At the end you will test out how Aurora read replica auto scaling works in practice using a load generator script.
 
 This lab contains the following tasks:
 
