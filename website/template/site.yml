@@ -272,6 +272,6 @@ Outputs:
   ContentBucket:
     Value: !Ref s3Website
   DistroEndpoint:
-    Value: !GetAtt cfWebsite.DomainName
+    Value: !If [ condProd, 'awsauroralabsmysql.com', !GetAtt cfWebsite.DomainName ]
   Region:
     Value: !Ref 'AWS::Region'
