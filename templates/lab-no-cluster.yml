@@ -125,7 +125,20 @@ Mappings:
       subPrv2Cidr: 172.31.11.0/24
       subPrv3Cidr: 172.31.12.0/24
       sshSourceCidr: 0.0.0.0/0
-
+  ClusterSettings:
+    global:
+      dbSchema: mylab
+      dbDriver: mysql
+    scaling:
+      maxCapacity: 2
+      minCapacity: 1
+      cpuLoadTarget: 20
+    sysbench:
+      dbSchema: sbtpcc
+      runTime: '300'
+      numThreads: '4'
+      numTables: '8'
+      numWarehouses: '2'
 
 ## Resources
 Resources:
@@ -542,6 +555,64 @@ Resources:
         - Key: Name
           Value: !Sub ${AWS::StackName}-cluster-params
 
+## Create sysbench prep SSM document
+  ssmDocSysbenchTest:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-sysbench-test
+      Content:
+        schemaVersion: '2.2'
+        description: SysBench Percona TPCC-LIKE Preparation
+        parameters:
+          clusterEndpoint:
+            type: String
+            description: Aurora Cluster Endpoint
+          dbUser:
+            type: String
+            description: DB User
+          dbPassword:
+            type: String
+            description: DB Password
+          dbSchema:
+            type: String
+            description: DB Schema
+            default: !FindInMap [ ClusterSettings, sysbench, dbSchema ]
+          dbDriver:
+            type: String
+            description: DB Driver
+            default: !FindInMap [ ClusterSettings, global, dbDriver ]
+            allowedValues: [ mysql, pgsql ]
+          runTime:
+            type: String
+            description: Test Runtime
+            default: !FindInMap [ ClusterSettings, sysbench, runTime ]
+          numThreads:
+            type: String
+            description: Threads
+            default: !FindInMap [ ClusterSettings, sysbench, numThreads ]
+          numTables:
+            type: String
+            description: Tables
+            default: !FindInMap [ ClusterSettings, sysbench, numTables ]
+          numScale:
+            type: String
+            description: Scale
+            default: !FindInMap [ ClusterSettings, sysbench, numWarehouses ]
+        mainSteps:
+        - action: aws:runShellScript
+          name: SysBenchTpccPrepare
+          inputs:
+            runCommand:
+            - 'echo "DROP SCHEMA IF EXISTS {{ dbSchema }}; CREATE SCHEMA {{ dbSchema }};" | mysql -h{{ clusterEndpoint }} -u{{ dbUser }} -p{{ dbPassword }} && cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password={{ dbPassword }} --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} prepare'
+        - action: aws:runShellScript
+          name: SysBenchTpccRun
+          inputs:
+            runCommand:
+            - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password={{ dbPassword }} --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
+
 
 ## Outputs
 Outputs:
@@ -560,3 +631,6 @@ Outputs:
   dbSecurityGroup:
     Description: Database Security Group
     Value: !Ref dbSecGroupCluster
+  loadTestRunDoc:
+    Description: Load Test Execution Command Document
+    Value: !Ref ssmDocSysbenchTest
