@@ -10,7 +10,7 @@
     "grunt": "latest",
     "grunt-aws-lambda": "latest",
     "grunt-pack": "latest",
-    "npm": "^6.10.2",
+    "npm": "^6.10.3",
     "standard": "^13.1.0"
   },
   "bundledDependencies": [
