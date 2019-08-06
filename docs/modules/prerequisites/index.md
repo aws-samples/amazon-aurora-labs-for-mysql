@@ -49,10 +49,12 @@ The environment deployed using CloudFormation includes several components, as li
 
 Please download the most appropriate CloudFormation template based on the labs you want to run:
 
-* [**lab-no-cluster.yml**](https://[[website]]/templates/lab-no-cluster.yml) - use when you wish to provision the initial cluster manually by following [Lab 1. - Creating a New Aurora Cluster](../create/)
-* [**lab-with-cluster.yml**](https://[[website]]/templates/lab-with-cluster.yml) - use when you wish to skip the initial cluster creation lab, and have it provisioned for you, so you can continue from [Lab 2. - Cluster Endpoints and Read Replica Auto Scaling](../connect/)
+Option | Download Template | One-Click Launch | Description
+--- | --- | --- | ---
+**I will create the DB cluster manually** | [lab-no-cluster.yml](https://[[website]]/templates/lab-no-cluster.yml) | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-no-cluster.yml" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a> | Use when you wish to provision the initial cluster manually by following [Lab 1. - Creating a New Aurora Cluster](../create/)
+**Provision the DB cluster for me** | [lab-with-cluster.yml](https://[[website]]/templates/lab-with-cluster.yml) | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-with-cluster.yml" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a> | Use when you wish to skip the initial cluster creation lab, and have the DB cluster provisioned for you, so you can continue from [Lab 2. - Cluster Endpoints and Read Replica Auto Scaling](../connect/)
 
-Save it in a memorable location such as your desktop, you will need to reference it later.
+If you downloaded the template, save it in a memorable location such as your desktop, you will need to reference it later.
 
 Open the <a href="https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks" target="_blank">CloudFormation service console</a>.
 
