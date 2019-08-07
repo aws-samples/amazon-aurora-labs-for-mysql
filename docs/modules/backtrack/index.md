@@ -42,7 +42,7 @@ quit;
 
 Remember or save the time markers displayed above, you will use them as references later, to simplify determining the right point in time to backtrack to, for demonstration purposes.
 
-<span class="image">![Drop Table](./1-drop-table.png?raw=true)</span>
+<span class="image">![Drop Table](1-drop-table.png?raw=true)</span>
 
 Now, run the following command to replace the dropped table using the sysbench command, from your EC2-based workstation command line:
 
@@ -63,7 +63,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --mysql-db | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 --table-size | | 1000000 | 1000000 | The number or rows to generate in the table.
 
-<span class="image">![Sysbench Prepare](./1-sysbench-prepare.png?raw=true)</span>
+<span class="image">![Sysbench Prepare](1-sysbench-prepare.png?raw=true)</span>
 
 Reconnect to the DB cluster, and run the checksum table operation, the checksum value should be different than the source cluster value calculated in the [Cloning Clusters](/modules/clone/#2-verifying-that-the-data-set-is-identical) lab:
 
@@ -90,7 +90,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --db-cluster-identifier | [clusterName] | `labstack-cluster` | See previous labs | The DB cluster identifier set at cluster creation time
 --backtrack-to | yyyy-mm-ddThh:mm:ssZ | See time markers displayed around the drop table operation | See time markers displayed around the drop table operation | The point in time to "rewind" the DB cluster to.
 
-<span class="image">![Backtrack Command](./2-backtrack-command.png?raw=true)</span>
+<span class="image">![Backtrack Command](2-backtrack-command.png?raw=true)</span>
 
 Run the below command to track the progress of the backtracking operation. The operation should complete in a few minutes.
 
@@ -104,7 +104,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --- | --- | --- | --- | ---
 --db-cluster-identifier | [clusterName] | `labstack-cluster` | See previous labs | The DB cluster identifier set at cluster creation time
 
-<span class="image">![Backtrack Status](./2-backtrack-status.png?raw=true)</span>
+<span class="image">![Backtrack Status](2-backtrack-status.png?raw=true)</span>
 
 ::TODO::
 
@@ -118,7 +118,7 @@ show tables;
 quit;
 ```
 
-<span class="image">![Show Tables](./2-show-tables.png?raw=true)</span>
+<span class="image">![Show Tables](2-show-tables.png?raw=true)</span>
 
 Now backtrack again to a time slightly before the first time marker above. (Right before dropping the table).
 

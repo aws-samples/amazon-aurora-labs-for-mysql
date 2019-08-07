@@ -13,11 +13,11 @@ This lab contains the following tasks:
 
 If you are running these labs in a formal, instructional setting, please use the Console URL, and credentials provided to you to access and log into the AWS Management Console. Otherwise, please use your own credentials. You can access the console at: <a href="https://console.aws.amazon.com/" target="_blank">https://console.aws.amazon.com/</a> or through the Single Sign-On (SSO) mechanism provided by your organization.
 
-<span class="image">![AWS Management Console Login](./1-login.png?raw=true)</span>
+<span class="image">![AWS Management Console Login](1-login.png?raw=true)</span>
 
 If you are running these labs in a formal, instructional setting, please use the AWS region provided. Ensure the correct AWS region is selected in the top right corner, if not use that dropdown to choose the correct region. The labs are designed to work in any of the regions where Amazon Aurora MySQL compatible is available. However, not all features and capabilities of Amazon Aurora may be available in all supported regions at this time.
 
-<span class="image">![AWS Management Console Region Selection](./1-region-select.png?raw=true)</span>
+<span class="image">![AWS Management Console Region Selection](1-region-select.png?raw=true)</span>
 
 Open the **Key Pairs** section of the <a href="https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#KeyPairs:sort=keyName" target="_blank">EC2 service console</a>.
 
@@ -26,7 +26,7 @@ Open the **Key Pairs** section of the <a href="https://us-west-2.console.aws.ama
 
 Click **Create Key Pair**.
 
-<span class="image">![EC2 Console - Create Key Pair](./1-create-keypair.png?raw=true)</span>
+<span class="image">![EC2 Console - Create Key Pair](1-create-keypair.png?raw=true)</span>
 
 Give the key pair a recognizable name, such as `labkeys`, then click **Create** and download the file named `labkeys.pem` to your computer, save it in a memorable location, such as your desktop.  You will need this file later in the lab.
 
@@ -54,31 +54,31 @@ Click **Create Stack**.
 !!! note
     The CloudFormation console has been upgraded recently. Depending on your previous usage of the CloudFormation console UI, you may see the old design or the new design, you may also be presented with a prompt to toggle between them. In this lab we are using the new design for reference, although the steps will work similarly in the old console design as well, if you are more familiar with it.
 
-<span class="image">![Create Stack](./2-create-stack.png?raw=true)</span>
+<span class="image">![Create Stack](2-create-stack.png?raw=true)</span>
 
 Select the radio button named **Upload a template**, then **Choose file** and select the template file you downloaded previously named and then click **Next**.
 
-<span class="image">![Upload Template](./2-upload-template.png?raw=true)</span>
+<span class="image">![Upload Template](2-upload-template.png?raw=true)</span>
 
 In the field named **Stack Name**, enter the value `labstack`, for the **ec2KeyPair** parameter value input the name of the key pair you have created previously (`labkeys`) and then click **Next**. For the **vpcAZs** parameter select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
 
-<span class="image">![Configure Stack Options](./2-stack-params.png?raw=true)</span>
+<span class="image">![Configure Stack Options](2-stack-params.png?raw=true)</span>
 
 On the **Configure stack options** page, leave the defaults as they are, scroll to the bottom and click **Next**.
 
-<span class="image">![Advanced Options](./2-no-advanced-opts.png?raw=true)</span>
+<span class="image">![Advanced Options](2-no-advanced-opts.png?raw=true)</span>
 
 On the **Review labstack** page, scroll to the bottom, check the box that reads: **I acknowledge that AWS CloudFormation might create IAM resources with custom names** and then click **Create**.
 
-<span class="image">![Review Stack Options](./2-review-stack.png?raw=true)</span>
+<span class="image">![Review Stack Options](2-review-stack.png?raw=true)</span>
 
 The stack will take approximatively 20 minutes to provision, you can monitor the status on the **Stack detail** page. You can monitor the progress of the stack creation process by refreshing the **Events** tab. The latest event in the list will indicate `CREATE_COMPLETE` for the stack resource.
 
-<span class="image">![Stack Status](./2-stack-status.png?raw=true)</span>
+<span class="image">![Stack Status](2-stack-status.png?raw=true)</span>
 
 Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==
 
-<span class="image">![Stack Outputs](./2-stack-outputs.png?raw=true)</span>
+<span class="image">![Stack Outputs](2-stack-outputs.png?raw=true)</span>
 
 
 ## 3. Installing an SSH client (Windows Users)

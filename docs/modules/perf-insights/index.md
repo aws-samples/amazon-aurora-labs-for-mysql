@@ -36,7 +36,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 
 The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
-<span class="image">![SSM Command](./1-ssm-command.png?raw=true)</span>
+<span class="image">![SSM Command](1-ssm-command.png?raw=true)</span>
 
 ## 2. Understanding the Performance Insights interface
 
@@ -47,15 +47,15 @@ While the command is running, open the <a href="https://us-west-2.console.aws.am
 
 In the menu on the left hand side, click on the **Performance Insights** menu option.
 
-<span class="image">![RDS Dashboard](./2-menu-perf-ins.png?raw=true)</span>
+<span class="image">![RDS Dashboard](2-menu-perf-ins.png?raw=true)</span>
 
 Next, select the desired **DB instance** to load the performance metrics for. For Aurora DB clusters, performance metrics are exposed on an individual DB instance basis. As the different Db instances comprising a cluster may run different workload patterns, and might not all have Performance Insights enabled. For this lab we are generating load on the **Writer** (master) DB instance only. Select the DB instance where the name either ends in `-node-01` or `-instance-1`
 
-<span class="image">![Select DB Instance](./2-select-instance.png?raw=true)</span>
+<span class="image">![Select DB Instance](2-select-instance.png?raw=true)</span>
 
 Once a DB instance is selected, you will see the main dashboard view of RDS Performance Insights. The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual queries, waits, users and hosts generating the load.
 
-<span class="image">![Performance Insights Dashboard](./2-pi-dashboard.png?raw=true)</span>
+<span class="image">![Performance Insights Dashboard](2-pi-dashboard.png?raw=true)</span>
 
 The performance metrics displayed by the dashboard are a moving time window. You can adjust the size of the time window by clicking the buttons across the top right of the interface (`5m`, `1h`, `5h`, `24h`, `1w`, `all`). You can also zoom into a specific period of time by dragging across the graphs.
 
@@ -73,7 +73,7 @@ Granular Session Activity | Sort by **Waits**, **SQL** (default), **Users** and 
 
 After running the load generator workload above, you will see a performance profile similar to the example below in the Performance Insights dashboard. The load generator command will first create an initial data set using `sysbench prepare`. And then will run an OLTP workload for the duration of 5 minutes, consisting of concurrent transactional reads and writes using 4 parallel threads.
 
-<span class="image">![Load Test Profile](./3-load-profile.png?raw=true)</span>
+<span class="image">![Load Test Profile](3-load-profile.png?raw=true)</span>
 
 Amazon Aurora MySQL specific wait events are documented in the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents" target="_blank">Amazon Aurora MySQL Reference guide</a>. Use the Performance Insights dashboard and the reference guide documentation to evaluate the workload profile of your load test, and answer the following questions:
 

@@ -31,7 +31,7 @@ aws rds describe-db-clusters --db-cluster-identifier [clusterName]-clone
 
 Take note of both the ==Status== and the ==Endpoint== attributes of the command output. Once the **Status** becomes **available**, you can add a DB instance to the cluster and once the DB instance is added, you will want to connect to the cluster via the **Endpoint** value, which represents the cluster endpoint.
 
-<span class="image">![DB Cluster Status](./1-describe-cluster.png?raw=true)</span>
+<span class="image">![DB Cluster Status](1-describe-cluster.png?raw=true)</span>
 
 !!! note
     Creating a DB cluster clone, even without adding DB instances, can be a useful and cost effective safety net measure, if you are about to make significant changes to your source cluster (such as an upgrade or risky DDL operation). The clone then becomes a quick rollback target, in case you encounter issues on the source as a result of the operation. You simply add a DB instance and point your application to the clone in such an event. We do not recommend using clones as long term point in time snapshot tools, as you are limited to 15 clones derived directly or indirectly from the same source.
@@ -49,7 +49,7 @@ Check the creation of the DB instance within the cluster, by using the following
 aws rds describe-db-instances --db-instance-identifier [clusterName]-clone-instance
 ```
 
-<span class="image">![DB Instance Status](./1-describe-instance.png?raw=true)</span>
+<span class="image">![DB Instance Status](1-describe-instance.png?raw=true)</span>
 
 Repeat the command to monitor the creation status. Once the ==DBInstanceStatus== attribute changes from **creating** to **available**, you have a functioning clone. Creating a node in a cluster also takes several minutes.
 
@@ -83,7 +83,7 @@ checksum table sbtest1;
 
 The output of your commands should look similar to the example below. Please take note of the value for your specific clone cluster.
 
-<span class="image">![Checksum on clone](./2-checksum-clone.png?raw=true)</span>
+<span class="image">![Checksum on clone](2-checksum-clone.png?raw=true)</span>
 
 Now disconnect from the clone and connect to the source cluster with the following sequence:
 
@@ -121,7 +121,7 @@ checksum table sbtest1;
 
 The output of your commands should look similar to the example below. Notice that the checksum value changed, and is no longer the same as calculated in section 2 above.
 
-<span class="image">![Checksum on clone changed](./3-checksum-clone-changed.png?raw=true)</span>
+<span class="image">![Checksum on clone changed](3-checksum-clone-changed.png?raw=true)</span>
 
 ## 4. Verifying that the data diverges
 

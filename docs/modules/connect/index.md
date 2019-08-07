@@ -142,14 +142,14 @@ Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-we
 
 Take note that the reader node is currently receiving load. It may take a minute or more for the metrics to fully reflect the incoming load.
 
-<span class="image">![Reader Load](./4-read-load.png?raw=true)</span>
+<span class="image">![Reader Load](4-read-load.png?raw=true)</span>
 
 After several minutes return to the list of instances and notice that a new reader is being provisioned to your cluster.
 
-<span class="image">![Application Auto Scaling Creating Reader](./4-aas-create-reader.png?raw=true)</span>
+<span class="image">![Application Auto Scaling Creating Reader](4-aas-create-reader.png?raw=true)</span>
 
 Once the new replica becomes available, note that the load distributes and stabilizes (it may take a few minutes to stabilize).
 
-<span class="image">![Application Auto Scaling Creating Reader](./4-read-load-balanced.png?raw=true)</span>
+<span class="image">![Application Auto Scaling Creating Reader](4-read-load-balanced.png?raw=true)</span>
 
 You can now type `CTRL+C` at the EC2 instance command line to quit the load generator, if you wish to. After a while the additional reader will be removed automatically.
