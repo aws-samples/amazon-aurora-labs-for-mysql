@@ -34,10 +34,14 @@ exports.handler = (event, context, callback) => {
 
   // if the IP address is not found, mark as forbidden
   if (foundItem === undefined && !requestedUri.startsWith('/scripts/')) {
+		console.log('URL: ' + requestedUri + '; IP:' + clientIp + '; Status: blocked; Script: ' + requestedUri.startsWith('/scripts/'))
+
     response = {
 			status: '403',
 			statusDescription: 'Forbidden'
 		}
+	} else {
+		console.log('URL: ' + requestedUri + '; IP:' + clientIp + '; Status: allowed; Script: ' + requestedUri.startsWith('/scripts/'))
 	}
 
 	// return
