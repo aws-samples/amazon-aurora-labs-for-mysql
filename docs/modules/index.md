@@ -55,3 +55,12 @@ If you are doing these workshop as part of an AWS sponsored event that doesn't p
 1. Browse to the AWS Account Settings console.
 2. Enter the Promo Code you received (these will be handed out at the beginning of the workshop).
 3. Enter the Security Check and click Redeem.
+
+## Additional software needed for labs
+
+The templates and scripts setting up the lab environment install the following software in the lab environment for the purposes of deploying and running the labs:
+
+* mysql-client package. MySQL open source software is provided under the GPL License.
+* sysbench available using the GPL License.
+* test_db available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
+* percona sysbench-tpcc available using the Apache License 2.0.

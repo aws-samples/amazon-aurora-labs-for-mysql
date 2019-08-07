@@ -1,3 +1,14 @@
+/*
+Amazon Aurora Labs for MySQL
+Custom stylesheet
+
+Dependencies:
+none
+
+License:
+This sample code is made available under the MIT-0 license. See the LICENSE file.
+*/
+
 body {
   color: #161e2d;
 }
@@ -56,6 +67,11 @@ body {
     margin: 0;
     padding: 0;
     border: 2px solid #ffcc83;
+}
+
+.aurora {
+  margin: 0 auto;
+  width: 200px;
 }
 
 /*
