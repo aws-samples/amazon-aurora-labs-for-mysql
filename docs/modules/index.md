@@ -24,7 +24,7 @@ You can also discover exercises, labs and workshops related to Amazon Aurora on 
 
 To simplify the getting started experience with the labs, we have created foundational templates for <a href="https://aws.amazon.com/cloudformation/" target="_blank">AWS CloudFormation</a> that provision the resources needed for the lab environment. These templates are designed to deploy a consistent networking infrastructure, and client-side experience of software packages and components used in the lab.
 
-::TODO:: Insert diagram
+<div class="architecture"><img src="/assets/images/generic-architecture.png"></div>
 
 The environment deployed using CloudFormation includes several components:
 
@@ -60,7 +60,7 @@ If you are doing these workshop as part of an AWS sponsored event that doesn't p
 
 The templates and scripts setting up the lab environment install the following software in the lab environment for the purposes of deploying and running the labs:
 
-* mysql-client package. MySQL open source software is provided under the GPL License.
-* sysbench available using the GPL License.
-* test_db available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
-* percona sysbench-tpcc available using the Apache License 2.0.
+* [mysql-client](https://dev.mysql.com/doc/refman/5.6/en/programs-client.html) package. MySQL open source software is provided under the GPL License.
+* [sysbench](https://github.com/akopytov/sysbench) available using the GPL License.
+* [test_db](https://github.com/datacharmer/test_db) available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
+* [Percona's sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
