@@ -38,6 +38,31 @@ Resources:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub '${AWS::StackName}-oai'
 
+  ## S3 bucket to host logs
+  s3Logs:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-logs-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+            Status: Enabled
+          - ExpirationInDays: 90
+            Status: Enabled
+      AccessControl: LogDeliveryWrite
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-logs-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
   ## S3 bucket to host content
   s3Website:
     Type: 'AWS::S3::Bucket'
@@ -47,6 +72,14 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+            Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref s3Logs
+        LogFilePrefix: "s3website/"
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-content-${AWS::Region}'
@@ -192,6 +225,10 @@ Resources:
           GeoRestriction:
             RestrictionType: blacklist
             Locations: [ AF, IR, IQ, LY, SY ]
+        Logging:
+          Bucket: !Sub '${s3Logs}.s3.amazonaws.com'
+          IncludeCookies: false
+          Prefix: "cfwebsite/"
         DefaultCacheBehavior:
           AllowedMethods: [ GET, HEAD ]
           CachedMethods: [ GET, HEAD ]
