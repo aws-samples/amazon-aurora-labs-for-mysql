@@ -88,17 +88,13 @@ Windows users: please download **PuTTY** `putty.exe` and the **PuTTY Key Generat
 * <a href="https://the.earth.li/~sgtatham/putty/latest/w64/putty.exe" target="_blank">PuTTY</a>
 * <a href="https://the.earth.li/~sgtatham/putty/latest/w64/puttygen.exe" target="_blank">PuTTY Key Generator</a>
 
-Once you have downloaded the client software, open `puttygen.exe` and click on **Load**.
+Once you have downloaded the client software, open `puttygen.exe` and click on **Load**. Please make sure that the file filter is set to `All Files (*.*)` and then select the EC2 Key Pair created earlier `labkeys.pem`.
 
-::TODO Screenshot::
-
-Please make sure that the file filter is set to `All Files (*.*)` and then select the EC2 Key Pair created earlier `labkeys.pem`.
-
-::TODO Screenshot::
+<span class="image">![Convert SSH Keys Part 1](3-puttygen-load-open.png?raw=true)</span>
 
 Fill in the **Key passphrase** and **Confirm passphrase** fields with a password of your choice that will be used to encrypt your private key and then click **Save private key**.  Please use the same name `labkeys.ppk` as your new key name.
 
-::TODO Screenshot::
+<span class="image">![Convert SSH Keys Part 2](3-puttygen-key-save.png?raw=true)</span>
 
 Next, open `putty.exe` and enter into the **Host Name (or IP address)** field the value of your bastion host generated from the AWS CloudFormation template that you used to bootstrap the labs:
 
@@ -106,16 +102,18 @@ Next, open `putty.exe` and enter into the **Host Name (or IP address)** field th
 ubuntu@[bastionEndpoint]
 ```
 
-::TODO Screenshot::
+<span class="image">![PuTTY Host Name](3-putty-host.png?raw=true)</span>
 
 Next, navigate within PuTTY to **Connection > SSH > Auth** and browse to the `labkeys.ppk` file that you created with the **PuTTY Key Generator** previously, and then click **Open**.
 
-::TODO Screenshot::
+<span class="image">![PuTTY Set Private Key](3-putty-set-key.png?raw=true)</span>
 
-When prompted by the **PuTTY Security Alert**, click **Yes**.
+Click **Open** at the bottom of the main PuTTY application window to establish the SSH connection. When prompted by the **PuTTY Security Alert**, click **Yes**.
 
-::TODO Screenshot::
+<span class="image">![PuTTY Security Alert](3-putty-warning.png?raw=true)</span>
 
 Next, enter the password that you configured when you created the `labkeys.ppk` private file previously.
 
-::TODO Screenshot::
+<span class="image">![PuTTY Key File Prompt](3-putty-pwd-prompt.png?raw=true)</span>
+
+You are now connected to your workstation EC2 instance using SSH. 
