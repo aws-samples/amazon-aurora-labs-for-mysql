@@ -95,7 +95,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 Run the below command to track the progress of the backtracking operation. The operation should complete in a few minutes.
 
 ```
-aws rds describe-db-clusters --db-cluster-identifier [clusterName] | grep \"Status\"
+aws rds describe-db-clusters --db-cluster-identifier [clusterName] | jq -r '.DBClusters[0].Status'
 ```
 
 **Command parameter values at a glance:**
@@ -129,7 +129,7 @@ aws rds backtrack-db-cluster --db-cluster-identifier [clusterName] --backtrack-t
 Track the progress of the backtracking operation, using the command below. The operation should complete in a few minutes.
 
 ```
-aws rds describe-db-clusters --db-cluster-identifier [clusterName] | grep \"Status\"
+aws rds describe-db-clusters --db-cluster-identifier [clusterName] | jq -r '.DBClusters[0].Status'
 ```
 
 Connect back to the database again. The `sbtest1` table should now be available in the database again, but contain the original data set.
