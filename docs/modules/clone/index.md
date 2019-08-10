@@ -56,7 +56,13 @@ Repeat the command to monitor the creation status. Once the ==DBInstanceStatus==
 Next, connect to the instance using the following command (use the endpoint you retrieved from the `describe-db-cluster` command above):
 
 ```
-mysql -h [cluster endpoint of clone] -u [username] -p [password] [database]
+mysql -h [cluster endpoint of clone] -u [username] -p [database]
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+mysql -h [cluster endpoint of clone] -u$DBUSER -p$DBPASS mylab
 ```
 
 **Command parameter values at a glance:**
@@ -65,7 +71,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --- | --- | --- | --- | ---
 -h | [cluster endpoint of clone] | See above | See above | The cluster endpoint of the Aurora cloned DB cluster.
 -u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+-p | [password] | `$DBPASS` | Manually set, enter when prompted | The password of the MySQL user to authenticate as.
 | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 !!! note
@@ -90,8 +96,17 @@ Now disconnect from the clone and connect to the source cluster with the followi
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
 ```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+quit;
+
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+```
+
 
 Execute the same checksum command that you ran on the clone:
 
@@ -108,7 +123,15 @@ Disconnect from the original cluster (if you are still connected to it) and conn
 ```
 quit;
 
-mysql -h [cluster endpoint of clone] -u [username] -p [password] [database]
+mysql -h [cluster endpoint of clone] -u [username] -p [database]
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+quit;
+
+mysql -h [cluster endpoint of clone] -u$DBUSER -p$DBPASS mylab
 ```
 
 Delete a row of data and execute the checksum command again:
@@ -130,7 +153,15 @@ Verify that the checksum value did not change on the source cluster as a result 
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+quit;
+
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
 ```
 
 Execute the same checksum command that you ran on the clone:

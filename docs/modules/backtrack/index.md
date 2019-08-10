@@ -13,7 +13,15 @@ This lab contains the following tasks:
 Connect to the DB cluster endpoint using the MySQL client, if you are not already connected from completing the previous lab:
 
 ```
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+quit;
+
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
 ```
 
 **Command parameter values at a glance:**
@@ -22,7 +30,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --- | --- | --- | --- | ---
 -h | [clusterEndpoint] | See CloudFormation stack output | See previous lab | The cluster endpoint of the Aurora DB cluster.
 -u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+-p | [password] | `$DBPASS` | Manually set, enter when prompted | The password of the MySQL user to authenticate as.
 | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 Drop the `sbtest1` table:
@@ -68,7 +76,17 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 Reconnect to the DB cluster, and run the checksum table operation, the checksum value should be different than the source cluster value calculated in the [Cloning Clusters](/modules/clone/#2-verifying-that-the-data-set-is-identical) lab:
 
 ```
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
+
+checksum table sbtest1;
+
+quit;
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
 
 checksum table sbtest1;
 
@@ -78,6 +96,10 @@ quit;
 ## 2. Backtracking to recover from unintended changes
 
 Backtrack the database to a time slightly after the second time marker. (Right after dropping the table).
+
+!!! note
+    Backtrack operations occur at the DB cluster level, the entire database state is rolled back to a designated point in time, even though the example in this lab illustrates the effects of the operation on an individual table.
+
 
 ```
 aws rds backtrack-db-cluster --db-cluster-identifier [clusterName] --backtrack-to "yyyy-mm-ddThh:mm:ssZ"
@@ -111,7 +133,17 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 Connect back to the database. The `sbtest1` table should be missing from the database.
 
 ```
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
+
+show tables;
+
+quit;
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
 
 show tables;
 
@@ -135,7 +167,19 @@ aws rds describe-db-clusters --db-cluster-identifier [clusterName] | jq -r '.DBC
 Connect back to the database again. The `sbtest1` table should now be available in the database again, but contain the original data set.
 
 ```
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
+
+show tables;
+
+checksum table sbtest1;
+
+quit;
+```
+
+If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+
+```
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
 
 show tables;
 

@@ -19,7 +19,7 @@ For macOS or Linux users: You can connect using the following command from a ter
 ```
 chmod 0600 /path/to/downloaded/labkeys.pem
 
-ssh -i /path/to/downloaded/labkeys.pem ubuntu@[bastionEndpoint]
+ssh -i /path/to/downloaded/labkeys.pem -o ServerAliveInterval=10 ubuntu@[bastionEndpoint]
 ```
 
 
@@ -28,15 +28,15 @@ ssh -i /path/to/downloaded/labkeys.pem ubuntu@[bastionEndpoint]
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect. The basic command is as follows:
 
 ```
-mysql -h [clusterEndpoint] -u [username] -p [password] [database]
+mysql -h [clusterEndpoint] -u [username] -p [database]
 ```
 
-If you have completed the previous lab, and created the Aurora DB cluster manually, you would input the **Cluster Endpoint** of that cluster as displayed at the end of that lab, along with the username, password and schema (database) you configured for that cluster in the parameter placeholders of the command above.
+If you have completed the previous lab, and created the Aurora DB cluster manually, you would input the **Cluster Endpoint** of that cluster as displayed at the end of that lab, along with the username, password and schema (database) you configured for that cluster in the parameter placeholders or prompts of the command above.
 
 However, if you have skipped that lab and provisioned the cluster using the CloudFormation template, we have set the DB cluster's database credentials automatically for you, and have also created a schema named `mylab` as well. The credentials were saved to an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS SecretsManager</a> secret. For your convenience, these credentials have been set as environment variables on the EC2 instance, although this practice should be avoided in a production system. Using these environment variables, you can connect to the database as follows:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS [database]
+mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
 ```
 
 **Command parameter values at a glance:**
@@ -45,7 +45,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --- | --- | --- | --- | ---
 -h | [clusterEndpoint] | See CloudFormation stack output | See previous lab | The cluster endpoint of the Aurora DB cluster.
 -u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+-p | [password] | `$DBPASS` | Manually set, enter when prompted | The password of the MySQL user to authenticate as.
 | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 !!! note
