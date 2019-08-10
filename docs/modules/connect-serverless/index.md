@@ -6,6 +6,7 @@ This lab contains the following tasks:
 
 1. Creating a Lambda execution role
 2. Creating a Lambda function
+3. Connecting to the database using the RDS Data API
 
 ## 1. Creating a Lambda execution role
 
@@ -93,7 +94,12 @@ Choose the option to **Author from scratch**, provide a memorable **Function nam
 
 <span class="image">![Name Function](2-lambda-create.png?raw=true)</span>
 
-In the **Function code** section, select **Edit code inline** for **Code entry type**, if not already selected, and leave the values for **Runtime** and **Handler** as default (`Node.js 10.x` and `index.handler` respectively). Paste the code snipped below into the editor, and change the placeholders as follows:
+Make sure the **Configuration** tab is selected. In the **Function code** section, select **Edit code inline** for **Code entry type**, if not already selected, and leave the values for **Runtime** and **Handler** as default (`Node.js 10.x` and `index.handler` respectively). Paste the code snipped below into the editor, and change the placeholders as follows:
+
+Placeholder | Description | Where to find it
+--- | --- | ---
+==[ClusterARN]== | The ARN of the serverless database cluster resource. RDS Data API will establish connectivity with this database on your behalf. | See the previous lab: [Creating a Serverless Aurora Cluster](/modules/create-serverless/) at step *1. Creating the serverless DB cluster*.
+==[SecretARN]== | The ARN of the secret used to store the database credentials. RDS Data API will access this secret and connect to the database using those credentials. | See the previous lab: [Creating a Serverless Aurora Cluster](/modules/create-serverless/) at step *2. Creating a secret to store the credentials*.
 
 ```
 // require the AWS SDK
@@ -113,7 +119,9 @@ exports.handler = (event, context, callback) => {
   // run SQL command
   rdsDataService.executeStatement(sqlParams, function (err, data) {
     if (err) {
-      console.log('Could not load items: ' + err)
+      // error
+      console.log(err)
+      callback('Query Failed')
     } else {
       // init
       var rows = []
@@ -137,11 +145,34 @@ exports.handler = (event, context, callback) => {
         })
         rows.push(row)
       })
-      console.log(JSON.stringify(rows))
+
+      // done
+      console.log('Found rows: ' + rows.length)
+      callback(null, rows)
     }
   })
-
-  // done
-  callback()
 }
 ```
+
+<span class="image">![Code Function](2-lambda-code.png?raw=true)</span>
+
+Once you have pasted and replaced the placeholders in the code, scroll down to the **Basic settings** section, and change the function **Timeout** to `30` sec. Click **Save** in the top right area of the console. We are increasing the timeout as it will take longer to respond to the first query against the serverless DB cluster. The compute capacity will be allocated only when the first request is received.
+
+<span class="image">![Save Function](2-lambda-save.png?raw=true)</span>
+
+
+## 3. Connecting to the database using the RDS Data API
+
+Now you are ready to connect to the database from a Lambda function, by using the RDS Data API. The function doesn't bundle a database driver, it simply uses a RESTful AWS API call to send a SQL Query, `SHOW TABLES;` in this example, retrieves the result as a JSON data structure. This is accomplished in a minimal number of lines of code.
+
+Execute the function by clicking the **Test** button.
+
+<span class="image">![Test Function](3-lambda-test.png?raw=true)</span>
+
+You will be asked to configure a test event the first time you try. The format and content for the test event are not relevant for this exercise, so pick any **Event template**, such as `Hello World`, input a memorable **Event name**, such as `MyTestEvent` and hit **Create**.
+
+<span class="image">![Test Event](3-lambda-event.png?raw=true)</span>
+
+If you have created a new test event, you may need to click the **Test** button again. After the function has completed running you can review the results, and see the function response. You may need to expand the **Details** sub-section of the **Execution result: succeeded** notification to see the results.
+
+<span class="image">![Results](3-lambda-results.png?raw=true)</span>

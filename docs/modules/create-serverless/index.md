@@ -57,6 +57,14 @@ Before continuing, let's summarize the configuration options selected. You will 
 
 Click **Create database** to provision the DB cluster.
 
+Once back to the list of databases, click the name of the new database in the listing.
+
+<span class="image">![Select Cluster](1-serverless-selection.png?raw=true)</span>
+
+In the details view of the cluster, click on the **Configuration** tab. Note the value for **ARN**. Write this down, you will need it later.
+
+<span class="image">![CLuster ARN](1-serverless-arn.png?raw=true)</span>
+
 ## 2. Creating a secret to store the credentials
 
 Open the <a href="https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2" target="_blank">AWS Secrets Manager service console</a>.
