@@ -65,6 +65,7 @@ nav:
     - Backtracking a Cluster: 'modules/backtrack/index.md'
     - Using Performance Insights: 'modules/perf-insights/index.md'
     - Creating a Serverless Aurora Cluster: 'modules/create-serverless/index.md'
+    - Using Aurora Serverless with Lambda Functions: 'modules/connect-serverless/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
