@@ -6,6 +6,7 @@ This lab contains the following tasks:
 
 1. Creating the serverless DB cluster
 2. Creating a secret to store the credentials
+3. Enabling the RDS Data API
 
 
 ## 1. Creating the serverless DB cluster
@@ -82,3 +83,25 @@ Finally, in the **Configure automatic rotation** section, leave the option of **
 <span class="image">![Rotate Secret](2-rotate-secret.png?raw=true)</span>
 
 In the **Review** section you have the ability to check the configuration parameters for your secret, before it gets created. Additionally, you can retrieve sample code in popular programming languages, so you can easily retrieve secrets into your application. Click **Store** at the bottom of the screen.
+
+Once created, identify the **ARN** of the newly created secret. This value will be needed in subsequent labs. In the list of **Secrets** in the console, click on the name of the newly created secret.
+
+<span class="image">![List Secrets](2-list-secrets.png?raw=true)</span>
+
+In the detail view of the secret, note the value for **Secret ARN**. Write this down, you will need it later.
+
+<span class="image">![Secret ARN](2-arn-secret.png?raw=true)</span>
+
+## 3. Enabling the RDS Data API
+
+Once the serverless DB cluster is available and the credentials are stored in a secret, you can enable the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html" target="_blank">RDS Data API</a> for the cluster. To do so navigate back to the **RDS service console** and select the serverless DB cluster recently created from the list of **Databases**. Click the **Modify** button in the header of the database listing.
+
+<span class="image">![Select Cluster](3-serverless-selection.png?raw=true)</span>
+
+In the **Network & Security** section, **check** the box next to **Data API**, then click **Continue**.
+
+<span class="image">![Enable Data API](3-serverless-modify.png?raw=true)</span>
+
+Finally, choose **Apply immediately** and click **Modify cluster**.
+
+<span class="image">![Confirm Modifications](3-serverless-confirm.png?raw=true)</span>
