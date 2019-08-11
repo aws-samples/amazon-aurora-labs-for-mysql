@@ -13,10 +13,12 @@ The following labs are currently available, part of this instructional website:
 --- | --- | --- | ---
 1 | [**Prerequisites**](/modules/prerequisites/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources
 2 | [**Create a New Aurora Cluster**](/modules/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually
-3 | [**Connecting, Loading Data and Auto Scaling**](/modules/connect/) | Recommended | Connect to the DB cluster for the first time, load an initial data set and test read replica auto scaling. The initial data set may be used in subsequent labs.
-4 | [**Cloning Clusters**](/modules/clone/) | Optional | Cloning an Aurora DB cluster and observing the divergence of the data set.
-5 | [**Backtracking a Cluster**](/modules/backtrack/) | Optional | Backtracking an Aurora DB cluster to fix an accidental DDL operation.
-6 | [**Using Performance Insights**](/modules/perf-insights/) | Optional | Examining the performance of your DB instances using RDS Performance Insights
+3 | [**Connecting, Loading Data and Auto Scaling**](/modules/connect/) | Recommended, for provisioned clusters | Connect to the DB cluster for the first time, load an initial data set and test read replica auto scaling. The initial data set may be used in subsequent labs.
+4 | [**Cloning Clusters**](/modules/clone/) | Recommended, for provisioned clusters | Cloning an Aurora DB cluster and observing the divergence of the data set.
+5 | [**Backtracking a Cluster**](/modules/backtrack/) | Recommended, for provisioned clusters | Backtracking an Aurora DB cluster to fix an accidental DDL operation.
+6 | [**Using Performance Insights**](/modules/perf-insights/) | Recommended, for provisioned clusters | Examining the performance of your DB instances using RDS Performance Insights
+7 | [**Creating a Serverless Aurora Cluster**](/modules/create-serverless/) | Recommended, for serverless clusters | Create a new Amazon Aurora Serverless MySQL DB cluster manually. You may skip the provisioned cluster labs if you are planning to operate a serverless workload.
+8 | [**Using Aurora Serverless with Lambda Functions**](/modules/connect-serverless/) | Recommended, for serverless clusters | Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.
 
 You can also discover exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
 
