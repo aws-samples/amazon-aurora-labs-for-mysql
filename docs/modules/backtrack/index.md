@@ -21,7 +21,7 @@ If you have opted to create the DB cluster using CloudFormation, you can use the
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 **Command parameter values at a glance:**
@@ -86,7 +86,7 @@ quit;
 If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 checksum table sbtest1;
 
@@ -143,7 +143,7 @@ quit;
 If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 show tables;
 
@@ -179,7 +179,7 @@ quit;
 If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 show tables;
 

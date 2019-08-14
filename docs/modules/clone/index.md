@@ -62,7 +62,7 @@ mysql -h [cluster endpoint of clone] -u [username] -p [database]
 If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
 
 ```
-mysql -h [cluster endpoint of clone] -u$DBUSER -p$DBPASS mylab
+mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 **Command parameter values at a glance:**
@@ -104,7 +104,7 @@ If you have opted to create the DB cluster using CloudFormation, you can use the
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 
@@ -131,7 +131,7 @@ If you have opted to create the DB cluster using CloudFormation, you can use the
 ```
 quit;
 
-mysql -h [cluster endpoint of clone] -u$DBUSER -p$DBPASS mylab
+mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Delete a row of data and execute the checksum command again:
@@ -161,7 +161,7 @@ If you have opted to create the DB cluster using CloudFormation, you can use the
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Execute the same checksum command that you ran on the clone:

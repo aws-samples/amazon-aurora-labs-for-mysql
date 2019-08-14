@@ -36,7 +36,7 @@ If you have completed the previous lab, and created the Aurora DB cluster manual
 However, if you have skipped that lab and provisioned the cluster using the CloudFormation template, we have set the DB cluster's database credentials automatically for you, and have also created a schema named `mylab` as well. The credentials were saved to an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS SecretsManager</a> secret. For your convenience, these credentials have been set as environment variables on the EC2 instance, although this practice should be avoided in a production system. Using these environment variables, you can connect to the database as follows:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p$DBPASS mylab
+mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 **Command parameter values at a glance:**
@@ -122,7 +122,7 @@ python3 loadtest.py -e [readerEndpoint] -u [username] -p [password] -d [schema]
 Or, if the cluster was created automatically:
 
 ```
-python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p $DBPASS -d mylab
+python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -d mylab
 ```
 
 **Command parameter values at a glance:**
