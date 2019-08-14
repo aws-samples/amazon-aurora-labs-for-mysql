@@ -580,7 +580,7 @@ Resources:
         SecretStringTemplate: '{"username": "masteruser"}'
         GenerateStringKey: 'password'
         PasswordLength: 10
-        ExcludeCharacters: '"@/\$'
+        ExcludeCharacters: '"@/\$`'
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-secret
