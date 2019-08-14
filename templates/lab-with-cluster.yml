@@ -536,7 +536,7 @@ Resources:
           export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --region ${AWS::Region} | jq -r '.SecretString'`
           export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
           export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
-          echo "export DBPASS='$DBPASS'" >> /home/ubuntu/.profile
+          echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.profile
           echo "export DBUSER=$DBUSER" >> /home/ubuntu/.profile
           echo "* db credentials initialized" >> /debug.log
 
