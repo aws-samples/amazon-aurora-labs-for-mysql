@@ -1,13 +1,15 @@
 ## Amazon Aurora Labs for MySQL
 
 List of improvements to be implemented in this project
-
-* Modules - Prerequisites: Screenshots needed for PuTTY setup
-* Modules - Create New Cluster: Walkthrough and screenshots needed
-* Modules - Performance Insights: Walkthrough and screenshots needed
 * Modules - Global Database
-* Update licensing info to reflect packages used in the labs
+* Modules - failiver, failover injection
+* Modules - Multi-master
 * Add taskcat testing scripts to grunt
-* Website content and overview sections
-* Template CFN links - for 1-click deploy
-* Add logging bucket
+* for secret fix: "Name the CLUSTER something recognizable, such as labstack-cluster-secret"
+* use session manager instead of direct EC2 access
+* break commands into multiple lines with \
+* do an overarching story to tie these together
+* do export password and username for manual create, clean up commands
+* use cahoot for quizzes
+* set up event engine
+* talk to Gal for TFC sign-off
