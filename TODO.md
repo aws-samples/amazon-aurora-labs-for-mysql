@@ -12,4 +12,5 @@ List of improvements to be implemented in this project
 * do export password and username for manual create, clean up commands
 * use cahoot for quizzes
 * set up event engine
-* talk to Gal for TFC sign-off
+* get TFC sign-off for publication (Gal)
+* Jupyter notebook type instructions
