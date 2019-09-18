@@ -5,7 +5,7 @@
   "devDependencies": {
     "grunt": "latest",
     "grunt-exec": "latest",
-    "npm": "^6.10.2",
+    "npm": "^6.11.3",
     "standard": "^13.1.0"
   },
   "license": "MIT-0"

@@ -5,6 +5,7 @@
 ## Changelog:
 ## 2019-05-13 - Initial release
 ## 2019-05-29 - Changed how AZ selection works
+## 2019-09-18 - Updated AMIs, Remove SSH access, bootstrap script changes for SSM
 ##
 ## Dependencies:
 ## none
@@ -32,85 +33,85 @@ Conditions:
 Mappings:
   RegionalSettings:
     us-east-1:
-      bastionAmi: ami-0a313d6098716f372
+      bastionAmi: ami-07d0cf3af28718ef8
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ohio
       azs: "3"
     us-east-2:
-      bastionAmi: ami-0c55b159cbfafe1f0
+      bastionAmi: ami-05c1fa8df71875112
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
       azs: "3"
     us-west-1:
-      bastionAmi: ami-06397100adf427136
+      bastionAmi: ami-08fd8ae3806f09a08
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. California
       azs: "2"
     us-west-2:
-      bastionAmi: ami-005bdb005fb00e791
+      bastionAmi: ami-06f2f779464715dc5
       bastionType: m5.large
       nodeType: db.r5.large
       name: Oregon
       azs: "3"
     ca-central-1:
-      bastionAmi: ami-01b60a3259250381b
+      bastionAmi: ami-0d0eaed20348a3389
       bastionType: m5.large
       nodeType: db.r5.large
       name: Montreal
       azs: "2"
     eu-central-1:
-      bastionAmi: ami-090f10efc254eaf55
+      bastionAmi: ami-0ac05733838eabc06
       bastionType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
       azs: "3"
     eu-west-1:
-      bastionAmi: ami-08d658f84a6d84a80
+      bastionAmi: ami-06358f49b5839867c
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
       azs: "3"
     eu-west-2:
-      bastionAmi: ami-07dc734dc14746eab
+      bastionAmi: ami-077a5b1762a2dde35
       bastionType: m5.large
       nodeType: db.r5.large
       name: London
       azs: "3"
     eu-west-3:
-      bastionAmi: ami-03bca18cb3dc173c9
+      bastionAmi: ami-0ad37dbbe571ce2a1
       bastionType: m5.large
       nodeType: db.r5.large
       name: Paris
       azs: "3"
     ap-southeast-1:
-      bastionAmi: ami-0dad20bd1b9c8c004
+      bastionAmi: ami-03b6f27628a4569c8
       bastionType: m5.large
       nodeType: db.r5.large
       name: Singapore
       azs: "3"
     ap-southeast-2:
-      bastionAmi: ami-0b76c3b150c6b1423
+      bastionAmi: ami-0edcec072887c2caa
       bastionType: m5.large
       nodeType: db.r5.large
       name: Sydney
       azs: "3"
     ap-south-1:
-      bastionAmi: ami-007d5db58754fa284
+      bastionAmi: ami-009110a2bf8d7dd0a
       bastionType: m5.large
       nodeType: db.r5.large
       name: Mumbai
       azs: "3"
     ap-northeast-1:
-      bastionAmi: ami-0eb48a19a8d81e20b
+      bastionAmi: ami-0eeb679d57500a06c
       bastionType: m5.large
       nodeType: db.r5.large
       name: Tokyo
       azs: "3"
     ap-northeast-2:
-      bastionAmi: ami-078e96948945fc2c9
+      bastionAmi: ami-0fd02cb7da42ee5e0
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
@@ -346,12 +347,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-bastion-host
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !FindInMap [ NetworkSettings, global, sshSourceCidr ]
-          Description: Allows SSH access from anywhere
 
 ## Create DB security group
   dbSecGroupCluster:
@@ -485,6 +480,9 @@ Resources:
           DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
           echo "* updated and upgraded packages" >> /debug.log
 
+          # get ssm-user home dir
+          export SSMHOME=`cat /etc/passwd | grep "ssm-user" | cut -d":" -f6`
+
           # install mysql client tools
           apt-get -y install mysql-client
           mysql --version >> /debug.log
@@ -498,13 +496,13 @@ Resources:
           echo "* installed sysbench package" >> /debug.log
 
           # install percona tpcc-like test suite
-          git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
-          chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
+          git clone https://github.com/Percona-Lab/sysbench-tpcc.git $SSMHOME/sysbench-tpcc
+          chown -R ssm-user:ssm-user $SSMHOME/sysbench-tpcc
           echo "* cloned percona/sysbench-tpcc repo" >> /debug.log
 
           # download demo databases
-          git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
-          chown -R ubuntu:ubuntu /home/ubuntu/samples
+          git clone https://github.com/datacharmer/test_db.git $SSMHOME/samples
+          chown -R ssm-user:ssm-user $SSMHOME/samples
           echo "* cloned test databases repo" >> /debug.log
 
           # install python pip and aws cli
@@ -517,11 +515,11 @@ Resources:
           echo "* pulled load test script" >> /debug.log
 
           # configure AWS CLI
-          mkdir /home/ubuntu/.aws
-          touch /home/ubuntu/.aws/config
-          echo "[default]" >> /home/ubuntu/.aws/config
-          echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
-          chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
+          mkdir $SSMHOME/.aws
+          touch $SSMHOME/.aws/config
+          echo "[default]" >> $SSMHOME/.aws/config
+          echo "region = ${AWS::Region}" >> $SSMHOME/.aws/config
+          chown -R ssm-user:ssm-user $SSMHOME/.aws/config
           echo "* configured aws cli" >> /debug.log
 
           # reboot
