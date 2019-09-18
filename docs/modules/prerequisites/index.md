@@ -4,12 +4,11 @@ The following steps should be completed before getting started with any of the l
 
 This lab contains the following tasks:
 
-1. Signing in to the AWS Management Console and creating an EC2 key pair
+1. Signing in to the AWS Management Console
 2. Creating a lab environment using AWS CloudFormation
-3. Installing an SSH client (Windows Users)
 
 
-## 1. Signing in to the AWS Management Console and creating an EC2 Key Pair
+## 1. Signing in to the AWS Management Console
 
 If you are running these labs in a formal, instructional setting, please use the Console URL, and credentials provided to you to access and log into the AWS Management Console. Otherwise, please use your own credentials. You can access the console at: <a href="https://console.aws.amazon.com/" target="_blank">https://console.aws.amazon.com/</a> or through the Single Sign-On (SSO) mechanism provided by your organization.
 
@@ -19,21 +18,13 @@ If you are running these labs in a formal, instructional setting, please use the
 
 <span class="image">![AWS Management Console Region Selection](1-region-select.png?raw=true)</span>
 
-Open the **Key Pairs** section of the <a href="https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#KeyPairs:sort=keyName" target="_blank">EC2 service console</a>.
-
-!!! warning "Region Check"
-    Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
-
-Click **Create Key Pair**.
-
-<span class="image">![EC2 Console - Create Key Pair](1-create-keypair.png?raw=true)</span>
-
-Give the key pair a recognizable name, such as `labkeys`, then click **Create** and download the file named `labkeys.pem` to your computer, save it in a memorable location, such as your desktop.  You will need this file later in the lab.
-
 
 ## 2. Creating a lab environment using AWS CloudFormation
 
 To simplify the getting started experience with the labs, we have created foundational templates for <a href="https://aws.amazon.com/cloudformation/" target="_blank">AWS CloudFormation</a> that provision the resources needed for the lab environment. These templates are designed to deploy a consistent networking infrastructure, and client-side experience of software packages and components used in the lab.
+
+!!! warning "Formal Event"
+    If you are running these labs in a formal instructional event, the lab environment may have been initialized on your behalf. If unsure, please verify with the event support staff.
 
 Please download the most appropriate CloudFormation template based on the labs you want to run:
 
@@ -60,7 +51,7 @@ Select the radio button named **Upload a template**, then **Choose file** and se
 
 <span class="image">![Upload Template](2-upload-template.png?raw=true)</span>
 
-In the field named **Stack Name**, enter the value `labstack`, for the **ec2KeyPair** parameter value input the name of the key pair you have created previously (`labkeys`) and then click **Next**. For the **vpcAZs** parameter select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
+In the field named **Stack Name**, enter the value `labstack`. For the **vpcAZs** parameter select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available. Click **Next**.
 
 <span class="image">![Configure Stack Options](2-stack-params.png?raw=true)</span>
 
@@ -79,41 +70,3 @@ The stack will take approximatively 20 minutes to provision, you can monitor the
 Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==
 
 <span class="image">![Stack Outputs](2-stack-outputs.png?raw=true)</span>
-
-
-## 3. Installing an SSH client (Windows Users)
-
-Windows users: please download **PuTTY** `putty.exe` and the **PuTTY Key Generator** `puttygen.exe` from the following links, if you do not already have a SSH client available.
-
-* <a href="https://the.earth.li/~sgtatham/putty/latest/w64/putty.exe" target="_blank">PuTTY</a>
-* <a href="https://the.earth.li/~sgtatham/putty/latest/w64/puttygen.exe" target="_blank">PuTTY Key Generator</a>
-
-Once you have downloaded the client software, open `puttygen.exe` and click on **Load**. Please make sure that the file filter is set to `All Files (*.*)` and then select the EC2 Key Pair created earlier `labkeys.pem`.
-
-<span class="image">![Convert SSH Keys Part 1](3-puttygen-load-open.png?raw=true)</span>
-
-Fill in the **Key passphrase** and **Confirm passphrase** fields with a password of your choice that will be used to encrypt your private key and then click **Save private key**.  Please use the same name `labkeys.ppk` as your new key name.
-
-<span class="image">![Convert SSH Keys Part 2](3-puttygen-key-save.png?raw=true)</span>
-
-Next, open `putty.exe` and enter into the **Host Name (or IP address)** field the value of your bastion host generated from the AWS CloudFormation template that you used to bootstrap the labs:
-
-```
-ubuntu@[bastionEndpoint]
-```
-
-<span class="image">![PuTTY Host Name](3-putty-host.png?raw=true)</span>
-
-Next, navigate within PuTTY to **Connection > SSH > Auth** and browse to the `labkeys.ppk` file that you created with the **PuTTY Key Generator** previously, and then click **Open**.
-
-<span class="image">![PuTTY Set Private Key](3-putty-set-key.png?raw=true)</span>
-
-Click **Open** at the bottom of the main PuTTY application window to establish the SSH connection. When prompted by the **PuTTY Security Alert**, click **Yes**.
-
-<span class="image">![PuTTY Security Alert](3-putty-warning.png?raw=true)</span>
-
-Next, enter the password that you configured when you created the `labkeys.ppk` private file previously.
-
-<span class="image">![PuTTY Key File Prompt](3-putty-pwd-prompt.png?raw=true)</span>
-
-You are now connected to your workstation EC2 instance using SSH. 
