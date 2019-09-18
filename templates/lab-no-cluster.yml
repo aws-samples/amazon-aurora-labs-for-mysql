@@ -21,9 +21,6 @@ Parameters:
   vpcAZs:
     Type: "List<AWS::EC2::AvailabilityZone::Name>"
     Description: List of Availability Zones to use for the subnets in the VPC. Must pick 3 AZs in regions with 3 or more AZs.
-  ec2KeyPair:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: EC2 key pair for instance access
 
 ## Conditions
 Conditions:
@@ -39,7 +36,7 @@ Mappings:
       name: Ohio
       azs: "3"
     us-east-2:
-      bastionAmi: ami-05c1fa8df71875112
+      bastionAmi: ami-090a9429be63ca087
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
@@ -154,7 +151,7 @@ Resources:
       CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-vpc
+          Value: !Sub labstack-vpc
 
 ## Create an IGW & attach it to the VPC
   vpcIgw:
@@ -162,7 +159,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-igw
+          Value: !Sub labstack-igw
   attachIgwVpc:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -179,7 +176,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-1
+          Value: !Sub labstack-pub-sub-1
   sub2Public:
     Type: AWS::EC2::Subnet
     Properties:
@@ -189,7 +186,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-2
+          Value: !Sub labstack-pub-sub-2
   sub3Public:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -200,7 +197,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-3
+          Value: !Sub labstack-pub-sub-3
 
 ## Associate the public subnets with a public route table
   rtbPublic:
@@ -209,7 +206,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-public-rtb
+          Value: !Sub labstack-public-rtb
   rteToIgw:
     Type: AWS::EC2::Route
     DependsOn: attachIgwVpc
@@ -244,7 +241,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-1
+          Value: !Sub labstack-prv-sub-1
   sub2Private:
     Type: AWS::EC2::Subnet
     Properties:
@@ -254,7 +251,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-2
+          Value: !Sub labstack-prv-sub-2
   sub3Private:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -265,7 +262,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-3
+          Value: !Sub labstack-prv-sub-3
 
 ## Create a NAT Gateway & EIP
   natEip:
@@ -286,7 +283,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-nat-rtb
+          Value: !Sub labstack-nat-rtb
   rteToNgw:
     Type: AWS::EC2::Route
     Properties:
@@ -331,33 +328,33 @@ Resources:
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
+      DBSubnetGroupDescription: !Sub labstack-db-subnet-group
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !If [ cond3AZs, !Ref sub3Private, !Ref "AWS::NoValue" ] ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-db-subnet-group
+          Value: !Sub labstack-db-subnet-group
 
 ## Create bastion security group
   bastionSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub ${AWS::StackName}-bastion-host
+      GroupName: !Sub labstack-bastion-host
       GroupDescription: Aurora Lab SSH Security Group
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-host
+          Value: !Sub labstack-bastion-host
 
 ## Create DB security group
   dbSecGroupCluster:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub ${AWS::StackName}-mysql-internal
+      GroupName: !Sub labstack-mysql-internal
       GroupDescription: Aurora Lab Database Firewall
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-internal
+          Value: !Sub labstack-mysql-internal
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
@@ -369,7 +366,7 @@ Resources:
   roleEnhancedMonitoring:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-monitor-${AWS::Region}
+      RoleName: !Sub labstack-monitor-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -386,7 +383,7 @@ Resources:
   roleServiceIntegration:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-integrate-${AWS::Region}
+      RoleName: !Sub labstack-integrate-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -418,7 +415,7 @@ Resources:
   roleBastionHost:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-bastion-${AWS::Region}
+      RoleName: !Sub labstack-bastion-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -458,10 +455,9 @@ Resources:
       SubnetId: !Ref sub1Public
       InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
       SecurityGroupIds: [ !Ref bastionSecGroup ]
-      KeyName: !Ref ec2KeyPair
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-host
+          Value: !Sub labstack-bastion-host
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -480,8 +476,11 @@ Resources:
           DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
           echo "* updated and upgraded packages" >> /debug.log
 
-          # get ssm-user home dir
-          export SSMHOME=`cat /etc/passwd | grep "ssm-user" | cut -d":" -f6`
+          # update SSM agent
+          snap remove amazon-ssm-agent
+          wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
+          DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
+          echo "* update ssm-agent to latest" >> /debug.log
 
           # install mysql client tools
           apt-get -y install mysql-client
@@ -496,13 +495,13 @@ Resources:
           echo "* installed sysbench package" >> /debug.log
 
           # install percona tpcc-like test suite
-          git clone https://github.com/Percona-Lab/sysbench-tpcc.git $SSMHOME/sysbench-tpcc
-          chown -R ssm-user:ssm-user $SSMHOME/sysbench-tpcc
+          git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
+          chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
           echo "* cloned percona/sysbench-tpcc repo" >> /debug.log
 
           # download demo databases
-          git clone https://github.com/datacharmer/test_db.git $SSMHOME/samples
-          chown -R ssm-user:ssm-user $SSMHOME/samples
+          git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
+          chown -R ubuntu:ubuntu /home/ubuntu/samples
           echo "* cloned test databases repo" >> /debug.log
 
           # install python pip and aws cli
@@ -515,11 +514,11 @@ Resources:
           echo "* pulled load test script" >> /debug.log
 
           # configure AWS CLI
-          mkdir $SSMHOME/.aws
-          touch $SSMHOME/.aws/config
-          echo "[default]" >> $SSMHOME/.aws/config
-          echo "region = ${AWS::Region}" >> $SSMHOME/.aws/config
-          chown -R ssm-user:ssm-user $SSMHOME/.aws/config
+          mkdir /home/ubuntu/.aws
+          touch /home/ubuntu/.aws/config
+          echo "[default]" >> /home/ubuntu/.aws/config
+          echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
+          chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
           echo "* configured aws cli" >> /debug.log
 
           # reboot
@@ -530,7 +529,7 @@ Resources:
   pgNodeParams:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-node-params
+      Description: !Sub labstack-node-params
       Family: aurora5.6
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
@@ -539,19 +538,19 @@ Resources:
         log_output: FILE
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-node-params
+          Value: !Sub labstack-node-params
 
 ## Create cluster parameter group
   cpgClusterParams:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-cluster-params
+      Description: !Sub labstack-cluster-params
       Family: aurora5.6
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-cluster-params
+          Value: !Sub labstack-cluster-params
 
 ## Create sysbench prep SSM document
   ssmDocSysbenchTest:
@@ -560,7 +559,7 @@ Resources:
       DocumentType: Command
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-sysbench-test
+          Value: !Sub labstack-sysbench-test
       Content:
         schemaVersion: '2.2'
         description: SysBench Percona TPCC-LIKE Preparation
@@ -617,9 +616,6 @@ Outputs:
   vpcId:
     Description: Aurora Lab VPC
     Value: !Ref vpc
-  bastionEndpoint:
-    Description: Bastion Host Endpoint
-    Value: !GetAtt bastionHost.PublicDnsName
   bastionInstance:
     Description: Bastion Instance ID
     Value: !Ref bastionHost
