@@ -28,7 +28,7 @@ Click **Create database** to start the configuration process
 
 In the first configuration section of the **Create database** page, called **Database settings** ensure the **Easy create** toggle button is turned **OFF** (grey color).
 
-Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility edition, the **Aurora (MySQL)-5.6.10a** version and the **Regional** database location.
+Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility** edition, the **Aurora (MySQL 5.6) 1.19.2** version and the **Regional** database location.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
