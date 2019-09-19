@@ -15,21 +15,30 @@ This lab contains the following tasks:
 !!! warning "Workload State Check"
     Before cloning the DB cluster ensure you have stopped any load generating tasks from the previous lab, and exited out of the MySQL client command line using `quit;`.
 
-On the EC2-based workstation you [connected to in the previous lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), enter:
+On the Session Manager workstation command line [see the previous lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), enter:
 
 ```
-aws rds restore-db-cluster-to-point-in-time --restore-type copy-on-write --use-latest-restorable-time --source-db-cluster-identifier [clusterName] --db-cluster-identifier [clusterName]-clone --vpc-security-group-ids [dbSecurityGroup] --db-subnet-group-name [dbSubnetGroup] --backtrack-window 86400
+aws rds restore-db-cluster-to-point-in-time \
+--restore-type copy-on-write \
+--use-latest-restorable-time \
+--source-db-cluster-identifier labstack-cluster \
+--db-cluster-identifier labstack-cluster-clone \
+--vpc-security-group-ids [dbSecurityGroup] \
+--db-subnet-group-name [dbSubnetGroup] \
+--backtrack-window 86400
 ```
 
-You can find the parameter values for the ==[placeholders]== above in the Outputs section of the CloudFormation stack you deployed when [completing the prerequisites](/modules/prerequisites/#2-creating-a-lab-environment-using-aws-cloudformation). If you have opted to create the DB cluster manually, use the DB cluster identifier you have configured when [creating the Aurora DB cluster](/modules/create/) for the ==[clusterName]== placeholder.
+You can find the parameter values for the ==[placeholders]== above in the Outputs section of the CloudFormation stack you deployed when [completing the prerequisites](/modules/prerequisites/#2-creating-a-lab-environment-using-aws-cloudformation). If you have opted to create the DB cluster manually, and have specified a different DB cluster identifier, please use that value.
 
 Next, check the status of the creation of your clone, by using the following command. The cloning process can take several minutes to complete. See the example output below.
 
 ```
-aws rds describe-db-clusters --db-cluster-identifier [clusterName]-clone
+aws rds describe-db-clusters \
+--db-cluster-identifier labstack-cluster-clone \
+| jq -r '.DBClusters[0].Status, .DBClusters[0].Endpoint'
 ```
 
-Take note of both the ==Status== and the ==Endpoint== attributes of the command output. Once the **Status** becomes **available**, you can add a DB instance to the cluster and once the DB instance is added, you will want to connect to the cluster via the **Endpoint** value, which represents the cluster endpoint.
+Take note of both the ==status== and the ==endpoint== in the command output. Once the **status** becomes **available**, you can add a DB instance to the cluster and once the DB instance is added, you will want to connect to the cluster via the **endpoint** value, which represents the cluster endpoint.
 
 <span class="image">![DB Cluster Status](1-describe-cluster.png?raw=true)</span>
 
@@ -40,26 +49,30 @@ Take note of both the ==Status== and the ==Endpoint== attributes of the command 
 Add a DB instance to the cluster once the status of the cluster becomes **available**, using the following command:
 
 ```
-aws rds create-db-instance --db-instance-class db.r5.large --engine aurora --db-cluster-identifier [clusterName]-clone --db-instance-identifier [clusterName]-clone-instance
+aws rds create-db-instance \
+--db-instance-class db.r5.large \
+--engine aurora \
+--db-cluster-identifier labstack-cluster-clone \
+--db-instance-identifier labstack-cluster-clone-instance
 ```
 
 Check the creation of the DB instance within the cluster, by using the following command:
 
 ```
-aws rds describe-db-instances --db-instance-identifier [clusterName]-clone-instance
+aws rds describe-db-instances \
+--db-instance-identifier labstack-cluster-clone-instance \
+| jq -r '.DBInstances[0].DBInstanceStatus'
 ```
 
 <span class="image">![DB Instance Status](1-describe-instance.png?raw=true)</span>
 
-Repeat the command to monitor the creation status. Once the ==DBInstanceStatus== attribute changes from **creating** to **available**, you have a functioning clone. Creating a node in a cluster also takes several minutes.
+Repeat the command to monitor the creation status. Once the **status** changes from **creating** to **available**, you have a functioning clone. Creating a node in a cluster also takes several minutes.
 
-Next, connect to the instance using the following command (use the endpoint you retrieved from the `describe-db-cluster` command above):
+## 2. Verifying that the data set is identical
 
-```
-mysql -h [cluster endpoint of clone] -u [username] -p [database]
-```
+Verify that the data set is identical on both the source and cloned DB clusters, before we make any changes to the data. You can verify by performing a checksum operation on the **sbtest1** table.
 
-If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
+Connect to the cloned database using the following command (use the endpoint you retrieved from the `describe-db-cluster` command above):
 
 ```
 mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
@@ -70,18 +83,14 @@ mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
 --- | --- | --- | --- | ---
 -h | [cluster endpoint of clone] | See above | See above | The cluster endpoint of the Aurora cloned DB cluster.
--u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | [password] | `$DBPASS` | Manually set, enter when prompted | The password of the MySQL user to authenticate as.
+-u | `$DBUSER` | Set automatically, see Secrets Manager | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+-p | `$DBPASS` | Set automatically, see Secrets Manager | Manually set | The password of the MySQL user to authenticate as.
 | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 !!! note
     The database credentials you use to connect are the same as for the source DB cluster, as this is an exact clone of the source.
 
-## 2. Verifying that the data set is identical
-
-Verify that the data set is identical on both the source and cloned DB clusters, before we make any changes to the data. You can verify by performing a checksum operation on the **sbtest1** table.
-
-Since you are already connected to the cloned DB cluster, issue the following command there first:
+Next, issue the following command on the clone:
 
 ```
 checksum table sbtest1;
@@ -96,17 +105,8 @@ Now disconnect from the clone and connect to the source cluster with the followi
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u [username] -p [database]
-```
-
-If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
-
-```
-quit;
-
 mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
-
 
 Execute the same checksum command that you ran on the clone:
 
@@ -119,14 +119,6 @@ Please take note of the value for your specific source cluster. The checksum val
 ## 3. Changing data on the clone
 
 Disconnect from the original cluster (if you are still connected to it) and connect to the clone cluster with the following sequence:
-
-```
-quit;
-
-mysql -h [cluster endpoint of clone] -u [username] -p [database]
-```
-
-If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
 
 ```
 quit;
@@ -149,14 +141,6 @@ The output of your commands should look similar to the example below. Notice tha
 ## 4. Verifying that the data diverges
 
 Verify that the checksum value did not change on the source cluster as a result of the delete operation on the clone. Disconnect from the clone (if you are still connected) and connect to the source cluster with the following sequence:
-
-```
-quit;
-
-mysql -h [clusterEndpoint] -u [username] -p [database]
-```
-
-If you have opted to create the DB cluster using CloudFormation, you can use the following command instead:
 
 ```
 quit;
