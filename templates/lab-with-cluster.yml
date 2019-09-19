@@ -9,6 +9,8 @@
 ## 2019-06-13 - Preconfigured aws cli
 ## 2019-06-14 - Preconfigured DB credentials as ENV variables
 ## 2019-06-14 - Fixed issue with Scalable Target and uppercase cluster identifiers
+## 2019-09-18 - Updated AMIs, Remove SSH access, bootstrap script changes for SSM
+## 2019-09-19 - Fixed resource names to enable EE
 ##
 ## Dependencies:
 ## none
@@ -24,103 +26,98 @@ Parameters:
   vpcAZs:
     Type: "List<AWS::EC2::AvailabilityZone::Name>"
     Description: List of Availability Zones to use for the subnets in the VPC. Must pick 3 AZs in regions with 3 or more AZs.
-  ec2KeyPair:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: EC2 key pair for instance access
-
 
 ## Conditions
 Conditions:
   cond3AZs: !Equals [ !FindInMap [ RegionalSettings, !Ref "AWS::Region", azs ], "3" ]
 
-
 ## Mappings
 Mappings:
   RegionalSettings:
     us-east-1:
-      bastionAmi: ami-0a313d6098716f372
+      bastionAmi: ami-024582e76075564db
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ohio
       azs: "3"
     us-east-2:
-      bastionAmi: ami-0c55b159cbfafe1f0
+      bastionAmi: ami-090a9429be63ca087
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
       azs: "3"
     us-west-1:
-      bastionAmi: ami-06397100adf427136
+      bastionAmi: ami-0c6eca62e6c7dacff
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. California
       azs: "2"
     us-west-2:
-      bastionAmi: ami-005bdb005fb00e791
+      bastionAmi: ami-09c08e9cd8d9c1b93
       bastionType: m5.large
       nodeType: db.r5.large
       name: Oregon
       azs: "3"
     ca-central-1:
-      bastionAmi: ami-01b60a3259250381b
+      bastionAmi: ami-0e76f0489f3cca311
       bastionType: m5.large
       nodeType: db.r5.large
       name: Montreal
       azs: "2"
     eu-central-1:
-      bastionAmi: ami-090f10efc254eaf55
+      bastionAmi: ami-0fd6d676e2e90dc7b
       bastionType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
       azs: "3"
     eu-west-1:
-      bastionAmi: ami-08d658f84a6d84a80
+      bastionAmi: ami-08f053fa3d25478f4
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
       azs: "3"
     eu-west-2:
-      bastionAmi: ami-07dc734dc14746eab
+      bastionAmi: ami-012d95ddd53c98e0e
       bastionType: m5.large
       nodeType: db.r5.large
       name: London
       azs: "3"
     eu-west-3:
-      bastionAmi: ami-03bca18cb3dc173c9
+      bastionAmi: ami-0001c7938b8e89312
       bastionType: m5.large
       nodeType: db.r5.large
       name: Paris
       azs: "3"
     ap-southeast-1:
-      bastionAmi: ami-0dad20bd1b9c8c004
+      bastionAmi: ami-0f8c65cdcc35d0a72
       bastionType: m5.large
       nodeType: db.r5.large
       name: Singapore
       azs: "3"
     ap-southeast-2:
-      bastionAmi: ami-0b76c3b150c6b1423
+      bastionAmi: ami-056280928f86f80a8
       bastionType: m5.large
       nodeType: db.r5.large
       name: Sydney
       azs: "3"
     ap-south-1:
-      bastionAmi: ami-007d5db58754fa284
+      bastionAmi: ami-03d48fdf7c142da15
       bastionType: m5.large
       nodeType: db.r5.large
       name: Mumbai
       azs: "3"
     ap-northeast-1:
-      bastionAmi: ami-0eb48a19a8d81e20b
+      bastionAmi: ami-0193f3ddafc2d8921
       bastionType: m5.large
       nodeType: db.r5.large
       name: Tokyo
       azs: "3"
     ap-northeast-2:
-      bastionAmi: ami-078e96948945fc2c9
+      bastionAmi: ami-0b0d9551c4775f4e4
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
-      azs: "3"
+      azs: "2"
   NetworkSettings:
     global:
       vpcCidr: 172.31.0.0/16
@@ -160,7 +157,7 @@ Resources:
       CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-vpc
+          Value: !Sub labstack-vpc
 
 ## Create an IGW & attach it to the VPC
   vpcIgw:
@@ -168,7 +165,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-igw
+          Value: !Sub labstack-igw
   attachIgwVpc:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -185,7 +182,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-1
+          Value: !Sub labstack-pub-sub-1
   sub2Public:
     Type: AWS::EC2::Subnet
     Properties:
@@ -195,7 +192,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-2
+          Value: !Sub labstack-pub-sub-2
   sub3Public:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -206,7 +203,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-3
+          Value: !Sub labstack-pub-sub-3
 
 ## Associate the public subnets with a public route table
   rtbPublic:
@@ -215,7 +212,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-public-rtb
+          Value: !Sub labstack-public-rtb
   rteToIgw:
     Type: AWS::EC2::Route
     DependsOn: attachIgwVpc
@@ -250,7 +247,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-1
+          Value: !Sub labstack-prv-sub-1
   sub2Private:
     Type: AWS::EC2::Subnet
     Properties:
@@ -260,7 +257,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-2
+          Value: !Sub labstack-prv-sub-2
   sub3Private:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -271,7 +268,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-3
+          Value: !Sub labstack-prv-sub-3
 
 ## Create a NAT Gateway & EIP
   natEip:
@@ -292,7 +289,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-nat-rtb
+          Value: !Sub labstack-nat-rtb
   rteToNgw:
     Type: AWS::EC2::Route
     Properties:
@@ -337,39 +334,33 @@ Resources:
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
+      DBSubnetGroupDescription: !Sub labstack-db-subnet-group
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !If [ cond3AZs, !Ref sub3Private, !Ref "AWS::NoValue" ] ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-db-subnet-group
+          Value: !Sub labstack-db-subnet-group
 
 ## Create bastion security group
   bastionSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub ${AWS::StackName}-bastion-host
+      GroupName: !Sub labstack-bastion-host
       GroupDescription: Aurora Lab SSH Security Group
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-host
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !FindInMap [ NetworkSettings, global, sshSourceCidr ]
-          Description: Allows SSH access from anywhere
+          Value: !Sub labstack-bastion-host
 
 ## Create DB security group
   dbSecGroupCluster:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub ${AWS::StackName}-mysql-internal
+      GroupName: !Sub labstack-mysql-internal
       GroupDescription: Aurora Lab Database Firewall
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-internal
+          Value: !Sub labstack-mysql-internal
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
@@ -381,7 +372,7 @@ Resources:
   roleEnhancedMonitoring:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-monitor-${AWS::Region}
+      RoleName: !Sub labstack-monitor-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -398,7 +389,7 @@ Resources:
   roleServiceIntegration:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-integrate-${AWS::Region}
+      RoleName: !Sub labstack-integrate-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -430,7 +421,7 @@ Resources:
   roleBastionHost:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-bastion-${AWS::Region}
+      RoleName: !Sub labstack-bastion-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -470,10 +461,9 @@ Resources:
       SubnetId: !Ref sub1Public
       InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
       SecurityGroupIds: [ !Ref bastionSecGroup ]
-      KeyName: !Ref ec2KeyPair
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-host
+          Value: !Sub labstack-bastion-host
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -491,6 +481,16 @@ Resources:
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
           echo "* updated and upgraded packages" >> /debug.log
+
+          # update SSM agent
+          snap remove amazon-ssm-agent
+          wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
+          DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
+          echo "* update ssm-agent to latest" >> /debug.log
+
+          # install jq
+          apt-get -y install jq
+          echo "* installed jq package" >> /debug.log
 
           # install mysql client tools
           apt-get -y install mysql-client
@@ -532,12 +532,11 @@ Resources:
           echo "* configured aws cli" >> /debug.log
 
           # set DB cluster user and password as env variables
-          apt-get -y install jq
           export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --region ${AWS::Region} | jq -r '.SecretString'`
           export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
           export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
-          echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.profile
-          echo "export DBUSER=$DBUSER" >> /home/ubuntu/.profile
+          echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
+          echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
           echo "* db credentials initialized" >> /debug.log
 
           # reboot
@@ -548,7 +547,7 @@ Resources:
   pgNodeParams:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-node-params
+      Description: !Sub labstack-node-params
       Family: aurora5.6
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
@@ -557,25 +556,25 @@ Resources:
         log_output: FILE
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-node-params
+          Value: !Sub labstack-node-params
 
 ## Create cluster parameter group
   cpgClusterParams:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-cluster-params
+      Description: !Sub labstack-cluster-params
       Family: aurora5.6
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-cluster-params
+          Value: !Sub labstack-cluster-params
 
 ## Create a random generated password and store it as a secret
   secretClusterMasterUser:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Description: !Sub "Master user credentials for ${AWS::StackName}-cluster"
+      Description: !Sub "Master user credentials for labstack-cluster"
       GenerateSecretString:
         SecretStringTemplate: '{"username": "masteruser"}'
         GenerateStringKey: 'password'
@@ -583,7 +582,7 @@ Resources:
         ExcludeCharacters: '"@/\$`&'
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-secret
+          Value: !Sub labstack-secret
 
 ## Create Aurora cluster
   dbCluster:
@@ -592,7 +591,7 @@ Resources:
       Engine: aurora
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref cpgClusterParams
-      DBClusterIdentifier: !Sub ${AWS::StackName}-cluster
+      DBClusterIdentifier: !Sub labstack-cluster
       BackupRetentionPeriod: 7
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
@@ -603,13 +602,13 @@ Resources:
       BacktrackWindow: 86400
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-cluster
+          Value: !Sub labstack-cluster
 
 ## Create role for use with role assignment to Aurora cluster and log export via custom resource
   roleClusterEnhancements:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-change-${AWS::Region}
+      RoleName: !Sub labstack-change-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -646,7 +645,7 @@ Resources:
   funcClusterEnhancements:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-cluster-changes
+      FunctionName: !Sub labstack-cluster-changes
       Description: Custom Resource to assign the IAM roles to an Aurora cluster, and export logs to CloudWatch Logs, since CloudFormation doesn't do it natively
       Handler: index.handler
       Role: !GetAtt roleClusterEnhancements.Arn
@@ -654,7 +653,7 @@ Resources:
       Timeout: 30
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-cluster-changes
+          Value: !Sub labstack-cluster-changes
       Environment:
         Variables:
           REGION: !Ref "AWS::Region"
@@ -755,7 +754,7 @@ Resources:
     DependsOn: [ resClusterEnhancements ]
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-node-01
+      DBInstanceIdentifier: !Sub labstack-node-01
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
@@ -767,7 +766,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-node-01
+          Value: !Sub labstack-node-01
 
 ## Deploy a reader node
   dbNodeSecondary:
@@ -775,7 +774,7 @@ Resources:
     DependsOn: [ dbNodeWriter ]
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-node-02
+      DBInstanceIdentifier: !Sub labstack-node-02
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
@@ -787,14 +786,14 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-node-02
+          Value: !Sub labstack-node-02
 
 ## Role to overcome current limitations in CFN ScalableTarget implemetation
 ## This role is *NOT* actively used by any resource and service, but must be present
   roleScalableTarget:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-aas-target-${AWS::Region}
+      RoleName: !Sub labstack-aas-target-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -824,7 +823,7 @@ Resources:
   dbScalingPolicy:
     Type : AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
-      PolicyName: !Sub ${AWS::StackName}-autoscale-readers
+      PolicyName: !Sub labstack-autoscale-readers
       PolicyType: TargetTrackingScaling
       ScalingTargetId: !Ref dbScalableTarget
       TargetTrackingScalingPolicyConfiguration:
@@ -841,7 +840,7 @@ Resources:
       DocumentType: Command
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-sysbench-test
+          Value: !Sub labstack-sysbench-test
       Content:
         schemaVersion: '2.2'
         description: SysBench Percona TPCC-LIKE Preparation
@@ -901,9 +900,6 @@ Outputs:
   vpcId:
     Description: Aurora Lab VPC
     Value: !Ref vpc
-  bastionEndpoint:
-    Description: Bastion Host Endpoint
-    Value: !GetAtt bastionHost.PublicDnsName
   bastionInstance:
     Description: Bastion Instance ID
     Value: !Ref bastionHost

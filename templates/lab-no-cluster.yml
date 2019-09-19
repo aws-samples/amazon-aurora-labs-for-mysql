@@ -6,6 +6,7 @@
 ## 2019-05-13 - Initial release
 ## 2019-05-29 - Changed how AZ selection works
 ## 2019-09-18 - Updated AMIs, Remove SSH access, bootstrap script changes for SSM
+## 2019-09-19 - Fixed resource names to enable EE
 ##
 ## Dependencies:
 ## none
@@ -484,6 +485,7 @@ Resources:
 
           # install jq
           apt-get -y install jq
+          echo "* installed jq package" >> /debug.log
 
           # install mysql client tools
           apt-get -y install mysql-client
