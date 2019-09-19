@@ -482,6 +482,9 @@ Resources:
           DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
           echo "* update ssm-agent to latest" >> /debug.log
 
+          # install jq
+          apt-get -y install jq
+
           # install mysql client tools
           apt-get -y install mysql-client
           mysql --version >> /debug.log
