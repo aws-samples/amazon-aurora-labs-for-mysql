@@ -30,7 +30,7 @@ Conditions:
 Mappings:
   RegionalSettings:
     us-east-1:
-      bastionAmi: ami-07d0cf3af28718ef8
+      bastionAmi: ami-024582e76075564db
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ohio
@@ -42,73 +42,73 @@ Mappings:
       name: N. Virginia
       azs: "3"
     us-west-1:
-      bastionAmi: ami-08fd8ae3806f09a08
+      bastionAmi: ami-0c6eca62e6c7dacff
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. California
       azs: "2"
     us-west-2:
-      bastionAmi: ami-06f2f779464715dc5
+      bastionAmi: ami-09c08e9cd8d9c1b93
       bastionType: m5.large
       nodeType: db.r5.large
       name: Oregon
       azs: "3"
     ca-central-1:
-      bastionAmi: ami-0d0eaed20348a3389
+      bastionAmi: ami-0e76f0489f3cca311
       bastionType: m5.large
       nodeType: db.r5.large
       name: Montreal
       azs: "2"
     eu-central-1:
-      bastionAmi: ami-0ac05733838eabc06
+      bastionAmi: ami-0fd6d676e2e90dc7b
       bastionType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
       azs: "3"
     eu-west-1:
-      bastionAmi: ami-06358f49b5839867c
+      bastionAmi: ami-08f053fa3d25478f4
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
       azs: "3"
     eu-west-2:
-      bastionAmi: ami-077a5b1762a2dde35
+      bastionAmi: ami-012d95ddd53c98e0e
       bastionType: m5.large
       nodeType: db.r5.large
       name: London
       azs: "3"
     eu-west-3:
-      bastionAmi: ami-0ad37dbbe571ce2a1
+      bastionAmi: ami-0001c7938b8e89312
       bastionType: m5.large
       nodeType: db.r5.large
       name: Paris
       azs: "3"
     ap-southeast-1:
-      bastionAmi: ami-03b6f27628a4569c8
+      bastionAmi: ami-0f8c65cdcc35d0a72
       bastionType: m5.large
       nodeType: db.r5.large
       name: Singapore
       azs: "3"
     ap-southeast-2:
-      bastionAmi: ami-0edcec072887c2caa
+      bastionAmi: ami-056280928f86f80a8
       bastionType: m5.large
       nodeType: db.r5.large
       name: Sydney
       azs: "3"
     ap-south-1:
-      bastionAmi: ami-009110a2bf8d7dd0a
+      bastionAmi: ami-03d48fdf7c142da15
       bastionType: m5.large
       nodeType: db.r5.large
       name: Mumbai
       azs: "3"
     ap-northeast-1:
-      bastionAmi: ami-0eeb679d57500a06c
+      bastionAmi: ami-0193f3ddafc2d8921
       bastionType: m5.large
       nodeType: db.r5.large
       name: Tokyo
       azs: "3"
     ap-northeast-2:
-      bastionAmi: ami-0fd02cb7da42ee5e0
+      bastionAmi: ami-0b0d9551c4775f4e4
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
