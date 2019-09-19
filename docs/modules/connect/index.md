@@ -12,40 +12,71 @@ This lab contains the following tasks:
 
 ## 1. Connecting to your workstation EC2 instance
 
-For Windows users: We will use PuTTY and PuTTY Key Generator to connect to the workstation using SSH. If you do not have these applications already installed please use the instructions in the [Prerequisites](/modules/prerequisites/#3-install-an-ssh-client-windows-users) for setting up PuTTY and connecting via SSH.
+To interact with the Aurora database cluster, you will use an Amazon EC2 Linux instance that acts like a workstation for the purposes of the labs. All necessary software packages and scripts have been installed and configured on this EC2 instance for you. To ensure a unified experience, you will be interacting with this workstation using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager</a>. With Session Manager you can interact with your workstation directly from the management console.
 
-For macOS or Linux users: You can connect using the following command from a terminal, however you will need to change the permissions of the certificate file first:
+Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager service console</a>. In the left hand menu, click on **Session Manager**. Then click the **Configure Preferences** button.
+
+!!! warning "Region Check"
+    Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+
+<span class="image">![Session Manager](1-session-manager.png?raw=true)</span>
+
+Check the box next to **Enable Run As support for Linux instances**, and enter `ubuntu` in the text field. This will instruct Session Manager to connect to the workstation using the `ubuntu` operating system user account. Click **Save**.
+
+!!! note
+    You will only need to set the preferences once for the purposes of the labs. However, if you use Session Manager for other use cases you may need to revert the changes as needed.
+
+<span class="image">![Session Preferences](1-session-prefs.png?raw=true)</span>
+
+Next, navigate to the **Sessions** tab, and click the **Start session** button.
+
+<span class="image">![Start Session](1-start-session.png?raw=true)</span>
+
+Please select the EC2 instance to establish a session with. The workstation is named `labstack-bastion-host`, select it and click **Start session**.
+
+<span class="image">![Conenct Instance](1-connect-session.png?raw=true)</span>
+
+
+If you see a black command like terminal screen and a prompt, you are now connected to the EC2 based workstation. With Session Manager it is not necessary to allow SSH access to the EC2 instance from a network level, reducing the attack surface of that EC2 instance.
+
+**If you have completed the previous lab**, and created the Aurora DB cluster manually, please execute the following commands to ensure you have a consistent experience compared for subsequent labs. These commands will save the database username and password in environment variables. When the cluster is provisioned automatically by CloudFormation this is done automatically.
 
 ```
-chmod 0600 /path/to/downloaded/labkeys.pem
+bash
+cd ~
+export DBUSER="masteruser"
+export DBPASS="<type your password>"
+echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
+echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+```
 
-ssh -i /path/to/downloaded/labkeys.pem -o ServerAliveInterval=10 ubuntu@[bastionEndpoint]
+**If you have not created the DB cluster manually**, execute the following commands to ensure a consistent experience.
+
+```
+bash
+cd ~
 ```
 
 
 ## 2. Connecting to the DB cluster
 
-Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect. The basic command is as follows:
-
-```
-mysql -h [clusterEndpoint] -u [username] -p [database]
-```
-
-If you have completed the previous lab, and created the Aurora DB cluster manually, you would input the **Cluster Endpoint** of that cluster as displayed at the end of that lab, along with the username, password and schema (database) you configured for that cluster in the parameter placeholders or prompts of the command above.
-
-However, if you have skipped that lab and provisioned the cluster using the CloudFormation template, we have set the DB cluster's database credentials automatically for you, and have also created a schema named `mylab` as well. The credentials were saved to an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS SecretsManager</a> secret. For your convenience, these credentials have been set as environment variables on the EC2 instance, although this practice should be avoided in a production system. Using these environment variables, you can connect to the database as follows:
+Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect. The command is as follows:
 
 ```
 mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
+
+If you have completed the previous lab, and created the Aurora DB cluster manually, you would input the **Cluster Endpoint** of that cluster as displayed at the end of that lab.
+
+However, if you have skipped that lab and provisioned the cluster using the CloudFormation template, you can find the value for the cluster endpoint parameter in the stack outputs. We have set the DB cluster's database credentials automatically for you, and have also created the schema named `mylab` as well. The credentials were saved to an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS SecretsManager</a> secret.
 
 **Command parameter values at a glance:**
 
 Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
 --- | --- | --- | --- | ---
 -h | [clusterEndpoint] | See CloudFormation stack output | See previous lab | The cluster endpoint of the Aurora DB cluster.
--u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | [password] | `$DBPASS` | Manually set, enter when prompted | The password of the MySQL user to authenticate as.
+-u | `$DBUSER` | Set automatically, see Secrets Manager | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+-p | `$DBPASS` | Set automatically, see Secrets Manager | Manually set | The password of the MySQL user to authenticate as.
 | [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 !!! note
@@ -113,13 +144,7 @@ quit;
 
 Once the data load completes successfully, you can run a read-only workload to generate load on the cluster. You will also observe the effects on the DB cluster topology. For this step you will use the **Reader Endpoint** of the cluster. If you created the cluster manually, you can find the endpoint value as indicated at the end of that lab. If the DB cluster was created automatically for you the value can be found in your CloudFormation stack outputs.
 
-Run the load generation script from the EC2 instance command line:
-
-```
-python3 loadtest.py -e [readerEndpoint] -u [username] -p [password] -d [schema]
-```
-
-Or, if the cluster was created automatically:
+Run the load generation script from the Session Manager workstation command line:
 
 ```
 python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -d mylab
@@ -130,12 +155,12 @@ python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -d mylab
 Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
 --- | --- | --- | --- | ---
 -e | [readerEndpoint] | See CloudFormation stack output | See previous lab | The reader endpoint of the Aurora DB cluster.
--u | [username] | `$DBUSER` | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | [password] | `$DBPASS` | Manually set | The password of the MySQL user to authenticate as.
+-u | `$DBUSER` | Set automatically, see Secrets Manager | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+-p | `$DBPASS` | Set automatically, see Secrets Manager | Manually set | The password of the MySQL user to authenticate as.
 -d | [database] | `mylab` | `mylab` or manually set | The schema (database) to generate load against.
 -t |  | 64 (default) | 64 (default) | The number of client connections (threads) to use concurrently.
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
+Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a> in a different browser tab.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -152,4 +177,4 @@ Once the new replica becomes available, note that the load distributes and stabi
 
 <span class="image">![Application Auto Scaling Creating Reader](4-read-load-balanced.png?raw=true)</span>
 
-You can now type `CTRL+C` at the EC2 instance command line to quit the load generator, if you wish to. After a while the additional reader will be removed automatically.
+You can now toggle back to the Session Manager command line, and type `CTRL+C` to quit the load generator. After a while the additional reader will be removed automatically.
