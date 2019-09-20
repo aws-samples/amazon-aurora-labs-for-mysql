@@ -12,18 +12,26 @@ This lab contains the following tasks:
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-On the workstation EC2 instance, you will instruct AWS to run a command created using AWS CloudFormation when the lab environment was provisioned, using your workstation EC2 instance. The command you will run depends if you chose to provision the Aurora DB cluster manually, or you opted to let CloudFormation provision it on your behalf.
+On the Session Manager workstation command line [see the Connecting, Loading Data and Auto Scaling lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), enter one of the following commands.
 
 If you have completed the [Creating a New Aurora Cluster](/modules/create) lab, and created the Aurora DB cluster manually execute this command:
 
 ```
-aws ssm send-command --document-name [loadTestRunDoc] --instance-ids [bastionInstance] --parameters clusterEndpoint=[clusterEndpoint],dbUser=[username],dbPassword="[password]"
+aws ssm send-command \
+--document-name [loadTestRunDoc] \
+--instance-ids [bastionInstance] \
+--parameters \
+clusterEndpoint=[clusterEndpoint],\
+dbUser=$DBUSER,\
+dbPassword="$DBPASS"
 ```
 
-If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Creating a New Aurora Cluster** lab, run:
+If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Creating a New Aurora Cluster** lab, you can run this simplified command:
 
 ```
-aws ssm send-command --document-name [loadTestRunDoc] --instance-ids [bastionInstance]
+aws ssm send-command \
+--document-name [loadTestRunDoc] \
+--instance-ids [bastionInstance]
 ```
 
 **Command parameter values at a glance:**
@@ -32,7 +40,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 --- | --- | --- | --- | ---
 --document-name | [loadTestRunDoc] | See CloudFormation stack output | See CloudFormation stack output | The name of the command document to run on your behalf.
 --instance-ids | [bastionInstance] | See CloudFormation stack output | See CloudFormation stack output | The EC2 instance to execute this command on.
---parameters | clusterEndpoint=[clusterEndpoint],dbUser=[username],dbPassword="[password]" | N/A | Substitute the DB cluster endpoint, the DB cluster username and password with the values configured manually | Additional command parameters.
+--parameters | clusterEndpoint=[clusterEndpoint],dbUser=$DBUSER,dbPassword="$DBPASS" | N/A | Substitute the DB cluster endpoint with the values configured manually | Additional command parameters.
 
 The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
@@ -40,7 +48,7 @@ The command will be sent to the workstation EC2 instance which will prepare the 
 
 ## 2. Understanding the Performance Insights interface
 
-While the command is running, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
+While the command is running, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a> in a new tab, if not already open.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
