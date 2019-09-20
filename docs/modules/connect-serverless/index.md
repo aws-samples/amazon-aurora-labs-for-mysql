@@ -8,6 +8,11 @@ This lab contains the following tasks:
 2. Creating a Lambda function
 3. Connecting to the database using the RDS Data API
 
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/) (using `lab-no-cluster.yml` template is sufficient)
+* [Creating a Serverless Aurora Cluster](/modules/create-serverless/)
+
 ## 1. Creating a Lambda execution role
 
 Before you create an AWS Lambda function, you need to configure an IAM execution role. This will contain the permissions you are granting the function to interact with AWS resources via the APIs. Open the <a href="https://console.aws.amazon.com/iam/home?region=us-west-2#/roles" target="_blank">Identity and Access Management (IAM) service console</a>. Choose **Roles** from the left hand side menu, if it isn't already selected, and click **Create role**.
@@ -63,7 +68,7 @@ In the new browser tab that opens up, toggle to the **JSON** interface tab. Igno
 
 <span class="image">![IAM Policy Content](1-iam-policy-json.png?raw=true)</span>
 
-Assign the IAM policy a recognizable name, such as `LabstackFunctionPolicy`, then click **Create policy**.
+Assign the IAM policy the name `LabstackFunctionPolicy`, then click **Create policy**.
 
 <span class="image">![IAM Policy Review](1-iam-policy-review.png?raw=true)</span>
 
@@ -75,7 +80,7 @@ Back on the browser tab for creating the role, click the refresh icon in the top
 
 <span class="image">![IAM Policy Selector](1-iam-policies-selected.png?raw=true)</span>
 
-Skip the **Add tags** section, and click **Next: Review**. Then assign the role a memorable name, such as `LabstackFunctionRole`, and click **Create role**.
+Skip the **Add tags** section, and click **Next: Review**. Then assign the role the name `LabstackFunctionRole`, and click **Create role**.
 
 <span class="image">![IAM Review Role](1-iam-role-review.png?raw=true)</span>
 
@@ -90,7 +95,7 @@ Choose **Functions** from the left hand side menu, if it isn't already selected,
 
 <span class="image">![Lambda Listing](2-lambda-listing.png?raw=true)</span>
 
-Choose the option to **Author from scratch**, provide a memorable **Function name**, such as `LabstackFunction` (the **Application name** will be autocompleted) and select **Node.js 10.x** for **Runtime**. Under **Permissions**, expand the sub-section called **Choose or create an execution role**. In the **Execution role** dropdown, select **Use an existing role**, then in the **Existing role** dropdown, select the execution role you have created previously (e.g. `LabstackFunctionRole`). Click **Create function**.
+Choose the option to **Author from scratch**, set the **Function name** to `LabstackFunction` and select **Node.js 10.x** for **Runtime**. Under **Permissions**, expand the sub-section called **Choose or create an execution role**. In the **Execution role** dropdown, select **Use an existing role**, then in the **Existing role** dropdown, select the execution role you have created previously, named `LabstackFunctionRole`. Click **Create function**.
 
 <span class="image">![Name Function](2-lambda-create.png?raw=true)</span>
 

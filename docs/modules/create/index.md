@@ -12,6 +12,10 @@ This lab contains the following tasks:
 3. Assigning an IAM role to the DB cluster
 4. Creating a replica auto scaling policy
 
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/) (using `lab-no-cluster.yml` template is sufficient)
+
 ## 1. Creating the DB cluster
 
 Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.

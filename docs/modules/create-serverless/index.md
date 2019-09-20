@@ -6,7 +6,10 @@ This lab contains the following tasks:
 
 1. Creating the serverless DB cluster
 2. Creating a secret to store the credentials
-3. Enabling the RDS Data API
+
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/) (using `lab-no-cluster.yml` template is sufficient)
 
 
 ## 1. Creating the serverless DB cluster
@@ -23,7 +26,7 @@ Click **Create database** to start the configuration process
 
 <span class="image">![Create Database](1-create-database.png?raw=true)</span>
 
-In the first configuration section of the **Create database** page, called **Database settings** ensure the **Easy create** toggle button is turned **OFF** (grey color).
+In the first configuration section of the **Create database** page, ensure the **Standard Create** database creation method is selected.
 
 Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility edition, the **Aurora (MySQL)-5.6.10a** version and the **Regional** database location.
 
@@ -31,7 +34,7 @@ Next, in the **Engine options** section, choose the **Amazon Aurora** engine typ
 
 In the **Database features** section, select **Serverless**. The selections so far will instruct AWS to create an Aurora MySQL database cluster with the most recent version of the MySQL 5.6 compatible engine in a serverless configuration.
 
-In the **Settings** section give your database cluster a recognizable identifier, such as `labstack-serverless`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `masteruser` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
+In the **Settings** section set the database cluster identifier to `labstack-serverless`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `masteruser` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
 
 <span class="image">![Database Settings](1-serverless-settings.png?raw=true)</span>
 
@@ -40,6 +43,8 @@ In the **Capacity settings** section, choose a **Minimum Aurora capacity unit** 
 In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, the CloudFormation stack you deployed in the preceding [Prerequisites](/modules/prerequisites/) module, has configured a VPC that includes all resources needed for an Aurora database cluster. This includes the VPC itself, subnets, DB subnet groups, security groups and several other networking constructs. All you need to do is select the appropriate existing connectivity controls in this section.
 
 Pick the **Virtual Private Cloud (VPC)** named after the CloudFormation stack name, such as `labstack-vpc`. Similarly make sure the selected **Subnet Group** also matches the stack name (e.g. `labstack-dbsubnets-[hash]`). The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group with a name ending in `-mysql-internal` (eg. `labstack-mysql-internal`). Please remove any other security groups, such as `default` from the selection.
+
+Additionally, please check the box **Data API**, to enable integration with the RDS Data API.
 
 <span class="image">![Capacity and Connectivity](1-serverless-capacity.png?raw=true)</span>
 
@@ -52,6 +57,7 @@ Before continuing, let's summarize the configuration options selected. You will 
 * Aurora MySQL 5.6 compatible (latest stable engine version)
 * Serverless db cluster scaling between 1 and 16 capacity units, and pausing compute capacity after 5 minutes of inactivity
 * Deployed in the VPC and using the network configuration of the lab environment
+* Integrated with the RDS Data API
 * Automatically backed up continuously, retaining backups for 7 days
 * Using data at rest encryption
 
@@ -82,7 +88,7 @@ Next, in the **Select which RDS database this secret will access** section, choo
 
 <span class="image">![Configure Secret](2-config-secret.png?raw=true)</span>
 
-Name the cluster a recognizable name, such as `labstack-serverless-secret` and provide a relevant description for the secret, then click **Next**.
+Name the secret `labstack-serverless-secret` and provide a relevant description for the secret, then click **Next**.
 
 <span class="image">![Name Secret](2-name-secret.png?raw=true)</span>
 
@@ -99,17 +105,3 @@ Once created, identify the **ARN** of the newly created secret. This value will 
 In the detail view of the secret, note the value for **Secret ARN**. Write this down, you will need it later.
 
 <span class="image">![Secret ARN](2-arn-secret.png?raw=true)</span>
-
-## 3. Enabling the RDS Data API
-
-Once the serverless DB cluster is available and the credentials are stored in a secret, you can enable the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html" target="_blank">RDS Data API</a> for the cluster. To do so navigate back to the **RDS service console** and select the serverless DB cluster recently created from the list of **Databases**. Click the **Modify** button in the header of the database listing.
-
-<span class="image">![Select Cluster](3-serverless-selection.png?raw=true)</span>
-
-In the **Network & Security** section, **check** the box next to **Data API**, then click **Continue**.
-
-<span class="image">![Enable Data API](3-serverless-modify.png?raw=true)</span>
-
-Finally, choose **Apply immediately** and click **Modify cluster**.
-
-<span class="image">![Confirm Modifications](3-serverless-confirm.png?raw=true)</span>

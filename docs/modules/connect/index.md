@@ -9,6 +9,10 @@ This lab contains the following tasks:
 3. Loading an initial data set from S3
 4. Running a read-only workload
 
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/)
+* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
 
 ## 1. Connecting to your workstation EC2 instance
 

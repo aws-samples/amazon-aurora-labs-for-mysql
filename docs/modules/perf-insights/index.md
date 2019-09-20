@@ -8,6 +8,13 @@ This lab contains the following tasks:
 2. Understanding the Performance Insights interface
 3. Examining the performance of your DB instance
 
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/)
+* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
+* [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity section only)
+
+
 ## 1. Generating load on your DB cluster
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.

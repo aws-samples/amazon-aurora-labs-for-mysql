@@ -8,6 +8,13 @@ This lab contains the following tasks:
 1. Making unintended data changes
 2. Backtracking to recover from unintended changes
 
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/)
+* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
+* [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity and data loading sections only)
+
+
 ## 1. Making unintended data changes
 
 Connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab:

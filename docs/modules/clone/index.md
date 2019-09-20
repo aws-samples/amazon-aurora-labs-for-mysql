@@ -9,6 +9,12 @@ This lab contains the following tasks:
 3. Changing data on the clone
 4. Verifying that the data diverges
 
+This lab requires the following lab modules to be completed first:
+
+* [Prerequisites](/modules/prerequisites/)
+* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
+* [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity and data loading sections only)
+
 
 ## 1. Creating a clone DB cluster
 
