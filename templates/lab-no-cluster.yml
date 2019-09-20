@@ -441,6 +441,7 @@ Resources:
                   - ssm:*
                   - kms:*
                   - secretsmanager:*
+                  - rds-db:connect
                 Resource: "*"
   profileBastionHost:
     Type: AWS::IAM::InstanceProfile
