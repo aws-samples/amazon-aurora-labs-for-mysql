@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "ec2KeyPair",
-    "ParameterValue": "taskcat"
-  },
-  {
     "ParameterKey": "vpcAZs",
     "ParameterValue": "$[taskcat_genaz_3]"
   }

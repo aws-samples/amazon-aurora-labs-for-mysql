@@ -1,10 +1,14 @@
 ---
 ## Amazon Aurora Labs for MySQL
-## Infrastructure template without an Aurora cluster for lab exercises
+## Infrastructure template with an Aurora cluster for lab exercises
 ##
 ## Changelog:
 ## 2019-05-13 - Initial release
 ## 2019-05-29 - Changed how AZ selection works
+## 2019-06-12 - Changed template to use Secrets MAnager for DB credentials
+## 2019-06-13 - Preconfigured aws cli
+## 2019-06-14 - Preconfigured DB credentials as ENV variables
+## 2019-06-14 - Fixed issue with Scalable Target and uppercase cluster identifiers
 ## 2019-09-18 - Updated AMIs, Remove SSH access, bootstrap script changes for SSM
 ## 2019-09-19 - Fixed resource names to enable EE
 ##
@@ -138,6 +142,7 @@ Mappings:
       numThreads: '4'
       numTables: '8'
       numWarehouses: '2'
+
 
 ## Resources
 Resources:
@@ -515,7 +520,7 @@ Resources:
           pip3 install pymysql
           pip3 install awscli
           cd /home/ubuntu
-          curl -O https://[[website]]/scripts/loadtest.py
+          curl -O https://d313ex006ebt1i.cloudfront.net/scripts/loadtest.py
           chown -R ubuntu:ubuntu /home/ubuntu/loadtest.py
           echo "* pulled load test script" >> /debug.log
 
@@ -526,6 +531,14 @@ Resources:
           echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
           chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
           echo "* configured aws cli" >> /debug.log
+
+          # set DB cluster user and password as env variables
+          export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --region ${AWS::Region} | jq -r '.SecretString'`
+          export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
+          export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
+          echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
+          echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+          echo "* db credentials initialized" >> /debug.log
 
           # reboot
           echo "* bootstrap complete, rebooting" >> /debug.log
@@ -558,6 +571,270 @@ Resources:
         - Key: Name
           Value: !Sub labstack-cluster-params
 
+## Create a random generated password and store it as a secret
+  secretClusterMasterUser:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: !Sub "Master user credentials for labstack-cluster"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "masteruser"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\$`&'
+      Tags:
+        - Key: Name
+          Value: !Sub labstack-secret
+
+## Create Aurora cluster
+  dbCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora
+      DBSubnetGroupName: !Ref dbSubnets
+      DBClusterParameterGroupName: !Ref cpgClusterParams
+      DBClusterIdentifier: !Sub labstack-cluster
+      BackupRetentionPeriod: 7
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
+      DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
+      StorageEncrypted: true
+      VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
+      EnableCloudwatchLogsExports: [ error, slowquery ]
+      BacktrackWindow: 86400
+      EnableIAMDatabaseAuthentication: true
+      Tags:
+        - Key: Name
+          Value: !Sub labstack-cluster
+
+## Create role for use with role assignment to Aurora cluster and log export via custom resource
+  roleClusterEnhancements:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub labstack-change-${AWS::Region}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - rds:AddRoleToDBCluster
+                  - rds:RemoveRoleFromDBCluster
+                  - rds:DescribeDBClusters
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                  - iam:GetRole
+                Resource: !GetAtt roleServiceIntegration.Arn
+
+## Create Lambda function to implement role assignment and log export for Aurora cluster
+  funcClusterEnhancements:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub labstack-cluster-changes
+      Description: Custom Resource to assign the IAM roles to an Aurora cluster, and export logs to CloudWatch Logs, since CloudFormation doesn't do it natively
+      Handler: index.handler
+      Role: !GetAtt roleClusterEnhancements.Arn
+      Runtime: python3.6
+      Timeout: 30
+      Tags:
+        - Key: Name
+          Value: !Sub labstack-cluster-changes
+      Environment:
+        Variables:
+          REGION: !Ref "AWS::Region"
+      Code:
+        ZipFile: |
+          # Dependencies
+          from os import environ
+          import cfnresponse
+          import boto3
+
+          print("[INFO]", "Initialize function")
+
+          session = boto3.session.Session(region_name=environ["REGION"])
+          rds = session.client('rds')
+
+          # Lambda handler function / main function
+          def handler(event, context):
+              print("[INFO]", "Invocation start")
+
+              # globals
+              global rds
+
+              # init response
+              response_status = cfnresponse.FAILED
+              response_data = {}
+              aurora_existing_roles = []
+              aurora_new_roles = []
+
+              # try/catch
+              try:
+                  # get cluster properties
+                  aurora_cluster = event["ResourceProperties"]["Cluster"]
+                  response = rds.describe_db_clusters(DBClusterIdentifier=aurora_cluster)
+                  if "DBClusters" not in response or not response["DBClusters"]:
+                      raise ValueError("Cluster does not exist, or bad API response: %s" % aurora_cluster)
+
+                  # get existing role associations
+                  if "AssociatedRoles" in response["DBClusters"][0]:
+                      for role in response["DBClusters"][0]["AssociatedRoles"]:
+                          aurora_existing_roles.append(role["RoleArn"])
+
+                  # get new roles
+                  if "Role" in event["ResourceProperties"]:
+                      aurora_new_roles.append(event["ResourceProperties"]["Role"])
+
+                  # figure out roles we need to add and delete
+                  roles_to_add = set(aurora_new_roles).difference(aurora_existing_roles)
+                  roles_to_del = set(aurora_existing_roles).difference(aurora_new_roles)
+
+                  # only make changes if changes are needed
+                  if roles_to_add and roles_to_del:
+                      # this is currently not well supported by the RDS API (multiple subsequent calls)
+                      raise ValueError("Cannot make multiple role changes at once on the cluster: %s" % aurora_cluster)
+                  elif len(roles_to_add) > 1 or len(roles_to_del) > 1:
+                      # this is currently not well supported by the RDS API (multiple subsequent calls)
+                      raise ValueError("Cannot make multiple role changes at once on the cluster: %s" % aurora_cluster)
+                  elif roles_to_add or roles_to_del:
+                      # deleting roles first
+                      for arn in roles_to_del:
+                          rds.remove_role_from_db_cluster(DBClusterIdentifier=aurora_cluster, RoleArn=arn)
+                          print("[INFO]", "Removed role %s from cluster %s" % (arn, aurora_cluster))
+
+                      # adding new roles
+                      for arn in roles_to_add:
+                          rds.add_role_to_db_cluster(DBClusterIdentifier=aurora_cluster, RoleArn=arn)
+                          print("[INFO]", "Added role %s to cluster %s" % (arn, aurora_cluster))
+
+                  # if we got here, set response to success
+                  response_data["DBClusterId"] = response["DBClusters"][0]["DBClusterIdentifier"]
+                  response_data["DBClusterScalableTarget"] = "cluster:%s" % response["DBClusters"][0]["DBClusterIdentifier"]
+                  response_status = cfnresponse.SUCCESS
+              except Exception as e:
+                  print("[ERROR]", e)
+
+              # try/catch
+              try:
+                  # send response to CloudFormation
+                  cfnresponse.send(event, context, response_status, response_data)
+              except Exception as e:
+                  print("[ERROR]", e)
+                  response_status = cfnresponse.FAILED
+
+              print("[INFO]", "Invocation end")
+
+              return response_status
+
+## Custom resource to assign cluster IAM role
+  resClusterEnhancements:
+    Type: Custom::resClusterEnhancements
+    Properties:
+      ServiceToken: !GetAtt funcClusterEnhancements.Arn
+      Cluster: !Ref dbCluster
+      Role: !GetAtt roleServiceIntegration.Arn
+
+## Deploy the first cluster node (always the writer)
+  dbNodeWriter:
+    Type: AWS::RDS::DBInstance
+    DependsOn: [ resClusterEnhancements ]
+    Properties:
+      DBClusterIdentifier: !Ref dbCluster
+      DBInstanceIdentifier: !Sub labstack-node-01
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: aurora
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !Sub labstack-node-01
+
+## Deploy a reader node
+  dbNodeSecondary:
+    Type: AWS::RDS::DBInstance
+    DependsOn: [ dbNodeWriter ]
+    Properties:
+      DBClusterIdentifier: !Ref dbCluster
+      DBInstanceIdentifier: !Sub labstack-node-02
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: aurora
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !Sub labstack-node-02
+
+## Role to overcome current limitations in CFN ScalableTarget implemetation
+## This role is *NOT* actively used by any resource and service, but must be present
+  roleScalableTarget:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub labstack-aas-target-${AWS::Region}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - rds.application-autoscaling.amazonaws.com
+
+## Register the scalable target
+## Bug fix: when the stack name contains uppercase letters,
+## the DB cluster identifier is actually lowercased, but the resource ID
+## still contains uppercase, so you get a mismatch on the scalable target ResourceId
+  dbScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: [ dbNodeSecondary ]
+    Properties:
+      ServiceNamespace: 'rds'
+      ScalableDimension: 'rds:cluster:ReadReplicaCount'
+      ResourceId: !GetAtt resClusterEnhancements.DBClusterScalableTarget
+      MaxCapacity: !FindInMap [ ClusterSettings, scaling, maxCapacity ]
+      MinCapacity: !FindInMap [ ClusterSettings, scaling, minCapacity ]
+      RoleARN: !GetAtt roleScalableTarget.Arn
+
+## Add scaling policy
+  dbScalingPolicy:
+    Type : AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub labstack-autoscale-readers
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref dbScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: RDSReaderAverageCPUUtilization
+        ScaleInCooldown: 180
+        ScaleOutCooldown: 180
+        TargetValue: !FindInMap [ ClusterSettings, scaling, cpuLoadTarget ]
+
 ## Create sysbench prep SSM document
   ssmDocSysbenchTest:
     Type: AWS::SSM::Document
@@ -573,12 +850,15 @@ Resources:
           clusterEndpoint:
             type: String
             description: Aurora Cluster Endpoint
+            default: !GetAtt dbCluster.Endpoint.Address
           dbUser:
             type: String
             description: DB User
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
           dbPassword:
             type: String
             description: DB Password
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
           dbSchema:
             type: String
             description: DB Schema
@@ -625,12 +905,24 @@ Outputs:
   bastionInstance:
     Description: Bastion Instance ID
     Value: !Ref bastionHost
+  clusterName:
+    Description: Cluster Name
+    Value: !GetAtt resClusterEnhancements.DBClusterId
+  clusterEndpoint:
+    Description: Aurora Cluster Endpoint
+    Value: !GetAtt dbCluster.Endpoint.Address
+  readerEndpoint:
+    Description: Aurora Reader Endpoint
+    Value: !GetAtt dbCluster.ReadEndpoint.Address
+  loadTestRunDoc:
+    Description: Load Test Execution Command Document
+    Value: !Ref ssmDocSysbenchTest
   dbSubnetGroup:
     Description: Database Subnet Group
     Value: !Ref dbSubnets
   dbSecurityGroup:
     Description: Database Security Group
     Value: !Ref dbSecGroupCluster
-  loadTestRunDoc:
-    Description: Load Test Execution Command Document
-    Value: !Ref ssmDocSysbenchTest
+  secretArn:
+    Description: Database Credentials Secret ARN
+    Value: !Ref secretClusterMasterUser

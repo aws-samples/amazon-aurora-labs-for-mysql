@@ -68,6 +68,12 @@ grunt.initConfig({
     },
     buildDocFinal: {
       cmd: 'sed -i "" "s/\\/assets\\/images\\///g" ./temp/pandoc/output.html && pandoc -o ./build/docx/aurora-labs-mysql.docx -f html -t docx --resource-path ./temp/pandoc/ ./temp/pandoc/output.html --toc --toc-depth 2'
+    },
+    prepTaskCat: {
+      cmd: 'rm -rf ./taskcat/templates && mkdir ./taskcat/templates && cp ./build/templates/*.yml ./taskcat/templates/'
+    },
+    runTaskCat: {
+      cmd: 'taskcat -c ./taskcat/ci/taskcat.yml -s tst'
     }
   }
 })
@@ -77,3 +83,4 @@ grunt.registerTask('build-doc', [ 'exec:clearTemp', 'exec:buildDocHtmlIntermedia
 grunt.registerTask('build-functions', [ 'exec:buildIndexDocFunction', 'exec:buildIpCheckFunction' ])
 grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
 grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+grunt.registerTask('run-taskcat', [ 'exec:clearBuild', 'exec:buildTemplates', 'exec:prepTaskCat', 'exec:runTaskCat' ])

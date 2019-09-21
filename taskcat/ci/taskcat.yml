@@ -28,8 +28,8 @@ global:
     - ap-northeast-2
 tests:
   no-cls-3az:
-    template_file: ../build/templates/lab-no-cluster.yml
-    parameter_input: lab-no-cluster-3az.json
+    template_file: lab-no-cluster.yml
+    parameter_input: lab-params-3az.json
     regions:
       - us-east-1
       - us-east-2
@@ -44,30 +44,30 @@ tests:
       - ap-northeast-1
       - ap-northeast-2
   no-cls-2az:
-    template_file: ../build/templates/lab-no-cluster.yml
-    parameter_input: lab-no-cluster-2az.json
+    template_file: lab-no-cluster.yml
+    parameter_input: lab-params-2az.json
     regions:
       - us-west-1
       - ca-central-1
-  w-cls-3az:
-    template_file: ../build/templates/lab-with-cluster.yml
-    parameter_input: lab-no-cluster-3az.json
-    regions:
-      - us-east-1
-      - us-east-2
-      - us-west-2
-      - eu-central-1
-      - eu-west-1
-      - eu-west-2
-      - eu-west-3
-      - ap-southeast-1
-      - ap-southeast-2
-      - ap-south-1
-      - ap-northeast-1
-      - ap-northeast-2
-  w-cls-2az:
-    template_file: ../build/templates/lab-with-cluster.yml
-    parameter_input: lab-no-cluster-2az.json
-    regions:
-      - us-west-1
-      - ca-central-1
+#  w-cls-3az:
+#    template_file: lab-with-cluster.yml
+#    parameter_input: lab-params-3az.json
+#    regions:
+#      - us-east-1
+#      - us-east-2
+#      - us-west-2
+#      - eu-central-1
+#      - eu-west-1
+#      - eu-west-2
+#      - eu-west-3
+#      - ap-southeast-1
+#      - ap-southeast-2
+#      - ap-south-1
+#      - ap-northeast-1
+#      - ap-northeast-2
+#  w-cls-2az:
+#    template_file: lab-with-cluster.yml
+#    parameter_input: lab-params-2az.json
+#    regions:
+#      - us-west-1
+#      - ca-central-1

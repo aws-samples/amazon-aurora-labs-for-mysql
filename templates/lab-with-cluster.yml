@@ -117,7 +117,7 @@ Mappings:
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
-      azs: "2"
+      azs: "3"
   NetworkSettings:
     global:
       vpcCidr: 172.31.0.0/16
