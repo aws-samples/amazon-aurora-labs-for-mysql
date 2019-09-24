@@ -7,6 +7,7 @@
 ## 2019-05-29 - Changed how AZ selection works
 ## 2019-09-18 - Updated AMIs, Remove SSH access, bootstrap script changes for SSM
 ## 2019-09-19 - Fixed resource names to enable EE
+## 2019-09-23 - Removed !Sub references on static names to pass linter
 ##
 ## Dependencies:
 ## none
@@ -152,7 +153,7 @@ Resources:
       CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
       Tags:
         - Key: Name
-          Value: !Sub labstack-vpc
+          Value: labstack-vpc
 
 ## Create an IGW & attach it to the VPC
   vpcIgw:
@@ -160,7 +161,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub labstack-igw
+          Value: labstack-igw
   attachIgwVpc:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -177,7 +178,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub labstack-pub-sub-1
+          Value: labstack-pub-sub-1
   sub2Public:
     Type: AWS::EC2::Subnet
     Properties:
@@ -187,7 +188,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub labstack-pub-sub-2
+          Value: labstack-pub-sub-2
   sub3Public:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -198,7 +199,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub labstack-pub-sub-3
+          Value: labstack-pub-sub-3
 
 ## Associate the public subnets with a public route table
   rtbPublic:
@@ -207,7 +208,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub labstack-public-rtb
+          Value: labstack-public-rtb
   rteToIgw:
     Type: AWS::EC2::Route
     DependsOn: attachIgwVpc
@@ -242,7 +243,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub labstack-prv-sub-1
+          Value: labstack-prv-sub-1
   sub2Private:
     Type: AWS::EC2::Subnet
     Properties:
@@ -252,7 +253,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub labstack-prv-sub-2
+          Value: labstack-prv-sub-2
   sub3Private:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -263,7 +264,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub labstack-prv-sub-3
+          Value: labstack-prv-sub-3
 
 ## Create a NAT Gateway & EIP
   natEip:
@@ -284,7 +285,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub labstack-nat-rtb
+          Value: labstack-nat-rtb
   rteToNgw:
     Type: AWS::EC2::Route
     Properties:
@@ -329,33 +330,33 @@ Resources:
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: !Sub labstack-db-subnet-group
+      DBSubnetGroupDescription: labstack-db-subnet-group
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !If [ cond3AZs, !Ref sub3Private, !Ref "AWS::NoValue" ] ]
       Tags:
         - Key: Name
-          Value: !Sub labstack-db-subnet-group
+          Value: labstack-db-subnet-group
 
 ## Create bastion security group
   bastionSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub labstack-bastion-host
+      GroupName: labstack-bastion-host
       GroupDescription: Aurora Lab SSH Security Group
       Tags:
         - Key: Name
-          Value: !Sub labstack-bastion-host
+          Value: labstack-bastion-host
 
 ## Create DB security group
   dbSecGroupCluster:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub labstack-mysql-internal
+      GroupName: labstack-mysql-internal
       GroupDescription: Aurora Lab Database Firewall
       Tags:
         - Key: Name
-          Value: !Sub labstack-mysql-internal
+          Value: labstack-mysql-internal
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
@@ -459,7 +460,7 @@ Resources:
       SecurityGroupIds: [ !Ref bastionSecGroup ]
       Tags:
         - Key: Name
-          Value: !Sub labstack-bastion-host
+          Value: labstack-bastion-host
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -535,7 +536,7 @@ Resources:
   pgNodeParams:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: !Sub labstack-node-params
+      Description: labstack-node-params
       Family: aurora5.6
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
@@ -544,19 +545,19 @@ Resources:
         log_output: FILE
       Tags:
         - Key: Name
-          Value: !Sub labstack-node-params
+          Value: labstack-node-params
 
 ## Create cluster parameter group
   cpgClusterParams:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: !Sub labstack-cluster-params
+      Description: labstack-cluster-params
       Family: aurora5.6
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !Sub labstack-cluster-params
+          Value: labstack-cluster-params
 
 ## Create sysbench prep SSM document
   ssmDocSysbenchTest:
@@ -565,7 +566,7 @@ Resources:
       DocumentType: Command
       Tags:
         - Key: Name
-          Value: !Sub labstack-sysbench-test
+          Value: labstack-sysbench-test
       Content:
         schemaVersion: '2.2'
         description: SysBench Percona TPCC-LIKE Preparation
