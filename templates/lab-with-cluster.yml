@@ -613,7 +613,6 @@ Resources:
 ## Deploy the first cluster node (always the writer)
   dbNodeWriter:
     Type: AWS::RDS::DBInstance
-    DependsOn: [ dbCluster ]
     Properties:
       DBClusterIdentifier: !Ref dbCluster
       DBInstanceIdentifier: labstack-node-01
