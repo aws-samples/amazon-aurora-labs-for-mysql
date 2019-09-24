@@ -84,3 +84,4 @@ grunt.registerTask('build-functions', [ 'exec:buildIndexDocFunction', 'exec:buil
 grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
 grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
 grunt.registerTask('run-taskcat', [ 'exec:clearBuild', 'exec:buildTemplates', 'exec:prepTaskCat', 'exec:runTaskCat' ])
+grunt.registerTask('build-templates', [ 'exec:clearBuild', 'exec:buildTemplates' ])
