@@ -103,6 +103,33 @@ Resources:
               CanonicalUser:
                 - !GetAtt oaiWebsite.S3CanonicalUserId
 
+## Create execution role for IpCheck function
+  roleIpCheck:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-ipcheck-${AWS::Region}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+                - 'edgelambda.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+
 ## Create execution role for IndexDoc function
   roleIndexDoc:
     Type: 'AWS::IAM::Role'
@@ -130,6 +157,23 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource: 'arn:aws:logs:*:*:*'
 
+  ## IP filtering function
+  funcIpCheck:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-ipcheck-${AWS::Region}'
+      Runtime: nodejs10.x
+      Handler: function.handler
+      CodeUri: ../lambda/ipcheck-function/dist/ipcheck-function_latest.zip
+      Description: 'Request IP address verification function for CloudFront distribution'
+      MemorySize: 128
+      Timeout: 5
+      Role: !GetAtt roleIpCheck.Arn
+      Tags:
+        Name: !Sub '${AWS::StackName}-ipcheck-${AWS::Region}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
   ## Index dodcument function
   funcIndexDoc:
     Type: 'AWS::Serverless::Function'
@@ -146,6 +190,13 @@ Resources:
         Name: !Sub '${AWS::StackName}-indexdoc-${AWS::Region}'
         Environment: !Ref tagEnvironment
         Workload: !Ref 'AWS::StackName'
+
+  ## IP filtering function version
+  funcIpCheckVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      Description: 'Request IP address verification function for CloudFront distribution'
+      FunctionName: !Ref funcIpCheck
 
   ## Index document function version
   funcIndexDocVersion:
