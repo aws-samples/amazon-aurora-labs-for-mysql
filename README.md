@@ -31,6 +31,12 @@ npm install -g npm
 npm install -g grunt-cli
 ```
 
+Install project dependencies (from [project root] folder):
+
+```
+npm install
+```
+
 Install dependencies for the individual AWS Lambda functions. For each function in `[project root]/website/lambda/[function name]/src/` run
 
 ```
@@ -65,10 +71,12 @@ grunt deploy-skipinfra --region-us-east-1 --bucket=<your_bucket> --cfnstack=<you
 
 The AWS CloudFormation templates for the labs are located in the `[project root]/templates/` folder. They contain placeholder expressions (such as `[[website]]`) that are replaced by the build process above, with the final URIs of the website you deploy in AWS. Final build versions of these templates are placed in the folder: `[project root]/build/templates/`
 
-From the root of the project folder run:
+Taskcat assets are located in `[project root]/taskcat/ci`. Because the templates have hardcoded resource names to satisfy requirements with external tools, you cannot test more than one template at a time via taskcat. It is therefore necessary to customize the `[project root]/taskcat/ci/taskcat.yml` config file to indicate which template to test.
+
+Once the config file is changed appropriately, from the root of the project folder run:
 
 ```
-taskcat -c /path/to/[project root]/ci/taskcat.yml -s test
+grunt run-taskcat --region-us-east-1 --bucket=<your_bucket> --cfnstack=<your_name_letters_and_dashes_only>
 ```
 
 ## License Summary
