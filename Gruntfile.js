@@ -29,10 +29,10 @@ grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
   exec: {
     clearBuild: {
-      cmd: 'rm -rf ./build && mkdir ./build && mkdir ./build/infra && mkdir ./build/templates && mkdir ./build/docx'
+      cmd: 'rm -rf ./build && mkdir ./build && mkdir ./build/infra && mkdir ./build/templates'
     },
     clearTemp: {
-      cmd: 'rm -rf ./temp  && mkdir ./temp && mkdir ./temp/pandoc'
+      cmd: 'rm -rf ./temp  && mkdir ./temp'
     },
     buildIndexDocFunction: {
       cwd: './website/lambda/indexdoc-function/src',
@@ -59,12 +59,6 @@ grunt.initConfig({
     copyScripts: {
       cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./scripts s3://$BUCKET/scripts/ --recursive'
     },
-    buildDocHtmlIntermediate: {
-      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && DISTRO=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "DistroEndpoint" then .OutputValue else "" end\' | tr -d "\\n") && ./pandoc.sh && find ./temp/pandoc -type f -name "*.html" -exec sed -i "" "s/\\[\\[bucket\\]\\]/$BUCKET/g" {} + && find ./temp/pandoc -type f -name "*.html" -exec sed -i "" "s/\\[\\[website\\]\\]/$DISTRO/g" {} + && find ./temp/pandoc -type f -name "*.html" -exec sed -i "" "s/\%5B\%5Bbucket\%5D\%5D/$BUCKET/g" {} + && find ./temp/pandoc -type f -name "*.html" -exec sed -i "" "s/\%5B\%5Bwebsite\%5D\%5D/$DISTRO/g" {} +'
-    },
-    buildDocFinal: {
-      cmd: 'sed -i "" "s/\\/assets\\/images\\///g" ./temp/pandoc/output.html && pandoc -o ./build/docx/aurora-labs-mysql.docx -f html -t docx --resource-path ./temp/pandoc/ ./temp/pandoc/output.html --toc --toc-depth 2'
-    },
     prepTaskCat: {
       cmd: 'rm -rf ./taskcat/templates && mkdir ./taskcat/templates && cp ./build/templates/*.yml ./taskcat/templates/'
     },
@@ -75,7 +69,6 @@ grunt.initConfig({
 })
 
 // register tasks
-grunt.registerTask('build-doc', [ 'exec:clearTemp', 'exec:buildDocHtmlIntermediate', 'exec:buildDocFinal' ])
 grunt.registerTask('build-functions', [ 'exec:buildIndexDocFunction' ])
 grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
 grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])

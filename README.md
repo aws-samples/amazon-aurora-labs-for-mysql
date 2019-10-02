@@ -22,7 +22,6 @@ brew install python3
 brew install mkdocs
 brew install node
 brew install jq
-brew install pandoc
 pip3 install mkdocs-material
 pip3 install pymdown-extensions
 pip3 install taskcat
