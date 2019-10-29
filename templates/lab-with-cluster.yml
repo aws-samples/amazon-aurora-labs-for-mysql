@@ -14,6 +14,7 @@
 ## 2019-09-23 - Removed custom Lambda resource, using native role assignment
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
 ## 2019-10-28 - Updated the Aurora DB Engine version used
+## 2019-10-28 - Added DNS failover script to bootstrap
 ##
 ## Dependencies:
 ## none
@@ -527,7 +528,8 @@ Resources:
           pip3 install awscli
           cd /home/ubuntu
           curl -O https://[[website]]/scripts/loadtest.py
-          chown -R ubuntu:ubuntu /home/ubuntu/loadtest.py
+          curl -O https://[[website]]/scripts/dns-failover.py
+          chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 
           # configure AWS CLI
