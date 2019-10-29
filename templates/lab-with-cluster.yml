@@ -13,6 +13,7 @@
 ## 2019-09-19 - Fixed resource names to enable EE
 ## 2019-09-23 - Removed custom Lambda resource, using native role assignment
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
+## 2019-10-28 - Updated the Aurora DB Engine version used
 ##
 ## Dependencies:
 ## none
@@ -134,6 +135,9 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
+      dbVersion: 5.6.mysql_aurora.1.19.5
+      dbEngine: aurora
+      dbFamily: aurora5.6
     scaling:
       maxCapacity: 2
       minCapacity: 1
@@ -551,7 +555,7 @@ Resources:
     Type: AWS::RDS::DBParameterGroup
     Properties:
       Description: labstack-node-params
-      Family: aurora5.6
+      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
         slow_query_log: "1"
@@ -566,7 +570,7 @@ Resources:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
       Description: labstack-cluster-params
-      Family: aurora5.6
+      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
       Tags:
@@ -591,7 +595,8 @@ Resources:
   dbCluster:
     Type: AWS::RDS::DBCluster
     Properties:
-      Engine: aurora
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref cpgClusterParams
       DBClusterIdentifier: labstack-cluster
