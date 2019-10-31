@@ -64,6 +64,7 @@ nav:
     - Cloning Clusters: 'modules/clone/index.md'
     - Backtracking a Cluster: 'modules/backtrack/index.md'
     - Using Performance Insights: 'modules/perf-insights/index.md'
+    - Testing Fault Tolerance: 'modules/failover/index.md'
     - Creating a Serverless Aurora Cluster: 'modules/create-serverless/index.md'
     - Using Aurora Serverless with Lambda Functions: 'modules/connect-serverless/index.md'
   - Related:
