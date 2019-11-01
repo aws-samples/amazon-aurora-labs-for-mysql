@@ -523,6 +523,7 @@ Resources:
           cd /home/ubuntu
           curl -O https://[[website]]/scripts/loadtest.py
           curl -O https://[[website]]/scripts/dns-failover.py
+          curl -O https://[[website]]/scripts/aware-failover.py
           chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 
