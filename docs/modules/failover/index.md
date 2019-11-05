@@ -8,13 +8,14 @@ This lab contains the following tasks:
 2. Test preparation
 3. Testing a manual DB cluster failover
 4. Testing fault injection queries
+5. Testing a failover with cluster awareness
+6. Next steps
 
 This lab requires the following lab modules to be completed first:
 
 * [Prerequisites](/modules/prerequisites/)
 * [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
 * [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity section only)
-* [Using Performance Insights](/modules/perf-insights/) (generating load section only)
 
 
 ## 1. Understanding fault tolerance
@@ -133,3 +134,63 @@ Wait and observe the monitor script output. Once triggered, you should see monit
 * After a few seconds the monitoring script is able to connect again to the DB engine.
 * The role of the DB instance has not changed, the writer is still the same DB instance (`labstack-node-01` in the example above).
 * There is no DB instance reconfiguration needed, and no DNS changes are needed either. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was ~3 seconds.
+
+
+## 5. Testing a failover with cluster awareness
+
+Simple DNS-based failovers work well for most use cases, and they are relatively fast. However, as you have noticed there are still several seconds of connectivity disruption due to DNS update and expiration delays, including the DNS flip-floping effect. Thus failover times can be improved further. In this test we will use an simple Aurora [cluster-aware monitoring script](/scripts/aware-failover.py), and compare it side by side with the DNS-based monitoring script.
+
+The script is similar to the DNS-based monitoring script with a few significant differences:
+
+* Initially, and after each failure, at re-connect it queries the DB cluster topology to determine the 'new' writer DB instance. The topology is documented in the `information_schema.replica_host_status` table in the database, and accessible from each DB instance.
+* If the current DB instance is not the writer, it simply reconnects to the DB instance endpoint of the new writer directly.
+* Upon encountering a new failure, it falls back to using the cluster DNS endpoint again.
+
+Assuming you still have the two command line sessions open and active, open a 3rd command line session. [See the Connecting, Loading Data and Auto Scaling lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), for steps how to create a Session Manager command line session. It will also be more effective if you put the new browser window side by side with the others.
+
+In the new (third) command line session, start the cluster-aware monitoring script using the following command:
+
+```
+python3 aware-failover.py -e [clusterEndpoint] -u $DBUSER -p "$DBPASS"
+```
+
+**Command parameter values at a glance:**
+
+Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
+--- | --- | --- | --- | ---
+-e | [clusterEndpoint] | See CloudFormation stack output | See previous lab | The cluster endpoint of the Aurora DB cluster.
+-u | `$DBUSER` | Set automatically, see Secrets Manager | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
+-p | `$DBPASS` | Set automatically, see Secrets Manager | Manually set | The password of the MySQL user to authenticate as.
+
+You can quit the monitoring script at any time by pressing `Ctrl+C`.
+
+!!! note
+    Unlike the simple DNS monitoring script from step #3 above, you can even use the reader endpoint to invoke the cluster aware monitoring script. However the cluster endpoint is still recommended.
+
+Enter the following command in the command line session that does not run any monitoring script, to trigger the failover:
+
+```
+aws rds failover-db-cluster \
+--db-cluster-identifier labstack-cluster
+```
+
+Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
+
+<span class="image">![Trigger Aware Failover](5-aware-failover.png?raw=true)</span>
+
+**Observations:**
+
+* When the crash is triggered, the monitoring script stops being able to connect to the database engine
+* After a few seconds the monitoring script is able to connect again to the DB engine, detects that the role of the DB instance has changed. It queries the topology of the cluster, discovers the new writer DB instance identifier and computes the DB instance endpoint.
+* It disconnects, and reconnects to the new DB writer directly using the DB instance endpoint.
+* In the example above, this process took 7 seconds to restore connectivity compared to 12 seconds when relying exclusively on the cluster DNS endpoint.
+* The initial cluster DNS endpoint is still authoritative and preferred, the cluster-aware monitoring script only uses the DB instance endpoint as long as it works, reverting back to the cluster endpoint when a failure is encountered. This ensures that connectivity is restored as quickly as possible even if there is a total compute failure of the writer DB instance.
+
+
+## 6. Next steps
+
+The tests above represent relatively simple failure conditions. Different failure modes may require more advanced testing processes or cluster awareness logic. For more advanced testing, and fault resilience consider the following:
+
+* How would production load at scale affect failure recovery time? Consider testing with the system under load.
+* How would recovery time be affected by the workload condition at the time? Consider testing failure recovery during different workload conditions, eg. a crash during a DDL operation.
+* Can you improve upon the cluster awareness to address other failure modes?
