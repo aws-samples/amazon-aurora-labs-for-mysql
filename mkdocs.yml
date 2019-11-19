@@ -68,5 +68,14 @@ nav:
     - Using Aurora Serverless with Lambda Functions: 'modules/connect-serverless/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
+  - re:Invent 2019:
+    - Getting Started: 'reinvent/index.md'
+    - Prerequisites: 'reinvent/prerequisites/index.md'
+    - Connecting, Loading Data and Auto Scaling: 'reinvent/connect/index.md'
+    - Cloning Clusters: 'reinvent/clone/index.md'
+    - Backtracking a Cluster: 'reinvent/backtrack/index.md'
+    - Using Performance Insights: 'reinvent/perf-insights/index.md'
+    - Creating a Serverless Aurora Cluster: 'reinvent/create-serverless/index.md'
+    - Using Aurora Serverless with Lambda Functions: 'reinvent/connect-serverless/index.md'
   - Contributing: 'contribute.md'
   - License: 'license.md'

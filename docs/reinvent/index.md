@@ -20,17 +20,17 @@ Click **Open Console**. For the purposes of this workshop, you will not need to 
 
 ## Overview of labs
 
-Time permitting, you will run the following hands-on labs. Start with the [prerequisites](/modules/prerequisites/).
+Time permitting, you will run the following hands-on labs. Start with the [prerequisites](/reinvent/prerequisites/).
 
 # | Lab Module | Recommendation | Overview
 --- | --- | --- | ---
-1 | [**Prerequisites**](/modules/prerequisites/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources
-2 | [**Connecting, Loading Data and Auto Scaling**](/modules/connect/) | Recommended, for provisioned clusters | Connect to the DB cluster for the first time, load an initial data set and test read replica auto scaling. The initial data set may be used in subsequent labs.
-3 | [**Cloning Clusters**](/modules/clone/) | Recommended, for provisioned clusters | Clone an Aurora DB cluster and observing the divergence of the data set.
-4 | [**Backtracking a Cluster**](/modules/backtrack/) | Recommended, for provisioned clusters | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
-5 | [**Using Performance Insights**](/modules/perf-insights/) | Recommended, for provisioned clusters | Examine the performance of your DB instances using RDS Performance Insights
-6 | [**Creating a Serverless Aurora Cluster**](/modules/create-serverless/) | Recommended, for serverless clusters | Create a new Amazon Aurora Serverless MySQL DB cluster manually. You may skip the provisioned cluster labs if you are planning to operate a serverless workload.
-7 | [**Using Aurora Serverless with Lambda Functions**](/modules/connect-serverless/) | Recommended, for serverless clusters | Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.
+1 | [**Prerequisites**](/reinvent/prerequisites/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources
+2 | [**Connecting, Loading Data and Auto Scaling**](/reinvent/connect/) | Recommended, for provisioned clusters | Connect to the DB cluster for the first time, load an initial data set and test read replica auto scaling. The initial data set may be used in subsequent labs.
+3 | [**Cloning Clusters**](/reinvent/clone/) | Recommended, for provisioned clusters | Clone an Aurora DB cluster and observing the divergence of the data set.
+4 | [**Backtracking a Cluster**](/reinvent/backtrack/) | Recommended, for provisioned clusters | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
+5 | [**Using Performance Insights**](/reinvent/perf-insights/) | Recommended, for provisioned clusters | Examine the performance of your DB instances using RDS Performance Insights
+6 | [**Creating a Serverless Aurora Cluster**](/reinvent/create-serverless/) | Recommended, for serverless clusters | Create a new Amazon Aurora Serverless MySQL DB cluster manually. You may skip the provisioned cluster labs if you are planning to operate a serverless workload.
+7 | [**Using Aurora Serverless with Lambda Functions**](/reinvent/connect-serverless/) | Recommended, for serverless clusters | Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.
 
 ## Lab environment at a glance
 
@@ -49,5 +49,3 @@ The environment deployed using CloudFormation includes several components:
 * the master database credentials will be generated automatically and stored in an <A href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS Secrets Manager</a> secret.
 *	a <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Integrating.AutoScaling.html" target="_blank">read replica auto scaling</a> configuration
 *	a <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html" target="_blank">AWS Systems Manager</a> command document to execute a load test
-
-## Get started with the [**prerequisites &raquo;**](/modules/prerequisites/)
