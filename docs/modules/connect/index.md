@@ -18,7 +18,7 @@ This lab requires the following lab modules to be completed first:
 
 To interact with the Aurora database cluster, you will use an Amazon EC2 Linux instance that acts like a workstation for the purposes of the labs. All necessary software packages and scripts have been installed and configured on this EC2 instance for you. To ensure a unified experience, you will be interacting with this workstation using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager</a>. With Session Manager you can interact with your workstation directly from the management console.
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager service console</a>. In the left hand menu, click on **Session Manager**. Then click the **Configure Preferences** button.
+Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager: Session Manager service console</a>. Choose the **Preferences** tab, then click **Edit**.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -164,7 +164,7 @@ Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFor
 -d | [database] | `mylab` | `mylab` or manually set | The schema (database) to generate load against.
 -t |  | 64 (default) | 64 (default) | The number of client connections (threads) to use concurrently.
 
-Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a> in a different browser tab.
+Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
