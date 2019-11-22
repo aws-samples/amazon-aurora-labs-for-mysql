@@ -26,13 +26,6 @@ aws ssm send-command \
 --instance-ids [bastionInstance]
 ```
 
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value | Description
---- | --- | --- | ---
---document-name | [loadTestRunDoc] | See CloudFormation stack output | The name of the command document to run on your behalf.
---instance-ids | [bastionInstance] | See CloudFormation stack output | The EC2 instance to execute this command on.
-
 The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
 <span class="image">![SSM Command](../../modules/perf-insights/1-ssm-command.png?raw=true)</span>

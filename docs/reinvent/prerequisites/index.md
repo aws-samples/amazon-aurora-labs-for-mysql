@@ -14,7 +14,7 @@ Click <a href="https://console.aws.amazon.com/cloudformation/home?region=eu-west
 
 The desired template should be pre-selected under **Amazon S3 URL**, click **Next**.
 
-<span class="image">![Upload Template](../../modules/prerequisites/2-upload-template.png?raw=true)</span>
+<span class="image">![Upload Template](../../modules/prerequisites/2-select-template.png?raw=true)</span>
 
 In the field named **Stack Name**, enter the value `labstack`. For the **vpcAZs** parameter select 3 availability zones (AZs) from the dropdown. Click **Next**.
 

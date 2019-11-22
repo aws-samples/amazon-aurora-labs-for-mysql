@@ -22,15 +22,6 @@ Connect to the DB cluster endpoint using the MySQL client, if you are not alread
 mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value | Description
---- | --- | --- | ---
--h | [cluster endpoint of clone] | See above | The cluster endpoint of the Aurora cloned DB cluster.
--u | `$DBUSER` | Set automatically, see Secrets Manager | The user name of the MySQL user to authenticate as.
--p | `$DBPASS` | Set automatically, see Secrets Manager | The password of the MySQL user to authenticate as.
-| [database] | `mylab` | The schema (database) to use by default.
-
 Drop the `sbtest1` table:
 
 !!! note
@@ -63,19 +54,6 @@ sysbench oltp_write_only \
 --mysql-db=mylab \
 --table-size=1000000 prepare
 ```
-
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value | Description
---- | --- | --- | ---
---threads | | 1 | Number of concurrent threads.
---mysql-host | [clusterEndpoint] | See CloudFormation stack output | The cluster endpoint of the Aurora DB cluster.
---mysql-user | `$DBUSER` | Set automatically, see Secrets Manager | The user name of the MySQL user to authenticate as.
---mysql-password | `$DBPASS` | Set automatically, see Secrets Manager | The password of the MySQL user to authenticate as.
---mysql-port | | 3306 | The port the Aurora database engine is listening on.
---tables | | 1 | Number of tables to create.
---mysql-db | | `mylab` | The schema (database) to use by default.
---table-size | | 1000000 | The number or rows to generate in the table.
 
 <span class="image">![Sysbench Prepare](../../modules/backtrack/1-sysbench-prepare.png?raw=true)</span>
 

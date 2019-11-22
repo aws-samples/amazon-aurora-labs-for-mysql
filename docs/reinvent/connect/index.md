@@ -17,7 +17,7 @@ This lab requires the following lab modules to be completed first:
 
 To interact with the Aurora database cluster, you will use an Amazon EC2 Linux instance that acts like a workstation for the purposes of the labs. All necessary software packages and scripts have been installed and configured on this EC2 instance for you. To ensure a unified experience, you will be interacting with this workstation using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager</a>. With Session Manager you can interact with your workstation directly from the management console.
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager service console</a>. In the left hand menu, click on **Session Manager**. Then click the **Configure Preferences** button.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>. Choose the **Preferences** tab, then click **Edit**.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -38,7 +38,7 @@ Please select the EC2 instance to establish a session with. The workstation is n
 
 If you see a black command like terminal screen and a prompt, you are now connected to the EC2 based workstation. With Session Manager it is not necessary to allow SSH access to the EC2 instance from a network level, reducing the attack surface of that EC2 instance.
 
-Execute the following commands to ensure a consistent experience.
+Execute the following commands to ensure a familiar experience.
 
 ```
 bash
@@ -56,21 +56,13 @@ mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 You can find the value for the cluster endpoint parameter in the stack outputs from the end of the [Prerequisites](/reinvent/prerequisites/) section. We have set the DB cluster's database credentials automatically for you, and have also created the schema named `mylab` as well. The credentials were saved to an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS SecretsManager</a> secret.
 
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value | Description
---- | --- | --- | ---
--h | [clusterEndpoint] | See CloudFormation stack output | The cluster endpoint of the Aurora DB cluster.
--u | `$DBUSER` | Set automatically, see Secrets Manager | The user name of the MySQL user to authenticate as.
--p | `$DBPASS` | Set automatically, see Secrets Manager | The password of the MySQL user to authenticate as.
-| [database] | `mylab` | The schema (database) to use by default.
-
 !!! note
-    You can view and retrieve the credentials stored in the secret using the following command:
+    While we have created the database credentials (MySQL username and password) automatically and set them in the `DBUSER` and `DBPASS` environment variables, you can view and retrieve the credentials stored in the secret using the following command:
 
     ```
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
+
 
 Once connected to the database, use the code below to create a stored procedure we'll use later in the labs, to generate load on the DB cluster. Run the following SQL queries:
 
@@ -128,7 +120,7 @@ quit;
 
 ## 4. Running a read-only workload
 
-Once the data load completes successfully, you can run a read-only workload to generate load on the cluster. You will also observe the effects on the DB cluster topology. For this step you will use the **Reader Endpoint** of the cluster. The value of the reader endpoint can be found in your CloudFormation stack outputs.
+Once the data load completes successfully, you can run a read-only workload to generate load on the cluster. Download and review our [simple load testing script](/scripts/loadtest.py) for reference. You will also observe the effects on the DB cluster topology. For this step you will use the **Reader Endpoint** of the cluster. The value of the reader endpoint can be found in your CloudFormation stack outputs.
 
 Run the load generation script from the Session Manager workstation command line:
 
@@ -136,17 +128,7 @@ Run the load generation script from the Session Manager workstation command line
 python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -d mylab
 ```
 
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value | Description
---- | --- | --- | ---
--e | [readerEndpoint] | See CloudFormation stack output | The reader endpoint of the Aurora DB cluster.
--u | `$DBUSER` | Set automatically, see Secrets Manager | The user name of the MySQL user to authenticate as.
--p | `$DBPASS` | Set automatically, see Secrets Manager | The password of the MySQL user to authenticate as.
--d | [database] | `mylab` | The schema (database) to generate load against.
--t |  | 64 (default) | The number of client connections (threads) to use concurrently.
-
-Now, open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1" target="_blank">Amazon RDS service console</a> in a different browser tab.
+Now, open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
