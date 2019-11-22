@@ -95,7 +95,7 @@ Choose **Functions** from the left hand side menu, if it isn't already selected,
 
 <span class="image">![Lambda Listing](2-lambda-listing.png?raw=true)</span>
 
-Choose the option to **Author from scratch**, set the **Function name** to `LabstackFunction` and select **Node.js 10.x** for **Runtime**. Under **Permissions**, expand the sub-section called **Choose or create an execution role**. In the **Execution role** dropdown, select **Use an existing role**, then in the **Existing role** dropdown, select the execution role you have created previously, named `LabstackFunctionRole`. Click **Create function**.
+Choose the option to **Author from scratch**, set the **Function name** to `LabstackFunction` and select **Node.js 12.x** for **Runtime**. Under **Permissions**, expand the sub-section called **Choose or create an execution role**. In the **Execution role** dropdown, select **Use an existing role**, then in the **Existing role** dropdown, select the execution role you have created previously, named `LabstackFunctionRole`. Click **Create function**.
 
 <span class="image">![Name Function](2-lambda-create.png?raw=true)</span>
 
