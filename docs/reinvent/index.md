@@ -10,7 +10,7 @@ Go to <a href="https://dashboard.eventengine.run/" target="_blank">**https://das
 
 <span class="image">![EventEngine Login](ee-login.png?raw=true)</span>
 
-On the **User Dashboard**, please click **AWS Console** to log into the AWS Management Console.
+On the **Team Dashboard**, please click **AWS Console** to log into the AWS Management Console.
 
 <span class="image">![EventEngine Dashboard](ee-dashboard.png?raw=true)</span>
 
