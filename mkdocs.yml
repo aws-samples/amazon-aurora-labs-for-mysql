@@ -68,7 +68,7 @@ nav:
     - Using Aurora Serverless with Lambda Functions: 'modules/connect-serverless/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
-  - re:Invent 2019:
+  - DAT327:
     - Getting Started: 'reinvent/index.md'
     - Prerequisites: 'reinvent/prerequisites/index.md'
     - Connecting, Loading Data and Auto Scaling: 'reinvent/connect/index.md'
@@ -77,5 +77,13 @@ nav:
     - Using Performance Insights: 'reinvent/perf-insights/index.md'
     - Creating a Serverless Aurora Cluster: 'reinvent/create-serverless/index.md'
     - Using Aurora Serverless with Lambda Functions: 'reinvent/connect-serverless/index.md'
+  - DAT348:
+    - Getting Started: 'reinvent-gdb/index.md'
+    - Setup: 'reinvent-gdb/setup/index.md'
+    - Create Global Database: 'reinvent-gdb/gdb/index.md'
+    - Connect Application: 'reinvent-gdb/biapp/index.md'
+    - Monitor Latency: 'reinvent-gdb/cw/index.md'
+    - Parameter Groups: 'reinvent-gdb/pg/index.md'
+    - Failover: 'reinvent-gdb/failover/index.md'
   - Contributing: 'contribute.md'
   - License: 'license.md'
