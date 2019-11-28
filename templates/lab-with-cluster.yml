@@ -15,6 +15,8 @@
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
 ## 2019-10-28 - Updated the Aurora DB Engine version used
 ## 2019-10-28 - Added DNS failover script to bootstrap
+## 2019-11-27 - Reverted back to resource names based on stack name
+## 2019-11-27 - Switched DB cluster to Aurora MySQL 5.7 engine, and version 2.07
 ##
 ## Dependencies:
 ## none
@@ -136,9 +138,9 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.6.mysql_aurora.1.19.5
-      dbEngine: aurora
-      dbFamily: aurora5.6
+      dbVersion: 5.7.mysql_aurora.2.07.0
+      dbEngine: aurora-mysql
+      dbFamily: aurora-mysql5.7
     scaling:
       maxCapacity: 2
       minCapacity: 1
@@ -627,7 +629,7 @@ Resources:
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
-      Engine: aurora
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -647,7 +649,7 @@ Resources:
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
-      Engine: aurora
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
