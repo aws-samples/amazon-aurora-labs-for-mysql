@@ -18,7 +18,7 @@ This lab requires the following lab modules to be completed first:
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-On the Session Manager workstation command line [see the Connecting, Loading Data and Auto Scaling lab](/reinvent/connect/#1-connecting-to-your-workstation-ec2-instance), enter following command.
+On the Session Manager workstation command line ([see the Connecting, Loading Data and Auto Scaling lab](/reinvent/connect/#1-connecting-to-your-workstation-ec2-instance)), enter the following command.
 
 ```
 aws ssm send-command \

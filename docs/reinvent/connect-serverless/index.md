@@ -100,7 +100,7 @@ Choose the option to **Author from scratch**, set the **Function name** to `Labs
 
 <span class="image">![Name Function](../../modules/connect-serverless/2-lambda-create.png?raw=true)</span>
 
-Make sure the **Configuration** tab is selected. In the **Function code** section, select **Edit code inline** for **Code entry type**, if not already selected, and leave the values for **Runtime** and **Handler** as default (`Node.js 10.x` and `index.handler` respectively). Paste the code snipped below into the editor, and change the placeholders as follows:
+Make sure the **Configuration** tab is selected. In the **Function code** section, select **Edit code inline** for **Code entry type**, if not already selected, and leave the values for **Runtime** and **Handler** as default (`Node.js 12.x` and `index.handler` respectively). Paste the code snipped below into the editor, replacing what is already there, and change the placeholders as follows:
 
 Placeholder | Description | Where to find it
 --- | --- | ---

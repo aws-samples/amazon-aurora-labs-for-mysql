@@ -1,5 +1,7 @@
 # DAT327 - Accelerating application development with Amazon Aurora
 
+![AWS re:Invent 2019](/assets/images/reinvent19-topbanner.png)
+
 In this session, learn how to leverage the unique features of the Amazon Aurora platform to build faster, more scalable database applications optimized for the cloud. Through hands-on labs, we help you understand how to best take advantage of the Aurora platform's capabilities to effectively accelerate application development.
 
 ## Sign in to the provided AWS accounts

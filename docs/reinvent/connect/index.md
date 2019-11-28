@@ -17,10 +17,13 @@ This lab requires the following lab modules to be completed first:
 
 To interact with the Aurora database cluster, you will use an Amazon EC2 Linux instance that acts like a workstation for the purposes of the labs. All necessary software packages and scripts have been installed and configured on this EC2 instance for you. To ensure a unified experience, you will be interacting with this workstation using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager</a>. With Session Manager you can interact with your workstation directly from the management console.
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>. Choose the **Preferences** tab, then click **Edit**.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>. Click **Configure Preferences**.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+
+!!! note
+    The introduction screen with the **Configure Preferences** and **Start Session** buttons only appears when you start using Session Manager for the first time in a new account. Once you have started using this service the console will display the session listing view instead, and the preferences page is accessible by clicking on the **Preferences** tab. From there click the **Edit** button if you wish to change settings.
 
 <span class="image">![Session Manager](../../modules/connect/1-session-manager.png?raw=true)</span>
 
@@ -132,6 +135,9 @@ Now, open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+
+!!! note
+    Please ignore any console notification titled **Update your Amazon RDS SSL/TLS certificates before March 5, 2020**, you may see in the RDS service console. The DB clusters provisioned for this workshop will not persist until that date. 
 
 Take note that the reader node is currently receiving load. It may take a minute or more for the metrics to fully reflect the incoming load.
 

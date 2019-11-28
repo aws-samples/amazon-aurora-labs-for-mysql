@@ -14,7 +14,7 @@ This lab requires the following lab modules to be completed first:
 
 ## 1. Creating the serverless DB cluster
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1" target="_blank">Amazon RDS service console</a>, if you do not already have it open.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#databases:" target="_blank">Amazon RDS service console</a>, if you do not already have it open.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -74,6 +74,9 @@ Open the <a href="https://eu-west-1.console.aws.amazon.com/secretsmanager/home?r
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+
+!!! note
+    Please ignore any console errors titled **Failed to fetch a list of Redshift clusters**, you may see in the Secrets Manager service console. The access credentials you are using have limited permissions and do not have access to the Amazon Redshift service.
 
 Click **Store a new secret** to start the configuration process.
 
