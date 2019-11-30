@@ -17,7 +17,6 @@
 ## 2019-10-18 - Updates to Allowed Regions (Global database Availability)
 ## 2019-11-10 - Added Apache Superset EC2 launch
 ## 2019-11-26 - Split GDB Region 1 Ready Release; removed bastion
-## 2019-11-29 - Primary Region disabled encryption (else Global DB will fail on adding fresh region)
 ##
 ## Dependencies:
 ## none
@@ -634,7 +633,7 @@ Resources:
       MasterUsername: 'masteruser'
       MasterUserPassword: !Ref dbMasterPassword
       DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
-      StorageEncrypted: false
+      StorageEncrypted: true
       VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
       EnableIAMDatabaseAuthentication: true

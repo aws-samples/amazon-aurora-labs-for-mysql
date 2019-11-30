@@ -83,7 +83,7 @@ nav:
     - Create Global Database: 'reinvent-gdb/gdb/index.md'
     - Connect Application: 'reinvent-gdb/biapp/index.md'
     - Monitor Latency: 'reinvent-gdb/cw/index.md'
+    - Parameter Groups: 'reinvent-gdb/pg/index.md'
     - Failover: 'reinvent-gdb/failover/index.md'
-    - Failback: 'reinvent-gdb/failback/index.md'    
   - Contributing: 'contribute.md'
   - License: 'license.md'
