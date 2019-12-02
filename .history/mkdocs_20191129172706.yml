@@ -1,0 +1,89 @@
+---
+## Amazon Aurora Labs for MySQL
+## Website configuration file
+##
+## Dependencies:
+## none
+##
+## License:
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
+# Site information
+site_name: Amazon Aurora Labs for MySQL
+site_description: Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features.
+site_author: 'amazon-aurora-labs-for-mysql@amazon.com'
+site_url: 'https://awsauroralabsmysql.com'
+
+# Repository
+repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
+repo_url: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
+
+# Copyright
+copyright: '&copy; 2019, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
+
+# Theme
+theme:
+  name: 'material'
+  logo: 'assets/images/aws_smile_logo.png'
+  favicon: 'assets/images/aws-favicon.ico'
+  feature:
+    tabs: true
+  custom_dir: 'docs/theme'
+
+# Customization
+extra_css:
+  - 'assets/css/custom.css'
+#extra_javascript:
+#  - 'javascripts/extra.js'
+extra:
+  social:
+    - type: 'home'
+      link: 'https://awsauroralabsmysql.com'
+    - type: 'amazon'
+      link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
+    - type: 'github'
+      link: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.mark
+
+# Navigation
+nav:
+  - Home: 'index.md'
+  - Getting Started: 'modules/index.md'
+  - Modules:
+    - Prerequisites: 'modules/prerequisites/index.md'
+    - Creating a New Aurora Cluster: 'modules/create/index.md'
+    - Connecting, Loading Data and Auto Scaling: 'modules/connect/index.md'
+    - Cloning Clusters: 'modules/clone/index.md'
+    - Backtracking a Cluster: 'modules/backtrack/index.md'
+    - Using Performance Insights: 'modules/perf-insights/index.md'
+    - Creating a Serverless Aurora Cluster: 'modules/create-serverless/index.md'
+    - Using Aurora Serverless with Lambda Functions: 'modules/connect-serverless/index.md'
+  - Related:
+    - Labs and Workshops: 'related/labs/index.md'
+  - DAT327:
+    - Getting Started: 'reinvent/index.md'
+    - Prerequisites: 'reinvent/prerequisites/index.md'
+    - Connecting, Loading Data and Auto Scaling: 'reinvent/connect/index.md'
+    - Cloning Clusters: 'reinvent/clone/index.md'
+    - Backtracking a Cluster: 'reinvent/backtrack/index.md'
+    - Using Performance Insights: 'reinvent/perf-insights/index.md'
+    - Creating a Serverless Aurora Cluster: 'reinvent/create-serverless/index.md'
+    - Using Aurora Serverless with Lambda Functions: 'reinvent/connect-serverless/index.md'
+  - DAT348:
+    - Getting Started: 'reinvent-gdb/index.md'
+    - Setup: 'reinvent-gdb/setup/index.md'
+    - Create Global Database: 'reinvent-gdb/gdb/index.md'
+    - Connect Application: 'reinvent-gdb/biapp/index.md'
+    - Monitor Latency: 'reinvent-gdb/cw/index.md'
+    - Parameter Groups: 'reinvent-gdb/pg/index.md'
+    - Failover: 'reinvent-gdb/failover/index.md'
+  - Contributing: 'contribute.md'
+  - License: 'license.md'
