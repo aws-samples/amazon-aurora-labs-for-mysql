@@ -22,9 +22,8 @@
 
   <span class="image">![Region 1 CFN Launch](setup-cfn-gdb1b.png)</span>
 
-* Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter value format: ``=[outputKey]=``
+* Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter value format: `=[outputKey]=`
 
   <span class="image">![Region 1 CFN Launch](setup-cfn-gdb1c.png)</span>
-  
 
 * Return to the rest of [Setup](index.md)

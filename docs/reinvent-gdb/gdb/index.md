@@ -35,32 +35,32 @@ An Amazon Aurora Replica supports only read operations, connects to the same Aur
 
 1. You are now creating an Aurora Global Database, adding a new region DB cluster to be replicated from your primary region's Aurora DB cluster.
 
-   1. Under **Global database identifier**. We will name our Global database as ``reinvent-dat348-gdb``
+   1. Under **Global database identifier**. We will name our Global database as `reinvent-dat348-gdb`
 
    1. For **Secondary Region**, use the drop down list and select your assigned secondary region **`Region 2 (Secondary)`**. This can take a few seconds to load.
 
-   1. Next, we have **DB Instance Class**. Aurora allows replicas and Global Database instances to be of different instance class and size. We will leave this as the default ``db.r5.large``.
+   1. Next, we have **DB Instance Class**. Aurora allows replicas and Global Database instances to be of different instance class and size. We will leave this as the default `db.r5.large`.
      <span class="image">![GDB Settings 1](gdb-settings1.png)</span>
 
-   1. For **Multi-AZ deployment**, we will leave this as the default value ``Don't create an Aurora Replica``. For production, it is highly recommended to scale your read traffic to multiple reader nodes for even higher availability.
+   1. For **Multi-AZ deployment**, we will leave this as the default value `Don't create an Aurora Replica`. For production, it is highly recommended to scale your read traffic to multiple reader nodes for even higher availability.
 
-   1. For **Virtual Private Cloud**, we will click on the drop down list, and select ``gdb2-vpc``. This is the dedicated VPC we created from CloudFormation for the secondary region.
+   1. For **Virtual Private Cloud**, we will click on the drop down list, and select `gdb2-vpc`. This is the dedicated VPC we created from CloudFormation for the secondary region.
 
    1. Expand on **Additional connectivity configuration** for more options.
 
-   1. Under **Existing VPC security groups**, we will click on the drop down list, <span style="color:red;">deselect</span> ``default`` and <span style="color:green;">select</span> ``gdb2-mysql-internal``. Attaching this security group allows our applications in the secondary region to reach the Aurora secondary DB Cluster.
+   1. Under **Existing VPC security groups**, we will click on the drop down list, <span style="color:red;">deselect</span> `default` and <span style="color:green;">select</span> `gdb2-mysql-internal`. Attaching this security group allows our applications in the secondary region to reach the Aurora secondary DB Cluster.
      <span class="image">![GDB Settings 2](gdb-settings2.png)</span>
 
    1. Leave the other default options, scroll down to bottom of the page and expand on **Additional configuration**.
 
-   1. For **DB instance identifier**, we will name the Aurora DB instance for the secondary region. Let's name this ``gdb2-node1``
+   1. For **DB instance identifier**, we will name the Aurora DB instance for the secondary region. Let's name this `gdb2-node1`
 
-   1. Similarly, under **DB cluster identifier**, we will name the Aurora DB cluster for the secondary region. Let's name this ``gdb2-cluster``
+   1. Similarly, under **DB cluster identifier**, we will name the Aurora DB cluster for the secondary region. Let's name this `gdb2-cluster`
 
-   1. Ensure the **DB cluster parameter group** and **DB parameter groups** are set to the ones with the ``gdb2-`` prefix.
+   1. Ensure the **DB cluster parameter group** and **DB parameter groups** are set to the ones with the `gdb2-` prefix.
      <span class="image">![GDB Settings 3](gdb-settings3.png)</span>
 
-   1. Near the bottom, under **Monitoring**, Enable Enhanced Monitoring. We will vend metrics down to ``1-second`` **Granularity**. Click on the drop-down menu and change **Monitoring Role** to the IAM role you have under ``gdb2-monitor-<xx-region-x>`` name.
+   1. Near the bottom, under **Monitoring**, Enable Enhanced Monitoring. We will vend metrics down to `1-second` **Granularity**. Click on the drop-down menu and change **Monitoring Role** to the IAM role you have under `gdb2-monitor-<xx-region-x>` name.
 
    1. For **Log exports**, we will enable and publish all log types to centralize and gather them into Amazon CloudWatch Logs.
      <span class="image">![GDB Settings 4](gdb-settings4.png)</span>

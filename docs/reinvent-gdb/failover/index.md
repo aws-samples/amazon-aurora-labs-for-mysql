@@ -12,7 +12,7 @@ Combined with an application layer that is deployed cross-region (via immutable 
 
 * On the Superset navigation menu, mouse over **SQL Lab** and then click on **SQL Editor**.
 
-* Ensure that your selected **Database** is still set to ``mysql aurora-gdb1-write`` and the **Schema** set to ``mylab``.
+* Ensure that your selected **Database** is still set to `mysql aurora-gdb1-write` and the **Schema** set to `mylab`.
 
 * Copy and paste the following SQL query and click on **Run Query**
 
@@ -38,7 +38,7 @@ SELECT * FROM mylab.failovertest1;
 
 ## Failure Injection
 
-Although we can simulate an in-region failure with the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.FaultInjectionQueries.html" target="_blank">Aurora-specific fault injection queries</a> like ```ALTER SYSTEM CRASH;``` - in this case we want to simulate a longer term and larger scale failure (however infrequent) and the best way to do this is to stop all ingress/egress data traffic in and out of the Aurora Global Database's primary DB cluster. The initial CloudFormation template created a NACL with specific DENY ALL traffic that will block all ingress/egress traffic out of the associated subnets.
+Although we can simulate an in-region failure with the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.FaultInjectionQueries.html" target="_blank">Aurora-specific fault injection queries</a> like `ALTER SYSTEM CRASH;` - in this case we want to simulate a longer term and larger scale failure (however infrequent) and the best way to do this is to stop all ingress/egress data traffic in and out of the Aurora Global Database's primary DB cluster. The initial CloudFormation template created a NACL with specific DENY ALL traffic that will block all ingress/egress traffic out of the associated subnets.
 
 >  **`Region 1 (Primary)`**
 
@@ -68,11 +68,13 @@ As we are simulating a prolonged regional infrastructure or service level failur
 
 * Within the RDS console, select **Databases** on the left menu. This will bring you to the list of Databases already deployed. You should see **gdb2-cluster**  and **gdb2-node1** .
 
-    * Note: You might also notice that in your RDS console it will still report the primary region DB cluster and DB instance still as *Available*, that is because we are simulating a failure by blocking all networking access via NACLs, and the blast radius of such a simulation is limited only to your AWS Account; the RDS/Aurora service and its internal health checks are provided by the service control plane itself and will still report the DB cluster and DB instance as healthy because there is no *real outage*.
+    !!! note
+        You might also notice that in your RDS console it will still report the primary region DB cluster and DB instance still as *Available*, that is because we are simulating a failure by blocking all networking access via NACLs, and the blast radius of such a simulation is limited only to your AWS Account; the RDS/Aurora service and its internal health checks are provided by the service control plane itself and will still report the DB cluster and DB instance as healthy because there is no *real outage*.
 
 * Select the secondary DB Cluster **gdb2-cluster**. Click on the **Actions** menu, then select **Remove from Global**
     <span class="image">![Aurora Promote Secondary](failover-aurora-promote1.png)</span>
-    * A message will pop up asking you to confirm that this will break replication from the primary DB cluster. Confirm by clicking on **Remove and promote**.
+
+* A message will pop up asking you to confirm that this will break replication from the primary DB cluster. Confirm by clicking on **Remove and promote**.
 
 * The promote process should take less than 1 minute. Once complete, you should be able to see the previously secondary DB cluster is now labeled as **Regional** and the DB instance is now a **Writer** node.
     <span class="image">![Aurora Promote Secondary](failover-aurora-promote2.png)</span>
@@ -100,7 +102,7 @@ SELECT * FROM mylab.failovertest1;
 * Note the query results, this should return the new table and record we entered into the Database shortly before the simulated failure.
 
 * Let's try to insert a new record to this table. Copy and paste the following DML query and click on **Run Query** - what do you expect the results to be?
-    
+
 ```
 INSERT INTO mylab.failovertest1 (gen_number, some_text, input_dt)
 VALUES (200,"region-2-input",now());
@@ -121,12 +123,12 @@ SELECT * FROM mylab.failovertest1;
       Field | Value and Description
       ----- | -----
       Database | <pre>aurora-gdb2-write</pre> <br> This will be the friendly name of our Aurora Database in Superset<br>&nbsp;
-      SQLAlchemy URI | <pre>mysql://masteruser:<b>auroragdb321</b>@<b><i>[Replace with Secondary Writer Endpoint]</i></b>/mysql</pre> <br> Replace the endpoint with the Secondary Writer Endpoint we have gathered previously. The password to connect to the database should remain as ```auroragdb321``` unless you have changed this value during CloudFormation deployment. Click on **Test Connection** to confirm.<br>&nbsp;
+      SQLAlchemy URI | <pre>mysql://masteruser:<b>auroragdb321</b>@<b><i>[Replace with Secondary Writer Endpoint]</i></b>/mysql</pre> <br> Replace the endpoint with the Secondary Writer Endpoint we have gathered previously. The password to connect to the database should remain as `auroragdb321` unless you have changed this value during CloudFormation deployment. Click on **Test Connection** to confirm.<br>&nbsp;
       Expose in SQL Lab | &#9745; (Checked)
       Allow CREATE TABLE AS | &#9745; (Checked)
       Allow DML | &#9745; (Checked)
 
-      ![Superset GDB2 Write Settings](../biapp/superset-gdb2w.png)
+      <span class="image">![Superset GDB2 Write Settings](../biapp/superset-gdb2w.png)</span>
 
 * Return to Apache Superset SQL Editor. Ensure that your selected **Database** is set to the new ``mysql aurora-gdb2-write`` and the **Schema** set to ``mylab``.
 
@@ -149,9 +151,8 @@ You have just performed a failover operation of your application from its primar
 ![Failover Diagram](failover-arch2.png)
 
 * In a real world scenario, you might want to front load your application tier with an application load balancer. Should you want to have seamless transition for your endpoint that handles write DML queries, you can also combine your applications with Route53 Active-Passive failover. These configurations are outside the scope of this particular workshop, but you can find more information on such architecture on AWS website:
-    * DNS Failover Types with Route53: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html#dns-failover-types-active-passive
-    * Creating Route53 DNS Health Check: https://aws.amazon.com/premiumsupport/knowledge-center/route-53-dns-health-checks/
-    * AWS This is my Architecture series - Multi-Region High-Availability Architecture: https://www.youtube.com/watch?v=vGywoYc_sA8
+    * <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html#dns-failover-types-active-passiveDNS" target="_blank">Failover Types with Route53</a>
+    * <a href="https://aws.amazon.com/premiumsupport/knowledge-center/route-53-dns-health-checks/Creating" target="_blank">Route53 DNS Health Check</a>
+    * <a href="https://www.youtube.com/watch?v=vGywoYc_sA8AWS" target="_blank">This is my Architecture series - Multi-Region High-Availability Architecture</a> 
 
 If you are up for another challenge, go to the optional step of [Failback](../failback/index.md).
-

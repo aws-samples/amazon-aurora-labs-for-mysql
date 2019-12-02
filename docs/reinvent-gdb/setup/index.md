@@ -46,7 +46,7 @@ Scroll to the bottom, check the box that reads: **I acknowledge that AWS CloudFo
 
 <span class="image">![Region 2 CFN Launch](setup-cfn-gdb2a.png)</span>
 
-In about 2-3 minutes, the status of the stack will change to `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter value format: ``=[outputKey]=``
+In about 2-3 minutes, the status of the stack will change to `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter value format: `=[outputKey]=`
 
 
 ## Checkpoint
