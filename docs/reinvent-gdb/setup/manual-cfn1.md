@@ -26,4 +26,4 @@
 
   <span class="image">![Region 1 CFN Launch](../setup-cfn-gdb1c.png)</span>
 
-* Return to the rest of [Setup](../setup/)
+* Return to the rest of [Setup](../)
