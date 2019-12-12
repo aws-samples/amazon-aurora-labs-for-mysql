@@ -10,6 +10,9 @@
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
 ## 2019-10-28 - Updated the Aurora DB Engine version used
 ## 2019-10-28 - Added DNS failover script to bootstrap
+## 2019-12-12 - Switched DB cluster to Aurora MySQL 5.7 engine, and version 2.07
+## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
+## 2019-12-12 - Added SNS permissions to bastion policy
 ##
 ## Dependencies:
 ## none
@@ -131,9 +134,9 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.6.mysql_aurora.1.19.5
-      dbEngine: aurora
-      dbFamily: aurora5.6
+      dbVersion: 5.7.mysql_aurora.2.07.0
+      dbEngine: aurora-mysql
+      dbFamily: aurora-mysql5.7
     scaling:
       maxCapacity: 2
       minCapacity: 1
@@ -446,6 +449,7 @@ Resources:
                   - s3:*
                   - ssm:*
                   - kms:*
+                  - sns:*
                   - secretsmanager:*
                   - rds-db:connect
                 Resource: "*"
@@ -522,7 +526,7 @@ Resources:
           pip3 install awscli
           cd /home/ubuntu
           curl -O https://[[website]]/scripts/loadtest.py
-          curl -O https://[[website]]/scripts/dns-failover.py
+          curl -O https://[[website]]/scripts/simple-failover.py
           curl -O https://[[website]]/scripts/aware-failover.py
           chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log

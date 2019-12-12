@@ -15,8 +15,9 @@
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
 ## 2019-10-28 - Updated the Aurora DB Engine version used
 ## 2019-10-28 - Added DNS failover script to bootstrap
-## 2019-11-27 - Reverted back to resource names based on stack name
 ## 2019-11-27 - Switched DB cluster to Aurora MySQL 5.7 engine, and version 2.07
+## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
+## 2019-12-12 - Added SNS permissions to bastion policy
 ##
 ## Dependencies:
 ## none
@@ -454,6 +455,7 @@ Resources:
                   - s3:*
                   - ssm:*
                   - kms:*
+                  - sns:*
                   - secretsmanager:*
                   - rds-db:connect
                 Resource: "*"
