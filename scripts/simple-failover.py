@@ -36,46 +36,18 @@ print("Press Ctrl+C to quit this test...")
 initial = True
 failover_detected = False
 failover_start_time = None
-current_master = None
-connect_endpoint = args.endpoint
-master_endpoint = None
 
-# Parse endpoint and build writer endpoint
-def instance_dns_endpoint(current_endpoint, db_identifier):
-    writer_endpoint = None
-
-    # Is this an RDS endpoint?
-    if current_endpoint.endswith(".rds.amazonaws.com"):
-        # Split the DNS name
-        temp = current_endpoint.split(".")
-
-        # Build the new endpoint
-        temp[0] = db_identifier
-        temp[1] = temp[1].replace("cluster-", "")
-        temp[1] = temp[1].replace("ro-", "")
-        temp[1] = temp[1].replace("custom-", "")
-
-        # Validate endpoint
-        if len(temp[1]) != 12 or len(temp) != 6:
-            raise Exception("Nonconforming endpoint DNS name provided")
-        else:
-            writer_endpoint = ".".join(temp)
-
-    # Return writer endpoint
-    return writer_endpoint
-
-
-# Loop indefinitely
+# Loop Indefinitely
 while True:
     try:
         # Resolve the endpoint
-        host = socket.gethostbyname(connect_endpoint)
+        host = socket.gethostbyname(args.endpoint)
 
         # Take timestamp
         conn_start_time = time.time()
 
         # Connect to the cluster endpoint
-        conn = pymysql.connect(host=connect_endpoint, user=args.username, password=args.password, database='information_schema', autocommit=True, connect_timeout=1)
+        conn = pymysql.connect(host=args.endpoint, user=args.username, password=args.password, database='information_schema', autocommit=True, connect_timeout=1)
 
         # Query status
         sql_command = "SELECT @@innodb_read_only, @@aurora_server_id, @@aurora_version;"
@@ -89,51 +61,6 @@ while True:
             else:
                 server_role = "writer"
             cursor.close()
-
-
-        # If we're not connected to the right role, or initial run
-        if server_role != "writer" or initial:
-            # Get the master server ID
-            sql_command = "SELECT server_id, session_id FROM information_schema.replica_host_status WHERE session_id = 'MASTER_SESSION_ID';"
-
-            # Run the query
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command)
-                (current_master, session_id) = cursor.fetchone()
-                cursor.close()
-            print("[INFO]", "Server role is: %s, writer ID is: %s" % (server_role, current_master))
-
-            # Compute the DNS endpoint of master
-            master_endpoint = instance_dns_endpoint(connect_endpoint, current_master)
-            if master_endpoint == None:
-                raise Exception('You did not provide a valid Aurora DB cluster DNS endpoint. If you are using a custom CNAME, adjust the topology detenction accordingly.')
-
-
-        # Reconnect to the right node if the role is not the right one
-        if server_role != "writer" and master_endpoint:
-            # Close the connection
-            conn.close()
-
-            # Connect to the cluster endpoint
-            conn = pymysql.connect(host=master_endpoint, user=args.username, password=args.password, database='information_schema', autocommit=True, connect_timeout=1)
-            print("[INFO]", "Reconnected to writer endpoint: %s" % (master_endpoint))
-
-            # Query status
-            sql_command = "SELECT @@innodb_read_only, @@aurora_server_id, @@aurora_version;"
-
-            # We want to continue using the master endpoint until we have a connection issue
-            connect_endpoint = master_endpoint
-
-            # Run the query
-            with conn.cursor() as cursor:
-                cursor.execute(sql_command)
-                (is_reader, server_id, version) = cursor.fetchone()
-                if is_reader > 0:
-                    server_role = "reader"
-                else:
-                    server_role = "writer"
-                cursor.close()
-
 
         # Take timestamp
         conn_end_time = time.time()
@@ -169,18 +96,15 @@ while True:
                 # Display info
                 print("[INFO]", "%s: connected to %s (%s, %s)" % (time.strftime('%H:%M:%S %Z'), server_id, server_role, version))
 
-
         # No longer in the initial loop
         initial = False;
 
         # Wait 1 second
         time.sleep(1)
 
-
     # Trap keyboard interrupt, exit
     except KeyboardInterrupt:
         sys.exit("\nStopped by the user")
-
 
     # Deal with MySQL connection errors
     except pymysql.MySQLError as e:
@@ -198,16 +122,38 @@ while True:
             # Display error
             print("[ERROR]", "%s: can't connect to the database (MySQL error: %d)!" % (time.strftime('%H:%M:%S %Z'), error_code))
 
-            # Revert back to using the initial endpoint
-            connect_endpoint = args.endpoint
+            # Close resources
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
             # Wait 1 second
             time.sleep(1)
+
+        # Connected to a proxy
+        elif error_code == 1105 and args.endpoint.find('.proxy-') > 0:
+            # Detect failover
+            if not failover_detected:
+                failover_start_time = conn_start_time
+            failover_detected = True
+
+            # Display error
+            print("[ERROR]", "%s: can't connect to the database (MySQL error: %d)!" % (time.strftime('%H:%M:%S %Z'), error_code))
+
+            # Close resources
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+            # Wait 1 second
+            time.sleep(1)
+
         else:
             # Display error
             print("[ERROR]", "%s, MySQL Error %d: %s" % (time.strftime('%H:%M:%S %Z'), error_code, error_message))
             sys.exit("\nUnexpected MySQL error encountered")
-
 
     # Any other error bail out
     except:
