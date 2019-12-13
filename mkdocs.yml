@@ -57,16 +57,21 @@ markdown_extensions:
 nav:
   - Home: 'index.md'
   - Getting Started: 'modules/index.md'
-  - Modules:
-    - Prerequisites: 'modules/prerequisites/index.md'
-    - Creating a New Aurora Cluster: 'modules/create/index.md'
-    - Connecting, Loading Data and Auto Scaling: 'modules/connect/index.md'
-    - Cloning Clusters: 'modules/clone/index.md'
-    - Backtracking a Cluster: 'modules/backtrack/index.md'
-    - Using Performance Insights: 'modules/perf-insights/index.md'
-    - Testing Fault Tolerance: 'modules/failover/index.md'
-    - Creating a Serverless Aurora Cluster: 'modules/create-serverless/index.md'
-    - Using Aurora Serverless with Lambda Functions: 'modules/connect-serverless/index.md'
+  - Prerequisites:
+    - Deploy Environment: 'prereqs/environment/index.md'
+    - Connect to the DB Cluster: 'prereqs/connect/index.md'
+  - Provisioned:
+    - Create a New DB Cluster: 'provisioned/create/index.md'
+    - Connect, Load Data and Auto Scale: 'provisioned/interact/index.md'
+    - Clone a DB Clusters: 'provisioned/clone/index.md'
+    - Backtrack a DB Cluster: 'provisioned/backtrack/index.md'
+    - Use Performance Insights: 'provisioned/perf-insights/index.md'
+    - Test Fault Tolerance: 'provisioned/failover/index.md'
+  - Serverless:
+    - Create an Aurora Serverless DB cluster: 'serverless/create/index.md'
+    - Use Aurora Serverless with AWS Lambda functions: 'serverless/dataapi/index.md'
+  - Global Database:
+    - Create an Aurora Global Database: 'global/create/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
