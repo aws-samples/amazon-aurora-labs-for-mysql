@@ -371,6 +371,12 @@ Resources:
           ToPort: 3306
           SourceSecurityGroupId: !Ref bastionSecGroup
           Description: Allows MySQL access from bastion host
+  ruleDbSecGroupClusterIngressSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref dbSecGroupCluster
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref dbSecGroupCluster
 
 ## Create enhanced monitoring role
   roleEnhancedMonitoring:
