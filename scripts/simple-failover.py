@@ -122,12 +122,6 @@ while True:
             # Display error
             print("[ERROR]", "%s: can't connect to the database (MySQL error: %d)!" % (time.strftime('%H:%M:%S %Z'), error_code))
 
-            # Close resources
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
             # Wait 1 second
             time.sleep(1)
 
@@ -140,12 +134,6 @@ while True:
 
             # Display error
             print("[ERROR]", "%s: can't connect to the database (MySQL error: %d)!" % (time.strftime('%H:%M:%S %Z'), error_code))
-
-            # Close resources
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
 
             # Wait 1 second
             time.sleep(1)
