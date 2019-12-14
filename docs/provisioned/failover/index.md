@@ -11,41 +11,42 @@ This lab will test the high availability and fault tolerance features provided b
 
 This lab contains the following tasks:
 
-1. Setting up failover event notifications
-2. Testing a manual DB cluster failover
-3. Testing fault injection queries
-4. Testing a failover with cluster awareness
-5. Using RDS Proxy to minimize failover disruptions
-5. Next steps
-
-This lab requires the following lab modules to be completed first:
-
-* [Prerequisites](/modules/prerequisites/)
-* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
-* [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity section only)
+1. Set up failover event notifications
+2. Test a manual DB cluster failover
+3. Test fault injection queries
+4. Test a failover with cluster awareness
+5. Use RDS Proxy to minimize failover disruptions
+6. More testing suggestions
 
 
-## 1. Setting up failover event notifications
+This lab requires the following prerequisites:
+
+* [Deploy Environment](/prereqs/environment/)
+* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
+
+
+## 1. Set up failover event notifications
 
 To receive notifications when failover events occur with your DB cluster, you will create an Amazon Simple Notification Service (SNS) topic, subscribe your email address to the SNS topic, create an RDS event subscription publishing events to the SNS topic and registering the DB cluster as an event source.
 
-On the Session Manager workstation command line [see the previous lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), run:
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run:
 
 ```
 aws sns create-topic \
---name labstack-rds-failovers
+--name labstack-aurora-failovers
 ```
 
 If successful, the command will respond back with a **TopicArn** identifier, you will need this value in the next command.
 
-::TODO:: screenshot
+<span class="image">![Create SNS Topic](1-sns-topic.png?raw=true)</span>
 
 Next, subscribe your email address to the SNS topic, using the command below, changing the placeholders as follows:
 
 Placeholder | Description | Where to find it
 --- | --- | ---
 ==[TopicArn]== | The ARN of the SNS topic | See the response to the command you ran above.
-==[YourEmail]== | An email address to receive notifications on | n/a
+==[YourEmail]== | Your email address | You will receive the event notifications to this email address.
 
 ```
 aws sns subscribe \
@@ -56,9 +57,9 @@ aws sns subscribe \
 
 You will receive a verification email on that address, please confirm the subscription by following the instructions in the email.
 
-::TODO:: screenshot
+<span class="image">![Create SNS Topic](1-subscription-verify.png?raw=true)</span>
 
-Once confirmed, or while you are waiting for the verification email to arrive, create an RDS event subscription and registering the DB cluster as an event source using the command below, changing the placeholders as follows:
+Once confirmed, or while you are waiting for the verification email to arrive, create an RDS event subscription and register the DB cluster as an event source using the command below, changing the placeholders as follows:
 
 Placeholder | Description | Where to find it
 --- | --- | ---
@@ -77,7 +78,7 @@ aws rds add-source-identifier-to-subscription \
 --source-identifier labstack-cluster
 ```
 
-::TODO:: screenshot
+<span class="image">![RDS Event Subscription](1-rds-event-source.png?raw=true)</span>
 
 At this time the event notifications have been configured. Ensure you have verified your email address before proceeding to the next section.
 
@@ -101,7 +102,7 @@ In this test you will use a [simple failover monitoring script](/scripts/simple-
 
     In the event of a fault, the script will report the number of seconds it takes to reconnect to the intended endpoint and the writer role.
 
-You will need to open an additional command line session to your EC2-based workstation. You will execute commands in one, and see the results in the other session. [See the Connecting, Loading Data and Auto Scaling lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), for steps how to create a Session Manager command line session. It will also be more effective if the two browser windows are side by side.
+You will need to open an additional command line session to your Session Manager workstation. You will execute commands in one, and see the results in the other session. See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session. It will also be more effective if the two browser windows are side by side.
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
@@ -127,7 +128,7 @@ aws rds failover-db-cluster \
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
 
-<span class="image">![Trigger DNS Failover](3-dns-failover.png?raw=true)</span>
+<span class="image">![Trigger DNS Failover](2-dns-failover.png?raw=true)</span>
 
 ??? info "Observations"
     Initially, the Cluster DNS endpoint resolves to the IP address of one of the cluster DB instances (`labstack-node-01` in the example above). The monitoring script connects to that particular DB instance and determines it is a writer.
@@ -146,7 +147,7 @@ Feel free to repeat the failover procedure a few times to determine if there are
 
 You will also receive two event notification emails for each failover you initiate, one indicating that a failover has **started**, and one indicating that it has **completed**.
 
-::TODO:: screenshots
+<span class="image">![SNS Emails](2-notification-emails.png?raw=true)</span>
 
 !!! note
     The difference between the notification timestamps of the two event notifications may be larger than the actual disruption observed using the monitoring script. The monitoring script measures the actual disruption observed by the client, while the event notification reflects the end-to-end failover process, including subsequent service-side validations once the DB cluster is operational again.
@@ -178,7 +179,7 @@ ALTER SYSTEM CRASH INSTANCE;
 
 Wait and observe the monitor script output. Once triggered, you should see monitoring output similar to the example below.
 
-<span class="image">![Trigger Fault Injection](4-fault-injection.png?raw=true)</span>
+<span class="image">![Trigger Fault Injection](3-fault-injection.png?raw=true)</span>
 
 ??? info "Observations"
     When the crash is triggered, the monitoring script stops being able to connect to the database engine.
@@ -188,6 +189,12 @@ Wait and observe the monitor script output. Once triggered, you should see monit
     The role of the DB instance has not changed, the writer is still the same DB instance (`labstack-node-01` in the example above).
 
     No DNS changes are needed. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was ~3 seconds.
+
+You may need to exit the mysql command console, even if it is disconnected using by typing:
+
+```
+quit;
+```
 
 
 ## 4. Testing a failover with cluster awareness
@@ -201,7 +208,7 @@ Simple DNS-based failovers work well for most use cases, and they are relatively
     * If the current DB instance is not the writer, it simply reconnects to the DB instance endpoint of the new writer directly.
     * Upon encountering a new failure, it falls back to using the cluster DNS endpoint again.
 
-Assuming you still have the two command line sessions open and active, open a 3rd command line session. [See the Connecting, Loading Data and Auto Scaling lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), for steps how to create a Session Manager command line session. It will also be more effective if you put the new browser window side by side with the others.
+Assuming you still have the two command line sessions open and active, open a 3rd command line session. See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session. It will also be more effective if you put the new browser window side by side with the others.
 
 In the new (third) command line session, start the cluster-aware monitoring script using the following command:
 
@@ -223,7 +230,7 @@ aws rds failover-db-cluster \
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
 
-<span class="image">![Trigger Aware Failover](5-aware-failover.png?raw=true)</span>
+<span class="image">![Trigger Aware Failover](4-aware-failover.png?raw=true)</span>
 
 ??? info "Observations"
     When the crash is triggered, the monitoring script stops being able to connect to the database engine
@@ -258,29 +265,29 @@ Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-we
 
 Navigate to **Proxies** in the left side navigation menu. Click **Create proxy**.
 
-::TODO:: screenshot
+<span class="image">![Create Proxy](5-create-proxy.png?raw=true)</span>
 
 In the **Proxy configuration** section, set the Proxy identifier to `labstack-proxy`. In the **Target group configuration** section, choose `labstack-cluster` in the **Database** dropdown. Leave all other default values as they are.
 
-::TODO:: screenshot
+<span class="image">![Configure Proxy](5-config-proxy.png?raw=true)</span>
 
 In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretCusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `labstack-mysql-internal`.
 
-::TODO:: screenshot
+<span class="image">![Configure Proxy Connectivity](5-config-connectivity.png?raw=true)</span>
 
 Check the box next to **I acknowledge this limited service agreement for the RDS Proxy.** due to the preview nature of this feature and click **Create proxy**.
 
-::TODO:: screenshot
+<span class="image">![Agree Create](5-config-proxy-agree.png?raw=true)</span>
 
-Creating a proxy may take several minutes, you may need to refresh your browser page to view the up to date status information. Once the status is listed as **Available**, click on the proxy identifier to view details.
+Creating a proxy may take several minutes, you may need to refresh your browser page to view up to date status information. Once the status is listed as **Available**, click on the proxy identifier to view details.
 
-::TODO:: screenshot
+<span class="image">![Proxy Listing](5-proxy-listing.png?raw=true)</span>
 
 Note down the **Proxy endpoint**, you will use it later.
 
-::TODO:: screenshot
+<span class="image">![Proxy Details](5-proxy-details.png?raw=true)</span>
 
-Next, you will need two command line sessions open and active (if you still have 3 open from the previous test you may close one by typing `exit` twice). [See the Connecting, Loading Data and Auto Scaling lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), for steps how to create a Session Manager command line session. It will also be more effective if you put the two command line browser windows side by side.
+Next, you will need two command line sessions open and active (if you still have 3 open from the previous test you may close one by clicking the **Terminate** button in the top right corner). See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session. It will also be more effective if you put the two command line browser windows side by side.
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
@@ -293,7 +300,7 @@ You can quit the monitoring script at any time by pressing `Ctrl+C`.
 !!! warning "Proxy Endpoint"
     Please ensure you use the **Proxy Endpoint** from the previous step, not the cluster endpoint used in the previous labs. If you encounter an error, starting the script, please verify that the endpoint is correct.
 
-::TODO:: screenshot
+<span class="image">![Monitor Started](5-monitor-started.png?raw=true)</span>
 
 In the other command line session, you will trigger a manual failover of the cluster.
 
@@ -306,18 +313,16 @@ aws rds failover-db-cluster \
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
 
-::TODO:: screenshot
+<span class="image">![Monitor Failover](5-monitor-failover.png?raw=true)</span>
 
 ??? info "Observations"
-    Initially, the proxy sends traffic to the current writer of the DB cluster (`labstack-node-01` in the example above). The monitoring script connects to that particular DB instance and determines it is a writer.
+    Initially, the proxy sends traffic to the current writer of the DB cluster (`labstack-node-01` in the example above). The proxy forwards the monitoring script queries to that particular DB instance.
 
-    When the actual failover is implemented by the AWS automation, the monitoring script experiences an increase in query response latency, as the request is queued up. Once the new writer is promoted, the query is routed to that new writer (`labstack-node-02` in the example above) and a response is sent to the client.
+    When the actual failover is implemented by the AWS automation, the monitoring script experiences a disconnection with MySQL error 1105. One second later, it is able to reconnect again, only this time the proxy is forwarding the queries to the new writer  (`labstack-node-02` in the example above). The client experienced ~1 second of disruption.
 
-    In this example the client connection is not disconnected during the failover, there was no disruption of the database connection from the monitoring script. This was due to timing: the query from the monitoring script arrived right after the failover started and was queued up.
+    The timing of requests issued by the client (our monitoring script in this example) matters. If the query is in-flight at the time the failover starts, or you are attempting to establish a new connection while the failover is ongoing, the proxy will return an error so you can retry. Existing client connections with no in-flight queries will be kept open, and any queries received after the failover starts will be queued up at the proxy until the failover completes. Such clients will simply experience increased response latency for the queries issued during the failover.
 
-    Subject to timing, the application may still experience an error when the query is issued, if the query is in-flight at the time the failover starts.
-
-    The failover recovery is also shorter than in the previous tests. In the example above, the client experienced ~3 seconds of latency in receiving a response to its query.
+    The failover recovery is also shorter than in the previous tests. In the example above, the client experienced a ~1 second disruption, compared to several seconds in the examples above.
 
 
 Feel free to repeat the failover procedure a few times to determine if there are any significant variances.
@@ -325,7 +330,7 @@ Feel free to repeat the failover procedure a few times to determine if there are
 You will also receive two event notification emails for each failover you initiate, one indicating that a failover has **started**, and one indicating that it has **completed**.
 
 
-## 6. Next steps
+## 6. More testing suggestions
 
 The tests above represent relatively simple failure conditions. Different failure modes may require more advanced testing processes or cluster awareness logic. For more advanced testing, and fault resilience consider the following:
 
