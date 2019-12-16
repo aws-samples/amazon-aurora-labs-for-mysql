@@ -7,19 +7,32 @@ If you are setting up an AWS account for the first time, follow the instructions
 
 ## Overview of labs
 
-The following labs are currently available, part of this instructional website:
+The following labs are currently available, part of this instructional website.
 
-# | Lab Module | Recommendation | Overview
---- | --- | --- | ---
-1 | [**Prerequisites**](/modules/prerequisites/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources
-2 | [**Create a New Aurora Cluster**](/modules/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually
-3 | [**Connecting, Loading Data and Auto Scaling**](/modules/connect/) | Recommended, for provisioned clusters | Connect to the DB cluster for the first time, load an initial data set and test read replica auto scaling. The initial data set may be used in subsequent labs.
-4 | [**Cloning Clusters**](/modules/clone/) | Recommended, for provisioned clusters | Clone an Aurora DB cluster and observing the divergence of the data set.
-5 | [**Backtracking a Cluster**](/modules/backtrack/) | Recommended, for provisioned clusters | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
-6 | [**Using Performance Insights**](/modules/perf-insights/) | Recommended, for provisioned clusters | Examine the performance of your DB instances using RDS Performance Insights
-6 | [**Testing Fault Tolerance**](/modules/failover/) | Recommended, for provisioned clusters | Examine the failover process in Amazon Aurora MySQL and how it can be optimized
-7 | [**Creating a Serverless Aurora Cluster**](/modules/create-serverless/) | Recommended, for serverless clusters | Create a new Amazon Aurora Serverless MySQL DB cluster manually. You may skip the provisioned cluster labs if you are planning to operate a serverless workload.
-8 | [**Using Aurora Serverless with Lambda Functions**](/modules/connect-serverless/) | Recommended, for serverless clusters | Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.
+???+ abstract "Prerequisites"
+    You will need to complete the following prerequisite labs before running any other labs. **Do this first!**
+
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    1 | [**Deploy Environment**](/prereqs/environment/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources.
+    2 | [**Connect to the Session Manager Workstation**](/prereqs/connect/) | **Required** | Connect to the EC2 based workstation using Session Manager, so you can interact with the database.
+
+
+??? abstract "Labs for Aurora Provisioned DB clusters"
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    1 | [**Create a New DB Cluster**](/provisioned/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually. This is optional, as you can also deploy the environment with a cluster provisioned automatically for you.
+    2 | [**Connect, Load Data and Auto Scale**](/provisioned/interact/) | Recommended | Connect to the DB cluster, load an initial data set from S3 and test read replica auto scaling. The initial data set may be used in subsequent labs.
+    3 | [**Clone a DB Cluster**](/provisioned/clone/) | Recommended | Clone an Aurora DB cluster and observing the divergence of the data set.
+    4 | [**Backtrack a DB Cluster**](/provisioned/backtrack/) | Recommended | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
+    5 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
+    6 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
+
+??? abstract "Labs for Aurora Serverless DB clusters"
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    1 | [**Create an Aurora Serverless DB cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
+    2 | [**Use Aurora Serverless with AWS Lambda functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
 
 You can also discover exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
 

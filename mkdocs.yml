@@ -63,15 +63,15 @@ nav:
   - Provisioned:
     - Create a New DB Cluster: 'provisioned/create/index.md'
     - Connect, Load Data and Auto Scale: 'provisioned/interact/index.md'
-    - Clone a DB Clusters: 'provisioned/clone/index.md'
+    - Clone a DB Cluster: 'provisioned/clone/index.md'
     - Backtrack a DB Cluster: 'provisioned/backtrack/index.md'
     - Use Performance Insights: 'provisioned/perf-insights/index.md'
     - Test Fault Tolerance: 'provisioned/failover/index.md'
   - Serverless:
     - Create an Aurora Serverless DB cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda functions: 'serverless/dataapi/index.md'
-  - Global Database:
-    - Create an Aurora Global Database: 'global/create/index.md'
+#  - Global Database:
+#    - Create an Aurora Global Database: 'global/create/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
