@@ -1,6 +1,6 @@
 # Connect to the Session Manager Workstation
 
-To interact with the Aurora database cluster, you will use an Amazon EC2 Linux instance that acts like a workstation to interact with the AWS resources in the labs on this website. All necessary software packages and scripts have been installed and configured on this EC2 instance for you. To ensure a unified experience, you will be interacting with this workstation using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager</a>. With Session Manager you can interact with your workstation directly from the management console, without the need of installing any software on your own devices.
+To interact with the Aurora database cluster, you will use an <a href="https://aws.amazon.com/ec2/" target="_blank">Amazon EC2</a> Linux instance that acts like a workstation to interact with the AWS resources in the labs on this website. All necessary software packages and scripts have been installed and configured on this EC2 instance for you. To ensure a unified experience, you will be interacting with this workstation using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" target="_blank">AWS Systems Manager Session Manager</a>. With Session Manager you can interact with your workstation directly from the management console, without the need to install any software on your own devices.
 
 This lab contains the following tasks:
 
@@ -14,10 +14,13 @@ This lab requires the following prerequisites:
 
 ## 1. Connect to your workstation instance
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager: Session Manager service console</a>. Choose the **Preferences** tab, then click **Edit**.
+Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager: Session Manager service console</a>. Click **Configure Preferences**.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+
+!!! warning "Console Differences"
+    The introduction screen with the **Configure Preferences** and **Start Session** buttons only appears when you start using Session Manager for the first time in a new account. Once you have started using this service the console will display the session listing view instead, and the preferences page is accessible by clicking on the **Preferences** tab. From there, click the **Edit** button if you wish to change settings.
 
 <span class="image">![Session Manager](1-session-manager.png?raw=true)</span>
 
@@ -32,31 +35,25 @@ Next, navigate to the **Sessions** tab, and click the **Start session** button.
 
 <span class="image">![Start Session](1-start-session.png?raw=true)</span>
 
-Please select the EC2 instance to establish a session with. The workstation is named `labstack-bastion-host`, select it and click **Start session**.
+Please select an EC2 instance to establish a session with. The workstation is named `labstack-bastion-host`, select it and click **Start session**.
 
 <span class="image">![Conenct Instance](1-connect-session.png?raw=true)</span>
 
-If you see a black command like terminal screen and a prompt, you are now connected to the EC2 based workstation. With Session Manager it is not necessary to allow SSH access to the EC2 instance from a network level, reducing the attack surface of that EC2 instance.
-
-**If you are planning to create an Aurora DB cluster manually**, as opposed to hving it provisioned automatically when the environment was deployed, please execute the following commands to ensure you have a consistent experience for subsequent labs. These commands will save the database username and password, you have set, or plan to use, in environment variables. When the cluster is provisioned automatically by CloudFormation this is done automatically for you.
-
-```
-bash
-cd ~
-export DBUSER="masteruser"
-export DBPASS="<type your password>"
-echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
-echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
-```
-
-**If you have not created the DB cluster manually**, execute the following commands to ensure a consistent experience.
+If you see a black command like terminal screen and a prompt, you are now connected to the workstation. Type the following commands to ensure a consistent experience, and that the connection is successful:
 
 ```
 bash
 cd ~
 ```
-
 
 ## 2. Verify the lab environment
 
-::TODO::
+Let's make sure your workstation has been configured properly. Type the following command in the Session Manager command line:
+
+```
+tail -n 1 /debug.log
+```
+
+You should see the output: `* bootstrap complete, rebooting`, if that is not the output you see, please wait a few more minutes and retry.
+
+Once you have verified the environment is configured correctly, you can proceed to the next lab.
