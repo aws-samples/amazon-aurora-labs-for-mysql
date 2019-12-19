@@ -1,18 +1,18 @@
-# Creating a Serverless Aurora Cluster
+# Create an Aurora Serverless DB Cluster
 
 This lab will walk you through the steps of creating an Amazon Aurora Serverless database cluster manually, and configuring the scaling parameters of the cluster.
 
 This lab contains the following tasks:
 
-1. Creating the serverless DB cluster
-2. Creating a secret to store the credentials
+1. Create a serverless DB cluster
+2. Create a secret to store the credentials
 
 This lab requires the following lab modules to be completed first:
 
-* [Prerequisites](/modules/prerequisites/) (using `lab-no-cluster.yml` template is sufficient)
+* [Deploy Environment](/prereqs/environment/) (using the `lab-no-cluster.yml` template is sufficient)
 
 
-## 1. Creating the serverless DB cluster
+## 1. Create a serverless DB cluster
 
 Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
 
@@ -20,9 +20,6 @@ Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-we
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
 
 Click **Create database** to start the configuration process
-
-!!! note
-    The RDS console database creation workflow has been simplified recently. Depending on your previous usage of the RDS console UI, you may see the old workflow or the new one, you may also be presented with a prompt to toggle between them. In this lab we are using the new workflow for reference, although the steps will work similarly in the old console workflow as well, if you are more familiar with it.
 
 <span class="image">![Create Database](1-create-database.png?raw=true)</span>
 
@@ -48,18 +45,19 @@ Additionally, please check the box **Data API**, to enable integration with the 
 
 <span class="image">![Capacity and Connectivity](1-serverless-capacity.png?raw=true)</span>
 
-Next, expand the **Advanced configuration** section. Choose a `7 days` **Backup retention period**. **De-select** the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
+Next, expand the **Advanced configuration** section. Choose a `1 day` **Backup retention period**. **De-select** the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
 
 <span class="image">![Advanced configuration](1-serverless-advconfig.png?raw=true)</span>
 
-Before continuing, let's summarize the configuration options selected. You will create a database cluster with the following characteristics:
+??? tip "What do these selections mean?"
+    You will create a database cluster with the following characteristics:
 
-* Aurora MySQL 5.6 compatible (latest stable engine version)
-* Serverless db cluster scaling between 1 and 16 capacity units, and pausing compute capacity after 5 minutes of inactivity
-* Deployed in the VPC and using the network configuration of the lab environment
-* Integrated with the RDS Data API
-* Automatically backed up continuously, retaining backups for 7 days
-* Using data at rest encryption
+    * Aurora MySQL 5.6 compatible (latest engine version)
+    * Serverless db cluster scaling between 1 and 16 capacity units, and pausing compute capacity after 5 minutes of inactivity
+    * Deployed in the VPC and using the network configuration of the lab environment
+    * Integrated with the RDS Data API
+    * Automatically backed up continuously, retaining backups for 7 days
+    * Using data at rest encryption
 
 Click **Create database** to provision the DB cluster.
 
@@ -71,7 +69,8 @@ In the details view of the cluster, click on the **Configuration** tab. Note the
 
 <span class="image">![CLuster ARN](1-serverless-arn.png?raw=true)</span>
 
-## 2. Creating a secret to store the credentials
+
+## 2. Create a secret to store the credentials
 
 Open the <a href="https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2" target="_blank">AWS Secrets Manager service console</a>.
 
