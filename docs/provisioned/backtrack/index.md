@@ -71,7 +71,7 @@ sysbench oltp_write_only \
 
 <span class="image">![Sysbench Prepare](1-sysbench-prepare.png?raw=true)</span>
 
-Reconnect to the DB cluster, and run the checksum table operation, the checksum value should be different than the source cluster value calculated in the [Clone a DB Cluster](/provisioned/clone/#2-verifying-that-the-data-set-is-identical) lab:
+Reconnect to the DB cluster, and run the checksum table operation, the checksum value should be different than the source cluster value calculated in the [Clone a DB Cluster](/provisioned/clone/#2-verify-that-the-data-set-is-identical) lab:
 
 ```
 mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab

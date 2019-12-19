@@ -1,27 +1,27 @@
-# Using Performance Insights
+# Use Performance Insights
 
 This lab will demonstrate the use of <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html" target="_blank">Amazon RDS Performance Insights</a>. Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance.
 
 This lab contains the following tasks:
 
-1. Generating load on your DB cluster
-2. Understanding the Performance Insights interface
-3. Examining the performance of your DB instance
+1. Generate load on your DB cluster
+2. Understand the Performance Insights interface
+3. Examine the performance of your DB instance
 
-This lab requires the following lab modules to be completed first:
+This lab requires the following prerequisites:
 
-* [Prerequisites](/modules/prerequisites/)
-* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
-* [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity section only)
+* [Deploy Environment](/prereqs/environment/)
+* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 
 
-## 1. Generating load on your DB cluster
+## 1. Generate load on your DB cluster
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-On the Session Manager workstation command line [see the Connecting, Loading Data and Auto Scaling lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), enter one of the following commands.
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, enter one of the following commands, replacing the placeholders appropriately.
 
-If you have completed the [Creating a New Aurora Cluster](/modules/create) lab, and created the Aurora DB cluster manually execute this command:
+If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute this command:
 
 ```
 aws ssm send-command \
@@ -33,7 +33,7 @@ dbUser=$DBUSER,\
 dbPassword="$DBPASS"
 ```
 
-If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Creating a New Aurora Cluster** lab, you can run this simplified command:
+If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run this simplified command:
 
 ```
 aws ssm send-command \
@@ -41,19 +41,18 @@ aws ssm send-command \
 --instance-ids [bastionInstance]
 ```
 
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
---- | --- | --- | --- | ---
---document-name | [loadTestRunDoc] | See CloudFormation stack output | See CloudFormation stack output | The name of the command document to run on your behalf.
---instance-ids | [bastionInstance] | See CloudFormation stack output | See CloudFormation stack output | The EC2 instance to execute this command on.
---parameters | clusterEndpoint=[clusterEndpoint],dbUser=$DBUSER,dbPassword="$DBPASS" | N/A | Substitute the DB cluster endpoint with the values configured manually | Additional command parameters.
+??? tip "What do all these parameters mean?"
+    Parameter | Description
+    --- | ---
+    --document-name | The name of the command document to run on your behalf.
+    --instance-ids | The EC2 instance to execute this command on.
+    --parameters | Additional command parameters.
 
 The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
 <span class="image">![SSM Command](1-ssm-command.png?raw=true)</span>
 
-## 2. Understanding the Performance Insights interface
+## 2. Understand the Performance Insights interface
 
 While the command is running, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a> in a new tab, if not already open.
 
@@ -84,7 +83,7 @@ Section | Filters | Description
 Granular Session Activity | Sort by **Waits**, **SQL** (default), **Users** and **Hosts** | Drill down capability that allows you to get detailed performance data down to the individual commands.
 
 
-## 3. Examining the performance of your DB instance
+## 3. Examine the performance of your DB instance
 
 After running the load generator workload above, you will see a performance profile similar to the example below in the Performance Insights dashboard. The load generator command will first create an initial data set using `sysbench prepare`. And then will run an OLTP workload for the duration of 5 minutes, consisting of concurrent transactional reads and writes using 4 parallel threads.
 
