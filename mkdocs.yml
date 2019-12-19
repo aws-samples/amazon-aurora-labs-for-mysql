@@ -69,7 +69,7 @@ nav:
     - Test Fault Tolerance: 'provisioned/failover/index.md'
   - Serverless:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
-    - Use Aurora Serverless with AWS Lambda functions: 'serverless/dataapi/index.md'
+    - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Global Database:
     - Create an Aurora Global Database: 'global/create/index.md'
   - Related:

@@ -1,19 +1,20 @@
-# Using Aurora Serverless with Lambda Functions
+# Use Aurora Serverless with AWS Lambda Functions
 
 This lab will show you how to connect to and interact with Amazon Aurora Serverless database clusters using AWS Lambda functions and the RDS Data API.
 
 This lab contains the following tasks:
 
-1. Creating a Lambda execution role
-2. Creating a Lambda function
-3. Connecting to the database using the RDS Data API
+1. Create a Lambda execution role
+2. Create a Lambda function
+3. Connect to the database using the RDS Data API
 
 This lab requires the following lab modules to be completed first:
 
-* [Prerequisites](/modules/prerequisites/) (using `lab-no-cluster.yml` template is sufficient)
-* [Creating a Serverless Aurora Cluster](/modules/create-serverless/)
+* [Deploy Environment](/prereqs/environment/) (using the `lab-no-cluster.yml` template is sufficient)
+* [Create an Aurora Serverless DB Cluster](/serverless/create/)
 
-## 1. Creating a Lambda execution role
+
+## 1. Create a Lambda execution role
 
 Before you create an AWS Lambda function, you need to configure an IAM execution role. This will contain the permissions you are granting the function to interact with AWS resources via the APIs. Open the <a href="https://console.aws.amazon.com/iam/home?region=us-west-2#/roles" target="_blank">Identity and Access Management (IAM) service console</a>. Choose **Roles** from the left hand side menu, if it isn't already selected, and click **Create role**.
 
@@ -84,7 +85,8 @@ Skip the **Add tags** section, and click **Next: Review**. Then assign the role 
 
 <span class="image">![IAM Review Role](1-iam-role-review.png?raw=true)</span>
 
-## 2. Creating a Lambda function
+
+## 2. Create a Lambda function
 
 Open the <a href="https://us-west-2.console.aws.amazon.com/lambda/home?region=us-west-2#/functions" target="_blank">AWS Lambda service console</a>.
 
@@ -103,8 +105,8 @@ Make sure the **Configuration** tab is selected. In the **Function code** sectio
 
 Placeholder | Description | Where to find it
 --- | --- | ---
-==[ClusterARN]== | The ARN of the serverless database cluster resource. RDS Data API will establish connectivity with this database on your behalf. | See the previous lab: [Creating a Serverless Aurora Cluster](/modules/create-serverless/) at step *1. Creating the serverless DB cluster*.
-==[SecretARN]== | The ARN of the secret used to store the database credentials. RDS Data API will access this secret and connect to the database using those credentials. | See the previous lab: [Creating a Serverless Aurora Cluster](/modules/create-serverless/) at step *2. Creating a secret to store the credentials*.
+==[ClusterARN]== | The ARN of the serverless database cluster resource. RDS Data API will establish connectivity with this database on your behalf. | See the previous lab: [Create an Aurora Serverless DB Cluster](/serverless/create/) at step *1. Create a serverless DB cluster*.
+==[SecretARN]== | The ARN of the secret used to store the database credentials. RDS Data API will access this secret and connect to the database using those credentials. | See the previous lab: [Create an Aurora Serverless DB Cluster](/serverless/create/) at step *2. Create a secret to store the credentials*.
 
 ```
 // require the AWS SDK
@@ -166,9 +168,9 @@ Once you have pasted and replaced the placeholders in the code, scroll down to t
 <span class="image">![Save Function](2-lambda-save.png?raw=true)</span>
 
 
-## 3. Connecting to the database using the RDS Data API
+## 3. Connect to the database using the RDS Data API
 
-Now you are ready to connect to the database from a Lambda function, by using the RDS Data API. The function doesn't bundle a database driver, it simply uses a RESTful AWS API call to send a SQL Query, `SHOW TABLES;` in this example, retrieves the result as a JSON data structure. This is accomplished in a minimal number of lines of code.
+Now you are ready to connect to the database from a Lambda function, by using the RDS Data API. The function doesn't bundle a database driver, it simply uses a RESTful AWS API call to send the SQL query: `SHOW TABLES;` and retrieves the result as a JSON data structure. This is accomplished in a minimal number of lines of code.
 
 Execute the function by clicking the **Test** button.
 
