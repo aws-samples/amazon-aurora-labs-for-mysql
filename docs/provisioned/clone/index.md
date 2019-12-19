@@ -1,27 +1,28 @@
-# Cloning Clusters
+# Clone a DB Cluster
 
 This lab will walk you through the process of <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Clone.html" target="_blank">cloning a DB cluster</a>. Cloning creates a separate, independent DB cluster, with a consistent copy of your data set as of the time you cloned it. Database cloning uses a copy-on-write protocol, in which data is copied at the time that data changes, either on the source databases or the clone databases. The two clusters are isolated, and there is no performance impact on the source DB cluster from database operations on the clone, or the other way around.
 
 This lab contains the following tasks:
 
-1. Creating a clone DB cluster
-2. Verifying that the data set is identical
-3. Changing data on the clone
-4. Verifying that the data diverges
+1. Create a clone DB cluster
+2. Verify that the data set is identical
+3. Change data on the clone
+4. Verify that the data diverges
 
-This lab requires the following lab modules to be completed first:
+This lab requires the following prerequisites:
 
-* [Prerequisites](/modules/prerequisites/)
-* [Creating a New Aurora Cluster](/modules/create/) (conditional, if creating a cluster manually)
-* [Connecting, Loading Data and Auto Scaling](/modules/connect/) (connectivity and data loading sections only)
+* [Deploy Environment](/prereqs/environment/)
+* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
+* [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
 
 
-## 1. Creating a clone DB cluster
+## 1. Create a clone DB cluster
 
 !!! warning "Workload State Check"
     Before cloning the DB cluster ensure you have stopped any load generating tasks from the previous lab, and exited out of the MySQL client command line using `quit;`.
 
-On the Session Manager workstation command line [see the previous lab](/modules/connect/#1-connecting-to-your-workstation-ec2-instance), enter:
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack:
 
 ```
 aws rds restore-db-cluster-to-point-in-time \
@@ -34,8 +35,6 @@ aws rds restore-db-cluster-to-point-in-time \
 --backtrack-window 86400
 ```
 
-You can find the parameter values for the ==[placeholders]== above in the Outputs section of the CloudFormation stack you deployed when [completing the prerequisites](/modules/prerequisites/#2-creating-a-lab-environment-using-aws-cloudformation). If you have opted to create the DB cluster manually, and have specified a different DB cluster identifier, please use that value.
-
 Next, check the status of the creation of your clone, by using the following command. The cloning process can take several minutes to complete. See the example output below.
 
 ```
@@ -44,11 +43,11 @@ aws rds describe-db-clusters \
 | jq -r '.DBClusters[0].Status, .DBClusters[0].Endpoint'
 ```
 
-Take note of both the ==status== and the ==endpoint== in the command output. Once the **status** becomes **available**, you can add a DB instance to the cluster and once the DB instance is added, you will want to connect to the cluster via the **endpoint** value, which represents the cluster endpoint.
+Take note of both the ==status== and the ==endpoint== in the command output. Repeat the command several times, if needed. Once the **status** becomes **available**, you can add a DB instance to the cluster and once the DB instance is added, you will want to connect to the cluster via the **endpoint** value, which represents the cluster endpoint.
 
 <span class="image">![DB Cluster Status](1-describe-cluster.png?raw=true)</span>
 
-!!! note
+??? tip "Cost optimization with DB cluster clones"
     Creating a DB cluster clone, even without adding DB instances, can be a useful and cost effective safety net measure, if you are about to make significant changes to your source cluster (such as an upgrade or risky DDL operation). The clone then becomes a quick rollback target, in case you encounter issues on the source as a result of the operation. You simply add a DB instance and point your application to the clone in such an event. We do not recommend using clones as long term point in time snapshot tools, as you are limited to 15 clones derived directly or indirectly from the same source.
 
 
@@ -74,7 +73,8 @@ aws rds describe-db-instances \
 
 Repeat the command to monitor the creation status. Once the **status** changes from **creating** to **available**, you have a functioning clone. Creating a node in a cluster also takes several minutes.
 
-## 2. Verifying that the data set is identical
+
+## 2. Verify that the data set is identical
 
 Verify that the data set is identical on both the source and cloned DB clusters, before we make any changes to the data. You can verify by performing a checksum operation on the **sbtest1** table.
 
@@ -83,15 +83,6 @@ Connect to the cloned database using the following command (use the endpoint you
 ```
 mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 ```
-
-**Command parameter values at a glance:**
-
-Parameter | Parameter Placeholder | Value<br/>DB cluster provisioned by CloudFormation | Value<br/>DB cluster configured manually | Description
---- | --- | --- | --- | ---
--h | [cluster endpoint of clone] | See above | See above | The cluster endpoint of the Aurora cloned DB cluster.
--u | `$DBUSER` | Set automatically, see Secrets Manager | `masteruser` or manually set | The user name of the MySQL user to authenticate as.
--p | `$DBPASS` | Set automatically, see Secrets Manager | Manually set | The password of the MySQL user to authenticate as.
-| [database] | `mylab` | `mylab` or manually set | The schema (database) to use by default.
 
 !!! note
     The database credentials you use to connect are the same as for the source DB cluster, as this is an exact clone of the source.
@@ -122,7 +113,8 @@ checksum table sbtest1;
 
 Please take note of the value for your specific source cluster. The checksum value should be the same as for the cloned cluster above.
 
-## 3. Changing data on the clone
+
+## 3. Change data on the clone
 
 Disconnect from the original cluster (if you are still connected to it) and connect to the clone cluster with the following sequence:
 
@@ -144,7 +136,8 @@ The output of your commands should look similar to the example below. Notice tha
 
 <span class="image">![Checksum on clone changed](3-checksum-clone-changed.png?raw=true)</span>
 
-## 4. Verifying that the data diverges
+
+## 4. Verify that the data diverges
 
 Verify that the checksum value did not change on the source cluster as a result of the delete operation on the clone. Disconnect from the clone (if you are still connected) and connect to the source cluster with the following sequence:
 
@@ -161,3 +154,9 @@ checksum table sbtest1;
 ```
 
 Please take note of the value for your specific source cluster. The checksum value should be the same as calculated for the source cluster above in section 2.
+
+Disconnect from the DB cluster, using:
+
+```
+quit;
+```

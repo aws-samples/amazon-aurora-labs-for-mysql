@@ -18,7 +18,6 @@ This lab contains the following tasks:
 5. Use RDS Proxy to minimize failover disruptions
 6. More testing suggestions
 
-
 This lab requires the following prerequisites:
 
 * [Deploy Environment](/prereqs/environment/)

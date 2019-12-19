@@ -8,7 +8,6 @@ This lab contains the following tasks:
 2. Load an initial data set from S3
 3. Run a read-only workload
 
-
 This lab requires the following prerequisites:
 
 * [Deploy Environment](/prereqs/environment/)
