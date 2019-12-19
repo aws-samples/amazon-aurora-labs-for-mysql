@@ -1,8 +1,10 @@
 """
 Amazon Aurora Labs for MySQL
-Simple Aurora DB cluster failover monitoring script, leveraging only the DNS endpoints. This scripts
+Aware Aurora DB cluster failover monitoring script, leveraging both the DNS endpoints and discovery of
+cluster instances by interrogating the information_schema.replica_host_status table. This scripts
 connects to the database using the cluster endpoint, approx. once a second and checks the role of
-the database engine. If it cannot connect or it connects to a reader instead, it counts the elapsed time.
+the database engine. If it cannot connect or it connects to a reader instead, it attempts to discover
+the writer and connect to it directly. It also counts the elapsed time for as long as it cannot connect.
 
 Changelog:
 2019-10-28 - Initial release
