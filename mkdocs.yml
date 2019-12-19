@@ -70,8 +70,8 @@ nav:
   - Serverless:
     - Create an Aurora Serverless DB cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda functions: 'serverless/dataapi/index.md'
-#  - Global Database:
-#    - Create an Aurora Global Database: 'global/create/index.md'
+  - Global Database:
+    - Create an Aurora Global Database: 'global/create/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
