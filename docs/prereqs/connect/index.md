@@ -5,7 +5,7 @@ To interact with the Aurora database cluster, you will use an <a href="https://a
 This lab contains the following tasks:
 
 1. Connect to your workstation instance
-2. Verify the lab environment
+2. Verify lab environment
 
 This lab requires the following prerequisites:
 
@@ -46,7 +46,7 @@ bash
 cd ~
 ```
 
-## 2. Verify the lab environment
+## 2. Verify lab environment
 
 Let's make sure your workstation has been configured properly. Type the following command in the Session Manager command line:
 
