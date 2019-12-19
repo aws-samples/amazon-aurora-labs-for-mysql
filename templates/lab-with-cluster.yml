@@ -18,6 +18,7 @@
 ## 2019-11-27 - Switched DB cluster to Aurora MySQL 5.7 engine, and version 2.07
 ## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
 ## 2019-12-12 - Added SNS permissions to bastion policy
+## 2019-12-18 - Changed backup retention to 1-day
 ##
 ## Dependencies:
 ## none
@@ -613,7 +614,7 @@ Resources:
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref cpgClusterParams
       DBClusterIdentifier: !Sub ${AWS::StackName}-cluster
-      BackupRetentionPeriod: 7
+      BackupRetentionPeriod: 1
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
       DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
