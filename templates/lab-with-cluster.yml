@@ -13,6 +13,12 @@
 ## 2019-09-19 - Fixed resource names to enable EE
 ## 2019-09-23 - Removed custom Lambda resource, using native role assignment
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
+## 2019-10-28 - Updated the Aurora DB Engine version used
+## 2019-10-28 - Added DNS failover script to bootstrap
+## 2019-11-27 - Switched DB cluster to Aurora MySQL 5.7 engine, and version 2.07
+## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
+## 2019-12-12 - Added SNS permissions to bastion policy
+## 2019-12-18 - Changed backup retention to 1-day
 ##
 ## Dependencies:
 ## none
@@ -134,6 +140,9 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
+      dbVersion: 5.7.mysql_aurora.2.07.0
+      dbEngine: aurora-mysql
+      dbFamily: aurora-mysql5.7
     scaling:
       maxCapacity: 2
       minCapacity: 1
@@ -159,7 +168,7 @@ Resources:
       CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
       Tags:
         - Key: Name
-          Value: labstack-vpc
+          Value: !Sub ${AWS::StackName}-vpc
 
 ## Create an IGW & attach it to the VPC
   vpcIgw:
@@ -167,7 +176,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: labstack-igw
+          Value: !Sub ${AWS::StackName}-igw
   attachIgwVpc:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -184,7 +193,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: labstack-pub-sub-1
+          Value: !Sub ${AWS::StackName}-pub-sub-1
   sub2Public:
     Type: AWS::EC2::Subnet
     Properties:
@@ -194,7 +203,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: labstack-pub-sub-2
+          Value: !Sub ${AWS::StackName}-pub-sub-2
   sub3Public:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -205,7 +214,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: labstack-pub-sub-3
+          Value: !Sub ${AWS::StackName}-pub-sub-3
 
 ## Associate the public subnets with a public route table
   rtbPublic:
@@ -214,7 +223,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: labstack-public-rtb
+          Value: !Sub ${AWS::StackName}-public-rtb
   rteToIgw:
     Type: AWS::EC2::Route
     DependsOn: attachIgwVpc
@@ -249,7 +258,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: labstack-prv-sub-1
+          Value: !Sub ${AWS::StackName}-prv-sub-1
   sub2Private:
     Type: AWS::EC2::Subnet
     Properties:
@@ -259,7 +268,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: labstack-prv-sub-2
+          Value: !Sub ${AWS::StackName}-prv-sub-2
   sub3Private:
     Type: AWS::EC2::Subnet
     Condition: cond3AZs
@@ -270,7 +279,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: labstack-prv-sub-3
+          Value: !Sub ${AWS::StackName}-prv-sub-3
 
 ## Create a NAT Gateway & EIP
   natEip:
@@ -291,7 +300,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: labstack-nat-rtb
+          Value: !Sub ${AWS::StackName}-nat-rtb
   rteToNgw:
     Type: AWS::EC2::Route
     Properties:
@@ -336,45 +345,51 @@ Resources:
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: labstack-db-subnet-group
+      DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !If [ cond3AZs, !Ref sub3Private, !Ref "AWS::NoValue" ] ]
       Tags:
         - Key: Name
-          Value: labstack-db-subnet-group
+          Value: !Sub ${AWS::StackName}-db-subnet-group
 
 ## Create bastion security group
   bastionSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: labstack-bastion-host
+      GroupName: !Sub ${AWS::StackName}-bastion-host
       GroupDescription: Aurora Lab SSH Security Group
       Tags:
         - Key: Name
-          Value: labstack-bastion-host
+          Value: !Sub ${AWS::StackName}-bastion-host
 
 ## Create DB security group
   dbSecGroupCluster:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: labstack-mysql-internal
+      GroupName: !Sub ${AWS::StackName}-mysql-internal
       GroupDescription: Aurora Lab Database Firewall
       Tags:
         - Key: Name
-          Value: labstack-mysql-internal
+          Value: !Sub ${AWS::StackName}-mysql-internal
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
           SourceSecurityGroupId: !Ref bastionSecGroup
           Description: Allows MySQL access from bastion host
+  ruleDbSecGroupClusterIngressSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref dbSecGroupCluster
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref dbSecGroupCluster
 
 ## Create enhanced monitoring role
   roleEnhancedMonitoring:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub labstack-monitor-${AWS::Region}
+      RoleName: !Sub ${AWS::StackName}-monitor-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -391,7 +406,7 @@ Resources:
   roleServiceIntegration:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub labstack-integrate-${AWS::Region}
+      RoleName: !Sub ${AWS::StackName}-integrate-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -423,7 +438,7 @@ Resources:
   roleBastionHost:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub labstack-bastion-${AWS::Region}
+      RoleName: !Sub ${AWS::StackName}-bastion-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -447,6 +462,7 @@ Resources:
                   - s3:*
                   - ssm:*
                   - kms:*
+                  - sns:*
                   - secretsmanager:*
                   - rds-db:connect
                 Resource: "*"
@@ -466,7 +482,7 @@ Resources:
       SecurityGroupIds: [ !Ref bastionSecGroup ]
       Tags:
         - Key: Name
-          Value: labstack-bastion-host
+          Value: !Sub ${AWS::StackName}-bastion-host
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -523,7 +539,9 @@ Resources:
           pip3 install awscli
           cd /home/ubuntu
           curl -O https://[[website]]/scripts/loadtest.py
-          chown -R ubuntu:ubuntu /home/ubuntu/loadtest.py
+          curl -O https://[[website]]/scripts/simple-failover.py
+          curl -O https://[[website]]/scripts/aware-failover.py
+          chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 
           # configure AWS CLI
@@ -550,8 +568,8 @@ Resources:
   pgNodeParams:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: labstack-node-params
-      Family: aurora5.6
+      Description: !Sub ${AWS::StackName}-node-params
+      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
         slow_query_log: "1"
@@ -559,25 +577,25 @@ Resources:
         log_output: FILE
       Tags:
         - Key: Name
-          Value: labstack-node-params
+          Value: !Sub ${AWS::StackName}-node-params
 
 ## Create cluster parameter group
   cpgClusterParams:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: labstack-cluster-params
-      Family: aurora5.6
+      Description: !Sub ${AWS::StackName}-cluster-params
+      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: labstack-cluster-params
+          Value: !Sub ${AWS::StackName}-cluster-params
 
 ## Create a random generated password and store it as a secret
   secretClusterMasterUser:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Description: "Master user credentials for labstack-cluster"
+      Description: !Sub "Master user credentials for ${AWS::StackName}-cluster"
       GenerateSecretString:
         SecretStringTemplate: '{"username": "masteruser"}'
         GenerateStringKey: 'password'
@@ -585,17 +603,18 @@ Resources:
         ExcludeCharacters: '"@/\$`&'
       Tags:
         - Key: Name
-          Value: labstack-secret
+          Value: !Sub ${AWS::StackName}-secret
 
 ## Create Aurora cluster
   dbCluster:
     Type: AWS::RDS::DBCluster
     Properties:
-      Engine: aurora
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref cpgClusterParams
-      DBClusterIdentifier: labstack-cluster
-      BackupRetentionPeriod: 7
+      DBClusterIdentifier: !Sub ${AWS::StackName}-cluster
+      BackupRetentionPeriod: 1
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
       DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
@@ -608,18 +627,18 @@ Resources:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: labstack-cluster
+          Value: !Sub ${AWS::StackName}-cluster
 
 ## Deploy the first cluster node (always the writer)
   dbNodeWriter:
     Type: AWS::RDS::DBInstance
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: labstack-node-01
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-node-01
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
-      Engine: aurora
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -627,7 +646,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: labstack-node-01
+          Value: !Sub ${AWS::StackName}-node-01
 
 ## Deploy a reader node
   dbNodeSecondary:
@@ -635,11 +654,11 @@ Resources:
     DependsOn: [ dbNodeWriter ]
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: labstack-node-02
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-node-02
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
-      Engine: aurora
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -647,14 +666,14 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: labstack-node-02
+          Value: !Sub ${AWS::StackName}-node-02
 
 ## Role to overcome current limitations in CFN ScalableTarget implemetation
 ## This role is *NOT* actively used by any resource and service, but must be present
   roleScalableTarget:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub labstack-aas-target-${AWS::Region}
+      RoleName: !Sub ${AWS::StackName}-aas-target-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -684,7 +703,7 @@ Resources:
   dbScalingPolicy:
     Type : AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
-      PolicyName: labstack-autoscale-readers
+      PolicyName: !Sub ${AWS::StackName}-autoscale-readers
       PolicyType: TargetTrackingScaling
       ScalingTargetId: !Ref dbScalableTarget
       TargetTrackingScalingPolicyConfiguration:
@@ -701,7 +720,7 @@ Resources:
       DocumentType: Command
       Tags:
         - Key: Name
-          Value: labstack-sysbench-test
+          Value: !Sub ${AWS::StackName}-sysbench-test
       Content:
         schemaVersion: '2.2'
         description: SysBench Percona TPCC-LIKE Preparation

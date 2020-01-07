@@ -1,6 +1,7 @@
 """
 Amazon Aurora Labs for MySQL
-Read load generator using multiple threads
+Read load generator using multiple threads. The script will randomize a set of query patterns,
+including point query, range query, aggregation and expensive stored procedure.
 
 Changelog:
 2019-06-14 - Initial release
