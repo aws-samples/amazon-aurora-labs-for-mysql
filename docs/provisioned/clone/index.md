@@ -81,7 +81,7 @@ Verify that the data set is identical on both the source and cloned DB clusters,
 Connect to the cloned database using the following command (use the endpoint you retrieved from the `describe-db-cluster` command above):
 
 ```
-mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 !!! note
@@ -102,7 +102,7 @@ Now disconnect from the clone and connect to the source cluster with the followi
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Execute the same checksum command that you ran on the clone:
@@ -121,7 +121,7 @@ Disconnect from the original cluster (if you are still connected to it) and conn
 ```
 quit;
 
-mysql -h [cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Delete a row of data and execute the checksum command again:
@@ -144,7 +144,7 @@ Verify that the checksum value did not change on the source cluster as a result 
 ```
 quit;
 
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Execute the same checksum command that you ran on the clone:

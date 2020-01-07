@@ -23,7 +23,7 @@ If you are not already connected to the Session Manager workstation command line
 
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 ??? tip "What do all these parameters mean?"
@@ -96,7 +96,7 @@ Once the data load completes successfully, you can run a read-only workload to g
 Run the load generation script from the Session Manager workstation command line, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
 
 ```
-python3 loadtest.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -d mylab
+python3 loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 
 Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.

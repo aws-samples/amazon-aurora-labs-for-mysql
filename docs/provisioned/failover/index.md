@@ -106,7 +106,7 @@ You will need to open an additional command line session to your Session Manager
 In one of the two command line sessions, start the monitoring script using the following command:
 
 ```
-python3 simple-failover.py -e [clusterEndpoint] -u $DBUSER -p "$DBPASS"
+python3 simple-failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
 You can quit the monitoring script at any time by pressing `Ctrl+C`.
@@ -167,7 +167,7 @@ In this test you will simulate a crash of the database engine service on the DB 
 Connect to the cluster endpoint using a MySQL client in the command line session that does not run the monitoring script:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Now, issue the following fault injection command:
@@ -212,7 +212,7 @@ Assuming you still have the two command line sessions open and active, open a 3r
 In the new (third) command line session, start the cluster-aware monitoring script using the following command:
 
 ```
-python3 aware-failover.py -e [clusterEndpoint] -u $DBUSER -p "$DBPASS"
+python3 aware-failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
 You can quit the monitoring script at any time by pressing `Ctrl+C`.
@@ -291,7 +291,7 @@ Next, you will need two command line sessions open and active (if you still have
 In one of the two command line sessions, start the monitoring script using the following command:
 
 ```
-python3 simple-failover.py -e [proxy endpoint from above] -u $DBUSER -p "$DBPASS"
+python3 simple-failover.py -e[proxy endpoint from above] -u$DBUSER -p"$DBPASS"
 ```
 
 You can quit the monitoring script at any time by pressing `Ctrl+C`.

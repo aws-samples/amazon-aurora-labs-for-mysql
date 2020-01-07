@@ -21,7 +21,7 @@ This lab requires the following prerequisites:
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Next, drop the `sbtest1` table:
@@ -74,7 +74,7 @@ sysbench oltp_write_only \
 Reconnect to the DB cluster, and run the checksum table operation, the checksum value should be different than the source cluster value calculated in the [Clone a DB Cluster](/provisioned/clone/#2-verify-that-the-data-set-is-identical) lab:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 checksum table sbtest1;
 
@@ -109,7 +109,7 @@ aws rds describe-db-clusters \
 Connect back to the database. The `sbtest1` table should be missing from the database.
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 show tables;
 
@@ -137,7 +137,7 @@ aws rds describe-db-clusters \
 Connect back to the database again. The `sbtest1` table should now be available in the database again, but contain the original data set.
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 show tables;
 
