@@ -163,7 +163,7 @@ Resources:
   funcIndexDocVersion:
     Type: AWS::Lambda::Version
     Properties:
-      Description: 'Injects index.html into any URI equest for subfolders in the path'
+      Description: 'Injects index.html into any URI request for subfolders in the path'
       FunctionName: !Ref funcIndexDoc
 
   ## CloudFront distribution
