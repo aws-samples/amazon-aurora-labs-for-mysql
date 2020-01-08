@@ -34,10 +34,6 @@ grunt.initConfig({
     clearTemp: {
       cmd: 'rm -rf ./temp  && mkdir ./temp'
     },
-    buildIndexDocFunction: {
-      cwd: './website/lambda/indexdoc-function/src',
-      cmd: 'npm update && grunt lambda_package'
-    },
     pkgInfra: {
       cmd: 'aws cloudformation package --template-file ./website/template/site.yml --s3-bucket ' + bucket + ' --output-template-file ./build/infra/site.yml.packaged --region ' + region
     },
@@ -69,8 +65,7 @@ grunt.initConfig({
 })
 
 // register tasks
-grunt.registerTask('build-functions', [ 'exec:buildIndexDocFunction' ])
-grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
-grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'build-functions', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
 grunt.registerTask('run-taskcat', [ 'exec:clearBuild', 'exec:buildTemplates', 'exec:prepTaskCat', 'exec:runTaskCat' ])
 grunt.registerTask('build-templates', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:buildTemplates' ])
