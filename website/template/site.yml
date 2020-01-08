@@ -5,6 +5,7 @@
 ## Changelog:
 ## 2019-07-03 - Initial release
 ## 2019-07-30 - Production website configuration (aliases, certificate, conditions)
+## 2020-01-07 - Replaced node.js indexdoc function with python3.7, less dependencies
 ##
 ## Dependencies:
 ## none
