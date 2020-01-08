@@ -135,10 +135,21 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Sub '${AWS::StackName}-indexdoc-${AWS::Region}'
-      Runtime: nodejs10.x
-      Handler: function.handler
-      CodeUri: ../lambda/indexdoc-function/dist/indexdoc-function_latest.zip
-      Description: 'Injects index.html into any URI equest for subfolders in the path'
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      InlineCode: |
+        # Lambda function handler
+        def lambda_handler(event, context):
+            # Request is the response, too
+            request = event['Records'][0]['cf']['request']
+
+            # Check if the URI ends with '/', then append 'index.html' to it
+            if request['uri'].endswith('/'):
+                request['uri'] = request['uri'] + 'index.html'
+
+            # Return modified request
+            return request
+      Description: 'Injects index.html into any URI request for subfolders in the path'
       MemorySize: 128
       Timeout: 5
       Role: !GetAtt roleIndexDoc.Arn
