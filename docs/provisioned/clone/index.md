@@ -56,7 +56,7 @@ Add a DB instance to the cluster once the status of the cluster becomes **availa
 ```
 aws rds create-db-instance \
 --db-instance-class db.r5.large \
---engine aurora \
+--engine aurora-mysql \
 --db-cluster-identifier labstack-cluster-clone \
 --db-instance-identifier labstack-cluster-clone-instance
 ```
