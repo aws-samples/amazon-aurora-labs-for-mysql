@@ -19,6 +19,7 @@
 ## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
 ## 2019-12-12 - Added SNS permissions to bastion policy
 ## 2019-12-18 - Changed backup retention to 1-day
+## 2020-01-29 - Updated EC2 AMIs and Aurora version
 ##
 ## Dependencies:
 ## none
@@ -43,85 +44,85 @@ Conditions:
 Mappings:
   RegionalSettings:
     us-east-1:
-      bastionAmi: ami-024582e76075564db
+      bastionAmi: ami-04b9e92b5572fa0d1
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ohio
       azs: "3"
     us-east-2:
-      bastionAmi: ami-090a9429be63ca087
+      bastionAmi: ami-0d5d9d301c853a04a
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
       azs: "3"
     us-west-1:
-      bastionAmi: ami-0c6eca62e6c7dacff
+      bastionAmi: ami-0dd655843c87b6930
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. California
       azs: "2"
     us-west-2:
-      bastionAmi: ami-09c08e9cd8d9c1b93
+      bastionAmi: ami-06d51e91cea0dac8d
       bastionType: m5.large
       nodeType: db.r5.large
       name: Oregon
       azs: "3"
     ca-central-1:
-      bastionAmi: ami-0e76f0489f3cca311
+      bastionAmi: ami-0d0eaed20348a3389
       bastionType: m5.large
       nodeType: db.r5.large
       name: Montreal
       azs: "2"
     eu-central-1:
-      bastionAmi: ami-0fd6d676e2e90dc7b
+      bastionAmi: ami-0cc0a36f626a4fdf5
       bastionType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
       azs: "3"
     eu-west-1:
-      bastionAmi: ami-08f053fa3d25478f4
+      bastionAmi: ami-02df9ea15c1778c9c
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
       azs: "3"
     eu-west-2:
-      bastionAmi: ami-012d95ddd53c98e0e
+      bastionAmi: ami-0be057a22c63962cb
       bastionType: m5.large
       nodeType: db.r5.large
       name: London
       azs: "3"
     eu-west-3:
-      bastionAmi: ami-0001c7938b8e89312
+      bastionAmi: ami-087855b6c8b59a9e4
       bastionType: m5.large
       nodeType: db.r5.large
       name: Paris
       azs: "3"
     ap-southeast-1:
-      bastionAmi: ami-0f8c65cdcc35d0a72
+      bastionAmi: ami-061eb2b23f9f8839c
       bastionType: m5.large
       nodeType: db.r5.large
       name: Singapore
       azs: "3"
     ap-southeast-2:
-      bastionAmi: ami-056280928f86f80a8
+      bastionAmi: ami-00a54827eb7ffcd3c
       bastionType: m5.large
       nodeType: db.r5.large
       name: Sydney
       azs: "3"
     ap-south-1:
-      bastionAmi: ami-03d48fdf7c142da15
+      bastionAmi: ami-0123b531fc646552f
       bastionType: m5.large
       nodeType: db.r5.large
       name: Mumbai
       azs: "3"
     ap-northeast-1:
-      bastionAmi: ami-0193f3ddafc2d8921
+      bastionAmi: ami-0cd744adeca97abb1
       bastionType: m5.large
       nodeType: db.r5.large
       name: Tokyo
       azs: "3"
     ap-northeast-2:
-      bastionAmi: ami-0b0d9551c4775f4e4
+      bastionAmi: ami-00379ec40a3e30f87
       bastionType: m5.large
       nodeType: db.r5.large
       name: Seoul
@@ -140,7 +141,7 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.07.0
+      dbVersion: 5.7.mysql_aurora.2.07.1
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     scaling:
