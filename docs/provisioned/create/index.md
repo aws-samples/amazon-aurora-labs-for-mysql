@@ -182,7 +182,7 @@ echo $DBUSER
 You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpont]== placeholder with the value of the cluster endpoint created in the preceding steps:
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 
 You should see a response containing version number `2.07.0`.
