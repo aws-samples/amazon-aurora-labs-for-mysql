@@ -72,11 +72,11 @@ nav:
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Global Database:
     - Create Infrastructure: 'global/create/index.md'
-    - Create Global Database: 'global/gdb/index.md'
-    - Connect Application: 'global/biapp/index.md'
-    - Monitor Latency: 'global/cw/index.md'
-    - Failover: 'global/failover/index.md'
-    - Failback: 'global/failback/index.md' 
+    - Create Global Database: 'reinvent-gdb/gdb/index.md'
+    - Connect Application: 'reinvent-gdb/biapp/index.md'
+    - Monitor Latency: 'reinvent-gdb/cw/index.md'
+    - Failover: 'reinvent-gdb/failover/index.md'
+    - Failback: 'reinvent-gdb/failback/index.md' 
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'

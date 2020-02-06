@@ -71,12 +71,7 @@ nav:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Global Database:
-    - Create Infrastructure: 'global/create/index.md'
-    - Create Global Database: 'global/gdb/index.md'
-    - Connect Application: 'global/biapp/index.md'
-    - Monitor Latency: 'global/cw/index.md'
-    - Failover: 'global/failover/index.md'
-    - Failback: 'global/failback/index.md' 
+    - Create an Aurora Global Database: 'global/create/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'

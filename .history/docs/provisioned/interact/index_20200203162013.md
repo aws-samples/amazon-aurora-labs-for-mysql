@@ -23,7 +23,7 @@ If you are not already connected to the Session Manager workstation command line
 
 
 ```
-mysql -h [clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 ??? tip "What do all these parameters mean?"
