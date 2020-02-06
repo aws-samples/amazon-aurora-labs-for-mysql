@@ -19,7 +19,6 @@
 ## 2019-11-26 - Split GDB Region 2 Ready Release; removed bastion
 ## 2019-11-29 - Primary Region disabled encryption (else Global DB will fail on adding fresh region)
 ## 2020-02-01 - Aurora 5.7 (2.07) DBcluster, DBclusterparametergroup, DBparametergroup  changes
-## 2020-02-04 - Force Superset Version 0.30.0
 ##
 ## Dependencies:
 ## none
