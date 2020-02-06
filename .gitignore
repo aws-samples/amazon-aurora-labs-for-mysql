@@ -190,4 +190,14 @@ node_modules/
 *.packaged
 temp/
 
+# VisualStudioCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Ignore all local history of files
+.history
+
 # End of https://www.gitignore.io/api/macos,python,windows
