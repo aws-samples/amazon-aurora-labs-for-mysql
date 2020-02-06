@@ -55,6 +55,9 @@ grunt.initConfig({
     copyScripts: {
       cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./scripts s3://$BUCKET/scripts/ --recursive'
     },
+    copySupport: {
+      cmd: 'BUCKET=$(aws cloudformation describe-stacks --stack-name ' + stack  + ' --region ' + region + ' | jq -r \'.Stacks[0].Outputs[] | if .OutputKey == "ContentBucket" then .OutputValue else "" end\' | tr -d "\\n") && aws s3 cp ./support s3://$BUCKET/support/ --recursive'
+    },
     prepTaskCat: {
       cmd: 'rm -rf ./taskcat/templates && mkdir ./taskcat/templates && cp ./build/templates/*.yml ./taskcat/templates/'
     },
@@ -65,7 +68,7 @@ grunt.initConfig({
 })
 
 // register tasks
-grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
-grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts' ])
+grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts', 'exec:copySupport' ])
+grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildSite', 'exec:buildTemplates', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts', 'exec:copySupport' ])
 grunt.registerTask('run-taskcat', [ 'exec:clearBuild', 'exec:buildTemplates', 'exec:prepTaskCat', 'exec:runTaskCat' ])
 grunt.registerTask('build-templates', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:buildTemplates' ])

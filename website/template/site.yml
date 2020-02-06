@@ -233,6 +233,19 @@ Resources:
                 QueryString: false
                 Cookies:
                   Forward: none
+            - AllowedMethods: [ GET, HEAD ]
+              CachedMethods: [ GET, HEAD ]
+              Compress: true
+              MaxTTL: 86400
+              MinTTL: 0
+              DefaultTTL: 3600
+              TargetOriginId: !Sub ${s3Website}-support
+              PathPattern: /support/*
+              ViewerProtocolPolicy: redirect-to-https
+              ForwardedValues:
+                QueryString: false
+                Cookies:
+                  Forward: none
         Origins:
           - Id: !Sub ${s3Website}-site
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
@@ -244,6 +257,10 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
           - Id: !Sub ${s3Website}-scripts
+            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
+          - Id: !Sub ${s3Website}-support
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
