@@ -517,8 +517,10 @@ Resources:
           sysbench --version >> /debug.log
           echo "* installed sysbench package" >> /debug.log
 
-          # install percona tpcc-like test suite
+          # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
           git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
+          cd /home/ubuntu/sysbench-tpcc
+          git checkout 288b7687877a2b52772949f13c507713db182d25
           chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
           echo "* cloned percona/sysbench-tpcc repo" >> /debug.log
 
