@@ -468,6 +468,15 @@ Resources:
                   - sns:*
                   - secretsmanager:*
                   - rds-db:connect
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:ListPolicies
+                  - iam:ListRoles
+                  - iam:PassRole
                 Resource: "*"
   profileBastionHost:
     Type: AWS::IAM::InstanceProfile
@@ -503,6 +512,10 @@ Resources:
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
           echo "* updated and upgraded packages" >> /debug.log
+
+          # install other supporting packages
+          apt-get -y install unzip
+          echo "* installed supporting packages" >> /debug.log
 
           # update SSM agent
           snap remove amazon-ssm-agent
