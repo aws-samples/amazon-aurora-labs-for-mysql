@@ -185,4 +185,4 @@ You should see `masteruser` as the response string. Next, verify the version of 
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 
-You should see a response containing version number `2.07.0`.
+You should see a response containing version number `2.07.1`.
