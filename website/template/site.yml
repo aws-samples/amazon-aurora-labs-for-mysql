@@ -104,7 +104,7 @@ Resources:
               CanonicalUser:
                 - !GetAtt oaiWebsite.S3CanonicalUserId
 
-## Create execution role for IndexDoc function
+  ## Create execution role for IndexDoc function
   roleIndexDoc:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -271,6 +271,153 @@ Resources:
           Value: !Ref tagEnvironment
         - Key: Workload
           Value: !Ref 'AWS::StackName'
+
+  ## S3 bucket to host analytics
+  s3Analytics:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-analytics-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+            Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref s3Logs
+        LogFilePrefix: "s3analytics/"
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-analytics-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  ## Role for Firehose to write to S3
+  roleWriteAnalytics:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'firehose.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:AbortMultipartUpload'
+                  - 's3:GetBucketLocation'
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                  - 's3:ListBucketMultipartUploads'
+                  - 's3:PutObject'
+                Resource:
+                  - !GetAtt s3Analytics.Arn
+                  - !Sub 'arn:aws:s3:::${s3Analytics}/*'
+
+  ## Firehose delivery stream to accumulate analytics
+  fireAnalyticStream:
+    Type: 'AWS::KinesisFirehose::DeliveryStream'
+    Properties:
+      DeliveryStreamName: !Sub '${AWS::StackName}-analytics-stream'
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt s3Analytics.Arn
+        BufferingHints:
+          IntervalInSeconds: 60
+          SizeInMBs: 10
+        CompressionFormat: GZIP
+        Prefix: !Sub 'v1-${tagEnvironment}-events/'
+        ErrorOutputPrefix: !Sub 'v1-${tagEnvironment}-errors/'
+        RoleARN: !GetAtt roleWriteAnalytics.Arn
+
+  ## API endpoint fronting the stream
+  apiAnalyticsStream:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${AWS::StackName}-analytics-api'
+
+  ## Role for API Gateway to write to the Delivery Stream
+  roleApiMethod:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'apigateway.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+                - firehose:PutRecord
+              Resource: !GetAtt fireAnalyticStream.Arn
+
+  ## API method to accept analytics events
+  apiAnalyticsMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      ApiKeyRequired: true
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: AWS
+        Credentials: !GetAtt roleApiMethod.Arn
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:firehose:action/PutRecord'
+        IntegrationHttpMethod: POST
+        RequestTemplates:
+          application/json: !Sub |
+            #set( $key = $context.identity.apiKey )
+            #set( $keyname = "apiKey" )
+            #set( $traceidval = $input.params().get("header").get("X-Amzn-Trace-Id"))
+            #set( $bodyname = "body" )
+            #set( $traceid = "traceid")
+            #set( $body = $input.body )
+            #set( $quote = '\"' )
+            #set( $b64 = $util.base64Encode("{$quote$keyname$quote:$quote$key$quote,$quote$traceid$quote:$quote$traceidval$quote,$quote$bodyname$quote:$body}") )
+            #now encode the payload in base64 to form a valid Firehose request
+            {
+              "DeliveryStreamName": "${fireAnalyticStream}",
+              "Record": { "Data": "$b64" }
+            }
+        RequestParameters: #Firehose requires the content type to not be json, but amz-json
+          integration.request.header.Content-Type: "'application/x-amz-json-1.1'"
+        IntegrationResponses:
+          - StatusCode: 200 #create a default response for the caller
+            ResponseTemplates:
+              application/json: '{"status":"OK"}'
+      MethodResponses:
+        - StatusCode: 200
+      ResourceId: !GetAtt apiAnalyticsStream.RootResourceId
+      RestApiId: !Ref apiAnalyticsStream
+
+  ## API deployment
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn:
+      - apiAnalyticsMethod
+    Properties:
+      RestApiId: !Ref apiAnalyticsStream
+      StageName: !Ref tagEnvironment
 
 ## Outputs
 Outputs:
