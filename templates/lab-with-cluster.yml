@@ -377,6 +377,45 @@ Resources:
             Action: 's3:*'
             Resource: [ 'arn:aws:s3:::*', 'arn:aws:s3:::*/*' ]
 
+## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
+  bucketLabData:
+    Type: AWS::S3::Bucket
+    Condition: condDeployMLResources
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - !Ref 'AWS::StackName'
+          - auroradata
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref 'AWS::StackId'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref 'AWS::StackName'
+              - data
+              - !Select
+                - 0
+                - !Split
+                  - "-"
+                  - !Select
+                    - 2
+                    - !Split
+                      - "/"
+                      - !Ref 'AWS::StackId'
+
 ## Create DB subnet group
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
@@ -605,6 +644,11 @@ Resources:
           chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
           echo "* configured aws cli" >> /debug.log
 
+          # set environment variables
+          export DATABUCKET="${AWS::Region}"
+          echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+          echo "* environemnt vars initialized" >> /debug.log
+
           # set DB cluster user and password as env variables
           export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --region ${AWS::Region} | jq -r '.SecretString'`
           export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
@@ -826,21 +870,6 @@ Resources:
           inputs:
             runCommand:
             - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
-
-## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
-  bucketLabData:
-    Type: AWS::S3::Bucket
-    Condition: condDeployMLResources
-    Properties:
-      BucketName: !Sub '${AWS::StackName}-data-${AWS::Region}'
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: TRUE
-        BlockPublicPolicy: TRUE
-        IgnorePublicAcls: TRUE
-        RestrictPublicBuckets: TRUE
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-data-${AWS::Region}'
 
 ## Create a role for the notebook.
   roleMLNotebook:
