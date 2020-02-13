@@ -25,11 +25,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Amazon Aurora Labs for MySQL
 
+
 ## Parameters
 Parameters:
   vpcAZs:
     Type: "List<AWS::EC2::AvailabilityZone::Name>"
-    Description: List of Availability Zones to use for the subnets in the VPC. Must pick 3 AZs in regions with 3 or more AZs.
+    Description: List of Availability Zones to use for the subnets in the VPC. Please select exactly 3 AZs in regions with 3 or more AZs, otherwise select 2.
   deployML:
     Default: "No"
     Type: String
@@ -38,10 +39,33 @@ Parameters:
       - "No"
     Description: If you plan to run the Aurora ML labs, choose 'Yes', to deploy the required resources.
 
+
+## Metadata
+Metadata:
+
+## Friendly UI grouping for parameters
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Regional Settings"
+        Parameters:
+          - vpcAZs
+      - Label:
+          default: "Lab Features"
+        Parameters:
+          - deployML
+    ParameterLabels:
+      vpcAZs:
+        default: 'Use AZs:'
+      deployML:
+        default: 'Enable Aurora ML Labs?'
+
+
 ## Conditions
 Conditions:
   cond3AZs: !Equals [ !FindInMap [ RegionalSettings, !Ref "AWS::Region", azs ], "3" ]
   condDeployMLResources: !Equals [ !Ref deployML, "Yes" ]
+
 
 ## Mappings
 Mappings:
@@ -748,6 +772,7 @@ Resources:
       RoleArn: !GetAtt roleMLNotebook.Arn
       NotebookInstanceName: !Sub ${AWS::StackName}-ml
       LifecycleConfigName: !GetAtt smMLNotebookHook.NotebookInstanceLifecycleConfigName
+
 
 ## Outputs
 Outputs:
