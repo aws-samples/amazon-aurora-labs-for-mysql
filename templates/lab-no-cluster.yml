@@ -14,6 +14,7 @@
 ## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
 ## 2019-12-12 - Added SNS permissions to bastion policy
 ## 2020-01-29 - Updated EC2 AMIs and Aurora version
+## 2020-02-12 - Added support for Aurora ML labs
 ##
 ## Dependencies:
 ## none
@@ -29,10 +30,18 @@ Parameters:
   vpcAZs:
     Type: "List<AWS::EC2::AvailabilityZone::Name>"
     Description: List of Availability Zones to use for the subnets in the VPC. Must pick 3 AZs in regions with 3 or more AZs.
+  deployML:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Aurora ML labs, choose 'Yes', to deploy the required resources.
 
 ## Conditions
 Conditions:
   cond3AZs: !Equals [ !FindInMap [ RegionalSettings, !Ref "AWS::Region", azs ], "3" ]
+  condDeployMLResources: !Equals [ !Ref deployML, "Yes" ]
 
 ## Mappings
 Mappings:
@@ -148,6 +157,10 @@ Mappings:
       numThreads: '4'
       numTables: '8'
       numWarehouses: '2'
+  MLSettings:
+    global:
+      notebookType: ml.m4.xlarge
+
 
 ## Resources
 Resources:
@@ -652,6 +665,89 @@ Resources:
             runCommand:
             - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
 
+## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
+  bucketLabData:
+    Type: AWS::S3::Bucket
+    Condition: condDeployMLResources
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-data-${AWS::Region}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-data-${AWS::Region}'
+
+## Create a role for the notebook.
+  roleMLNotebook:
+    Type: AWS::IAM::Role
+    Condition: condDeployMLResources
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ml-${AWS::Region}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:DeleteObject
+                  - s3:ListMultipartUploadParts
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::*/*
+                  - arn:aws:s3:::*
+
+## Create a Sagemaker Lifecycle hook, which will clone the github repo and get the Jupyter notebook and other resources needed to build the model.
+## using nohup, so the script keeps running after 5 minutes. The onstart event fails, if script doesn't finish in 5 minutes.
+  smMLNotebookHook:
+    Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
+    Condition: condDeployMLResources
+    Properties:
+      OnCreate:
+        - Content:
+            Fn::Base64: !Sub |
+              #!/bin/bash
+
+              set -e
+              sudo -u ec2-user -i <<EOF
+              unset SUDO_UID
+              python3 -m pip install sagemaker boto3 sagemaker_containers
+              cd /home/ec2-user/SageMaker/
+              wget https://[[website]]/support/ChurnNB.py
+              wget https://[[website]]/support/DKD2e_data_sets.zip
+              sed -i "s%mlbucketplaceholder%${bucketLabData}%" ChurnNB.py
+              sudo mkdir -p /opt/ml/code/
+              cd /home/ec2-user/SageMaker/
+              unzip -o DKD2e_data_sets.zip
+              nohup ipython ChurnNB.py>nohup.out &
+
+## Create the Sagemake Jupyter book if the lab condition allows it.
+  smMLNotebook:
+    Type : AWS::SageMaker::NotebookInstance
+    Condition: condDeployMLResources
+    Properties:
+      InstanceType: !FindInMap [ MLSettings, global, notebookType ]
+      RootAccess: Enabled
+      RoleArn: !GetAtt roleMLNotebook.Arn
+      NotebookInstanceName: !Sub ${AWS::StackName}-ml
+      LifecycleConfigName: !GetAtt smMLNotebookHook.NotebookInstanceLifecycleConfigName
 
 ## Outputs
 Outputs:
@@ -670,3 +766,9 @@ Outputs:
   loadTestRunDoc:
     Description: Load Test Execution Command Document
     Value: !Ref ssmDocSysbenchTest
+  s3BucketName:
+    Description: "S3 Bucket Name for SageMaker training data"
+    Value: !If [ condDeployMLResources, !Ref bucketLabData, "" ]
+  notebookName:
+    Description: "Jupytr Notebook Name"
+    Value: !If [ condDeployMLResources, !Ref smMLNotebook, "" ]
