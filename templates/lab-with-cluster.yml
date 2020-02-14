@@ -645,8 +645,8 @@ Resources:
           echo "* configured aws cli" >> /debug.log
 
           # set environment variables
-          export DATABUCKET="${AWS::Region}"
-          echo "export DATABUCKET=${bucketLabData}" >> /home/ubuntu/.bashrc
+          export DATABUCKET="${bucketLabData}"
+          echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
           echo "* environemnt vars initialized" >> /debug.log
 
           # set DB cluster user and password as env variables
