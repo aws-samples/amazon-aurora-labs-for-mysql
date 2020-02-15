@@ -1,4 +1,4 @@
-Connect to the session manager using the instructions [here](/prereqs/connect/) and execute following commands to cleanup Sagemaker resoucres and roles. Replace the ==[dbCluster]== placeholder with the name of your DB cluster.
+Connect to the session manager using the instructions [here](/prereqs/connect/) and execute following commands to cleanup Sagemaker resources and roles. Replace the ==[dbCluster]== placeholder with the name of your DB cluster.
 
 
 ``` shell
