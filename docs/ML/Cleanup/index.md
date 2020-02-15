@@ -1,4 +1,4 @@
-Connect to the session manager using the instructions [here](/prereqs/connect/) and execute following commands to cleanup Sagemaker resoucres and roles.
+Connect to the session manager using the instructions [here](/prereqs/connect/) and execute following commands to cleanup Sagemaker resoucres and roles. Replace the ==[dbCluster]== placeholder with the name of your DB cluster.
 
 
 ``` shell
@@ -22,6 +22,8 @@ aws iam delete-role --role-name SagemakerAuroraAccessRole
 aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
 
 aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`SagemakerAuroraPolicy`].Arn' --output text)
+
+aws rds modify-db-cluster --db-cluster-identifier [dbCluster] --db-cluster-parameter-group-name $DBCLUSTERPG
 
 aws rds delete-db-cluster-parameter-group --db-cluster-parameter-group-name allowawsaccesstomlservices
 
