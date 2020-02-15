@@ -76,6 +76,7 @@ nav:
     - Overview and Pre-requisites: 'ML/Overview/index.md'
     - Comprehend on Aurora: 'ML/Comprehend/index.md'
     - Sagemaker on Aurora: 'ML/SageMaker/index.md'
+    - Cleanup: 'ML/Cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
