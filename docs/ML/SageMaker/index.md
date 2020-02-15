@@ -1,9 +1,9 @@
-This lab will walk you through the process of provisioning the inrastructure needed to create and call Comprehend function from Amazon Aurora.
+This lab will walk you through the process of provisioning the infrastructure needed to create and call Comprehend function from Amazon Aurora.
 
-## Pre-requisits
-Before running the lab make sure you have met the followin pre-requisits.
+## Pre-requisites
+Before running the lab make sure you have met the following pre-requisites.
 
-* [Complete the pre-requists section](/prereqs/Overview/)
+* [Complete the pre-requisites section](/prereqs/Overview/)
 * [Complete Comprehend on Aurora lab](/ML/Comprehend/)
 
 ## This lab contains following tasks:
@@ -13,7 +13,7 @@ Before running the lab make sure you have met the followin pre-requisits.
 3. Associate the IAM role with the Aurora cluster.
 4. Add the Sagemaker role to the db cluster parameter group.
 5. Create the SageMaker function.
-6. Exececute the function and observe predictions.  
+6. Execute the function and observe predictions.  
 
 
 ## 1. Create IAM role required by Aurora to Talk to Sagemaker
@@ -66,7 +66,7 @@ aws rds modify-db-cluster-parameter-group \
 
 ## 5.Create Sagemaker function
 
-execute the commands below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora mysql  instance.
+Execute the commands below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora MySQL  instance.
 
 ``` shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mltest
@@ -95,9 +95,9 @@ alias aws_sagemaker_invoke_endpoint
 endpoint name 'AuroraML-churn-endpoint';
 ```
 
-## 6. Execute the function and observe predictions  
 
-Now that we have the function created linking back to the sagemaker endpoint, we can pass it values and observer predictions. In the example, we will observe that based on the values passed, prediction is that the this customer **will churn**. This is represented by the "True" result in the Wiil Churn column as shown in the screenshot.
+## 6. Execute the function and observe predictions
+Now that we have the function created linking back to the sagemaker endpoint, we can pass it values and observer predictions. In this example, we will observe that based on the values passed, we are predicting that particular this customer **will churn**. This is represented by the **"True"** result in the **‘Will Churn?’** column as shown in the screenshot.
 
 ``` sql
 select 

@@ -1,9 +1,9 @@
 # Machine Learning on Amazon Aurora 
 
-Machine Learning integration with Amazon aurora currently supports Comprehend and Sagemaker. We will follow steps in this lab to create and run functions that will seemlessly and securly call Comprehend and Sagemaker in the background.
+Machine Learning integration with Amazon aurora currently supports Comprehend and Sagemaker. We will follow steps in this lab to create and run functions that will seamlessly and securely call Comprehend and Sagemaker in the background.
 
-## Pre-requisits
-Before running the lab make sure you have met the followin pre-requisits.
+## Pre-requisites
+Before running the lab make sure you have met the following pre-requisites.
 
 * [Deploy Environment](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)

@@ -1,6 +1,6 @@
 # Comprehend on Amazon Aurora
 
-This lab will walk you through the process of provisioning the inrastructure needed to create and call Comprehend function from Amazon Aurora.
+This lab will walk you through the process of provisioning the infrastructure needed to create and call Comprehend function from Amazon Aurora.
 
 ## This lab contains following tasks:
 
@@ -55,7 +55,7 @@ aws rds describe-db-clusters --db-cluster-identifier [dbCluster] \
 
 ## 4. Create cluster parameter group
 
-Cluster-level parameters are grouped into DB cluster parameter groups. Create a new DB cluster parameter group, by executing followin command.
+Cluster-level parameters are grouped into DB cluster parameter groups. Create a new DB cluster parameter group, by executing following command.
 
 ``` shell
 aws rds create-db-cluster-parameter-group --db-cluster-parameter-group-name AllowAWSAccessToMLServices \
@@ -84,13 +84,13 @@ aws rds failover-db-cluster --db-cluster-identifier [dbCluster]
 
 ## 7. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function
 
-Run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora mysql  instance.
+Run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora MySQL instance.
 
 ``` shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mltest
 ```
 
-Aurora has the built-in comprehend fuction which will make a call to the Comprehend service, pass the comments from the table and return the appropriate results.
+Aurora has the built-in comprehend function which will make a call to the Comprehend service, pass the comments from the table and return the appropriate results.
 Run the following SQL query to run sentiment analysis on the comments table.
 
 ```sql
