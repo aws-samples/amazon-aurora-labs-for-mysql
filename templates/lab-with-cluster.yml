@@ -648,6 +648,8 @@ Resources:
           # set environment variables
           export DATABUCKET="${bucketLabData}"
           echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+          export DBCLUSTERPG="${cpgClusterParams}"
+          echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
           echo "* environemnt vars initialized" >> /debug.log
 
           # set DB cluster user and password as env variables
