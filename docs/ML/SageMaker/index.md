@@ -13,8 +13,8 @@ Before running the lab make sure you have met the followin pre-requisits.
 2. Create and attach policy to the role.
 3. Associate the IAM role with the Aurora cluster.
 4. Add the Sagemaker role to the db cluster parameter group.
-5. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function.
-8. Create and run the function.  
+5. Create the SageMaker function.
+6. Exececute the function and observe predictions.  
 
 
 ## 1. Create IAM role required by Aurora to Talk to Sagemaker
@@ -66,12 +66,12 @@ aws rds modify-db-cluster-parameter-group \
 --parameters "ParameterName=aws_default_sagemaker_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`SagemakerAuroraAccessRole`].Arn' --output text),ApplyMethod=immediate"
 ```
 
-## 5. Connect to the Aurora cluster and execute SQL commands to create and use Sagemaker function
+## 5.Create Sagemaker function
 
 execute the commands below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora mysql  instance.
 
 ``` shell
-mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS"
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mltest
 ```
 
 Once connected, execute the following SQL quey to create **will_churn** the function using the ==alias aws_sagemaker_invoke_endpointparameter== parameter and passing the name of the sagemaker endpoint.  
@@ -95,4 +95,14 @@ int_calls bigint(20),
 cust_service_calls bigint(20)) RETURNS varchar(2048) CHARSET latin1
 alias aws_sagemaker_invoke_endpoint
 endpoint name 'AuroraML-churn-endpoint';
+```
+
+## 6. Execute the function and observe predictions  
+
+Now that we have the function created linking back to the sagemaker endpoint, we can pass it values and observer predictions. In the example, we will observe that based on the values passed, prediction is that the this customer **will churn**.
+
+``` sql
+select 
+will_churn('IN',65,415,'no','no',0,129.1,137,228.5,83,208.8,111,12.7,6,4) as 'Will Churn?';
+
 ```
