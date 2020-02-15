@@ -628,6 +628,7 @@ Resources:
           curl -O https://[[website]]/scripts/loadtest.py
           curl -O https://[[website]]/scripts/simple-failover.py
           curl -O https://[[website]]/scripts/aware-failover.py
+          curl -O https://[[website]]/support/SMAuroraPolicy.json
           chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 

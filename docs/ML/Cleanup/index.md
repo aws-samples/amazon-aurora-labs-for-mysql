@@ -9,7 +9,7 @@ aws sagemaker delete-endpoint-config --endpoint-config-name AuroraML-churn-endpo
 
 aws sagemaker delete-model --model-name $(aws sagemaker list-models --output text --query 'Models[*].[ModelName]' | grep sagemaker-scikit-learn)
 
-aws s3 rm s3://$(aws s3api list-buckets --output text  --query 'Buckets[?Name].{Name:Name}' |grep labstack-auroradata*) --recursive
+aws s3 rm s3://$DATABUCKET --recursive
 
 aws iam detach-role-policy --role-name ComprehendAuroraAccessRole --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
 
@@ -23,7 +23,6 @@ aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?Po
 
 aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`SagemakerAuroraPolicy`].Arn' --output text)
 
-
-
+aws rds delete-db-cluster-parameter-group --db-cluster-parameter-group-name allowawsaccesstomlservices
 
 ```

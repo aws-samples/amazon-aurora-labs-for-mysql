@@ -87,7 +87,7 @@ aws rds failover-db-cluster --db-cluster-identifier [dbCluster]
 Run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora mysql  instance.
 
 ``` shell
-mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS"
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mltest
 ```
 
 Aurora has the built-in comprehend fuction which will make a call to the Comprehend service, pass the comments from the table and return the appropriate results.
@@ -103,3 +103,9 @@ FROM comments;
 You should see the result as shown in the screenshot below. Observe the columns sentiment, and confidence. Combination of these two columns provide the sentiment for the text in the comment_text column, and also the confidence score of the prediction.
 
 <span class="image">![Reader Load](1-comprehend-query.png?raw=true)</span>
+
+Exit from the mysql prompt by running command below, before you proceed to the next section.
+
+``` sql
+exit
+```

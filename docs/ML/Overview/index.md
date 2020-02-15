@@ -5,7 +5,7 @@ Machine Learning integration with Amazon aurora currently supports Comprehend an
 ## Pre-requisits
 Before running the lab make sure you have met the followin pre-requisits.
 
-* [Deploy Environment](/prereqs/environment/) (using the `lab-with-cluster.yml` template)
+* [Deploy Environment](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 
 Once you have an Amazon Aurora clustered provisioned and established a session to the bastion host, execute the commands below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora mysql  instance.
@@ -62,4 +62,17 @@ LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (state,acc_length,area_code,@dummy1,int_plan,vmail_plan,vmail_msg,day_mins,day_calls,@dummy2,eve_mins,eve_calls,@dummy3,night_mins,night_calls,@dummy4,int_mins,int_calls,@dummy5,cust_service_calls,Churn);
 
+```
+
+Execute the following sql statement. You should be able to see two tables, **churn** and **comments**, as shown in the screenshot. If you don't see the tables rerun the commands.
+
+``` sql
+show tables;
+```
+<span class="image">![Reader Load](1-tables.png?raw=true)</span>
+
+Exit from the mysql prompt by running command below, before you proceed to the next section.
+
+``` sql
+exit
 ```
