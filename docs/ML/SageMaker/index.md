@@ -105,7 +105,7 @@ will_churn('IN',65,415,'no','no',0,129.1,137,228.5,83,208.8,111,12.7,6,4) as 'Wi
 
 ```
 
-<span class="image">![Reader Load](/ML/Sagemaker/1-sagemaker-out.png?raw=true)</span>
+<span class="image">![Reader Load](/ML/SageMaker/1-sagemaker-out.png?raw=true)</span>
 
 
 
