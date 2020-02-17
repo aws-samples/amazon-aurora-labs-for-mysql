@@ -130,4 +130,4 @@ WHERE will_churn(state, acc_length,
 
 You can observe that based on the following output, our Sagemake model is 99.25% accurate.
 
-<span class="image">![Reader Load](/ML/Sagemaker/2-sagemaker-function-out.png?raw=true)</span>
+<span class="image">![Reader Load](/ML/SageMaker/2-sagemaker-function-out.png?raw=true)</span>
