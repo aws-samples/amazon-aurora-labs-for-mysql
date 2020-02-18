@@ -4,7 +4,7 @@ This lab will walk you through the process of provisioning the infrastructure ne
 Before running the lab make sure you have met the following pre-requisites.
 
 * [Complete the pre-requisites section](/prereqs/Overview/)
-* [Complete Comprehend on Aurora lab](/ML/Comprehend/)
+* [Complete Comprehend on Aurora lab](/ml/comprehend/)
 
 ## This lab contains following tasks:
 
@@ -12,8 +12,9 @@ Before running the lab make sure you have met the following pre-requisites.
 2. Create and attach policy to the role.
 3. Associate the IAM role with the Aurora cluster.
 4. Add the Sagemaker role to the db cluster parameter group.
-5. Create the SageMaker function.
-6. Execute the function and observe predictions.  
+5. Apply the new parameter to the database cluster.
+6. Create the SageMaker function.
+7. Execute the function and observe predictions.  
 
 
 ## 1. Create IAM role required by Aurora to Talk to Sagemaker
@@ -54,17 +55,25 @@ aws rds describe-db-clusters --db-cluster-identifier [dbCluster] \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
-<span class="image">![Reader Load](/ML/Comprehend/2-dbcluster-available.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
 
 ## 4. Add the Sagemaker role to the db cluster parameter group
 
 ``` shell
 aws rds modify-db-cluster-parameter-group \
---db-cluster-parameter-group-name AllowAWSAccessToMLServices \
---parameters "ParameterName=aws_default_sagemaker_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`SagemakerAuroraAccessRole`].Arn' --output text),ApplyMethod=immediate"
+--db-cluster-parameter-group-name $DBCLUSTERPG \
+--parameters "ParameterName=aws_default_sagemaker_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`SagemakerAuroraAccessRole`].Arn' --output text),ApplyMethod=pending-reboot"
 ```
 
-## 5.Create Sagemaker function
+## 5. Apply the new parameter to the database cluster.
+Reboot the cluster for the change to take effect by executing the commands below. Replacing the ==[dbCluster]== placeholder with the  name of your DB cluster.
+
+``` shell
+aws rds failover-db-cluster --db-cluster-identifier [dbCluster]
+```
+
+
+## 6.Create Sagemaker function
 
 Execute the commands below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora MySQL  instance.
 
@@ -96,7 +105,7 @@ endpoint name 'AuroraML-churn-endpoint';
 ```
 
 
-## 6. Execute the function and observe predictions
+## 7. Execute the function and observe predictions
 Now that we have the function created linking back to the sagemaker endpoint, we can pass it values and observer predictions. In this example, we will observe that based on the values passed, we are predicting that particular this customer **will churn**. This is represented by the **"True"** result in the **‘Will Churn?’** column as shown in the screenshot.
 
 ``` sql
@@ -105,7 +114,7 @@ will_churn('IN',65,415,'no','no',0,129.1,137,228.5,83,208.8,111,12.7,6,4) as 'Wi
 
 ```
 
-<span class="image">![Reader Load](/ML/SageMaker/1-sagemaker-out.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/sagemaker/1-sagemaker-out.png?raw=true)</span>
 
 
 
@@ -130,4 +139,4 @@ WHERE will_churn(state, acc_length,
 
 You can observe that based on the following output, our Sagemake model is 99.25% accurate.
 
-<span class="image">![Reader Load](/ML/SageMaker/2-sagemaker-function-out.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/sagemaker/2-sagemaker-function-out.png?raw=true)</span>

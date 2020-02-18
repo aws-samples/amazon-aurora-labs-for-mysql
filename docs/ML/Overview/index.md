@@ -69,7 +69,7 @@ Execute the following sql statement. You should be able to see two tables, **chu
 ``` sql
 show tables;
 ```
-<span class="image">![Reader Load](1-tables.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/overview/1-tables.png?raw=true)</span>
 
 Exit from the mysql prompt by running command below, before you proceed to the next section.
 

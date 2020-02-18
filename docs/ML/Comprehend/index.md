@@ -7,10 +7,9 @@ This lab will walk you through the process of provisioning the infrastructure ne
 1. Create IAM role required by Aurora to Talk to Comprehend.
 2. Create and attach policy to the role.
 3. Associate the IAM role with the Aurora cluster.
-4. Create cluster parameter group.
-5. Add the Comprehend role to the db cluster parameter group.
-6. Associate the cluster parameter group to the Aurora cluster.
-7. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function.        
+4. Add the Comprehend role to the db cluster parameter group.
+5. Apply the new parameter to the database cluster.
+6. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function.        
 
 ## 1. Create IAM role required by Aurora to Talk to Comprehend
 
@@ -50,39 +49,26 @@ aws rds describe-db-clusters --db-cluster-identifier [dbCluster] \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
-<span class="image">![Reader Load](2-dbcluster-available.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
 
-
-## 4. Create cluster parameter group
-
-Cluster-level parameters are grouped into DB cluster parameter groups. Create a new DB cluster parameter group, by executing following command.
-
-``` shell
-aws rds create-db-cluster-parameter-group --db-cluster-parameter-group-name AllowAWSAccessToMLServices \
---db-parameter-group-family aurora-mysql5.7 --description "Allow access to AWS SageMaker and AWS Comprehend"  
-```
-
-## 5. Add the Comprehend role to the db cluster parameter group
+## 4. Add the Comprehend role to the db cluster parameter group
 
 Set the ==aws_default_comprehend_role== cluster-level parameter to thw Comprehend IAM role we created in the first step of this lab. We will use the ARN value of the IAM role. Execute the following command.
 
 ``` shell
 aws rds modify-db-cluster-parameter-group \
---db-cluster-parameter-group-name AllowAWSAccessToMLServices \
---parameters "ParameterName=aws_default_comprehend_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`ComprehendAuroraAccessRole`].Arn' --output text),ApplyMethod=immediate" 
+--db-cluster-parameter-group-name $DBCLUSTERPG \
+--parameters "ParameterName=aws_default_comprehend_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`ComprehendAuroraAccessRole`].Arn' --output text),ApplyMethod=pending-reboot" 
 ```
 
-## 6. Associate the cluster parameter group to the Aurora cluster
-Modify the DB cluster to use the new DB cluster parameter group. Then, reboot the cluster for the change to take effect by executing the commands below. Replacing the ==[dbCluster]== placeholder with the  name of your DB cluster.
+## 5. Apply the new parameter to the database cluster.
+Reboot the cluster for the change to take effect by executing the commands below. Replacing the ==[dbCluster]== placeholder with the  name of your DB cluster.
 
 ``` shell
-aws rds modify-db-cluster --db-cluster-identifier [dbCluster] \
---db-cluster-parameter-group-name AllowAWSAccessToMLServices
-
 aws rds failover-db-cluster --db-cluster-identifier [dbCluster]
 ```
 
-## 7. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function
+## 6. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function
 
 Run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora MySQL instance.
 
@@ -102,7 +88,7 @@ FROM comments;
 
 You should see the result as shown in the screenshot below. Observe the columns sentiment, and confidence. Combination of these two columns provide the sentiment for the text in the comment_text column, and also the confidence score of the prediction.
 
-<span class="image">![Reader Load](1-comprehend-query.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/comprehend/1-comprehend-query.png?raw=true)</span>
 
 Exit from the mysql prompt by running command below, before you proceed to the next section.
 

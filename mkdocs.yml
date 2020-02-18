@@ -73,10 +73,10 @@ nav:
   - Global Database:
     - Create an Aurora Global Database: 'global/create/index.md'
   - Machine Learning:
-    - Overview and Pre-requisites: 'ML/Overview/index.md'
-    - Comprehend on Aurora: 'ML/Comprehend/index.md'
-    - Sagemaker on Aurora: 'ML/SageMaker/index.md'
-    - Cleanup: 'ML/Cleanup/index.md'
+    - Overview and Pre-requisites: 'ml/overview/index.md'
+    - Comprehend on Aurora: 'ml/comprehend/index.md'
+    - Sagemaker on Aurora: 'ml/sagemaker/index.md'
+    - Cleanup: 'ml/cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
