@@ -76,7 +76,12 @@ nav:
     - Connect Application: 'global/biapp/index.md'
     - Monitor Latency: 'global/cw/index.md'
     - Failover: 'global/failover/index.md'
-    - Failback: 'global/failback/index.md' 
+    - Failback: 'global/failback/index.md'
+  - Machine Learning:
+    - Overview and Pre-requisites: 'ml/overview/index.md'
+    - Comprehend on Aurora: 'ml/comprehend/index.md'
+    - Sagemaker on Aurora: 'ml/sagemaker/index.md'
+    - Cleanup: 'ml/cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
