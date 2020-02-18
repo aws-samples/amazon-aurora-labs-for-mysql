@@ -633,6 +633,7 @@ Resources:
           curl -O https://[[website]]/scripts/loadtest.py
           curl -O https://[[website]]/scripts/simple-failover.py
           curl -O https://[[website]]/scripts/aware-failover.py
+          curl -O https://[[website]]/support/SMAuroraPolicy.json
           chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 
@@ -645,8 +646,10 @@ Resources:
           echo "* configured aws cli" >> /debug.log
 
           # set environment variables
-          export DATABUCKET="${AWS::Region}"
+          export DATABUCKET="${bucketLabData}"
           echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+          export DBCLUSTERPG="${cpgClusterParams}"
+          echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
           echo "* environemnt vars initialized" >> /debug.log
 
           # set DB cluster user and password as env variables
