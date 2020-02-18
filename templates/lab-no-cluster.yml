@@ -372,6 +372,45 @@ Resources:
             Action: 's3:*'
             Resource: [ 'arn:aws:s3:::*', 'arn:aws:s3:::*/*' ]
 
+## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
+  bucketLabData:
+    Type: AWS::S3::Bucket
+    Condition: condDeployMLResources
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - !Ref 'AWS::StackName'
+          - data
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref 'AWS::StackId'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref 'AWS::StackName'
+              - auroradata
+              - !Select
+                - 0
+                - !Split
+                  - "-"
+                  - !Select
+                    - 2
+                    - !Split
+                      - "/"
+                      - !Ref 'AWS::StackId'
+
 ## Create DB subnet group
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
@@ -589,6 +628,7 @@ Resources:
           curl -O https://[[website]]/scripts/loadtest.py
           curl -O https://[[website]]/scripts/simple-failover.py
           curl -O https://[[website]]/scripts/aware-failover.py
+          curl -O https://[[website]]/support/SMAuroraPolicy.json
           chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 
@@ -599,6 +639,13 @@ Resources:
           echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
           chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
           echo "* configured aws cli" >> /debug.log
+
+          # set environment variables
+          export DATABUCKET="${bucketLabData}"
+          echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+          export DBCLUSTERPG="${cpgClusterParams}"
+          echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
+          echo "* environemnt vars initialized" >> /debug.log
 
           # reboot
           echo "* bootstrap complete, rebooting" >> /debug.log
@@ -688,21 +735,6 @@ Resources:
           inputs:
             runCommand:
             - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
-
-## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
-  bucketLabData:
-    Type: AWS::S3::Bucket
-    Condition: condDeployMLResources
-    Properties:
-      BucketName: !Sub '${AWS::StackName}-data-${AWS::Region}'
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: TRUE
-        BlockPublicPolicy: TRUE
-        IgnorePublicAcls: TRUE
-        RestrictPublicBuckets: TRUE
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-data-${AWS::Region}'
 
 ## Create a role for the notebook.
   roleMLNotebook:
