@@ -30,6 +30,7 @@ phases:
         - npm install -g npm
         - npm install -g grunt-cli
         - npm install
+        - find ./website/lambda -type d -exec npm install {} +
         #- apt-get install node-gyp -y --install-suggests
         #- apt-get install npm -y --install-suggests
         # - apt-get install awscli -y --install-suggests

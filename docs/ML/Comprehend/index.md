@@ -67,6 +67,14 @@ Reboot the cluster for the change to take effect by executing the commands below
 ``` shell
 aws rds failover-db-cluster --db-cluster-identifier [dbCluster]
 ```
+Run the following command and wait until the output shows as **"available"**, before moving on to the next step.  Replacing the ==[dbCluster]== placeholder with the name of your DB cluster.
+
+``` shell
+aws rds describe-db-clusters --db-cluster-identifier [dbCluster] \
+--query 'DBClusters[*].[Status]' --output text
+```
+<span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
+
 
 ## 6. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function
 
