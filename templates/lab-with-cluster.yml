@@ -652,7 +652,7 @@ Resources:
           echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
           export STACKREGION="${AWS::Region}"
           echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
-          export STACKNAME="{AWS::StackName}"
+          export STACKNAME="${AWS::StackName}"
           echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
           echo "* environemnt vars initialized" >> /debug.log
 
