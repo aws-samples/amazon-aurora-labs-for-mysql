@@ -3,7 +3,7 @@ This lab will walk you through the process of provisioning the infrastructure ne
 ## Pre-requisites
 Before running the lab make sure you have met the following pre-requisites.
 
-* [Complete the pre-requisites section](/prereqs/Overview/)
+* [Complete the pre-requisites section](/ml/overview/)
 
 ## This lab contains following tasks:
 
