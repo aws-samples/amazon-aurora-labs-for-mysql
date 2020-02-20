@@ -11,16 +11,16 @@ aws sagemaker delete-model --model-name $(aws sagemaker list-models --output tex
 
 aws s3 rm s3://$DATABUCKET --recursive
 
-aws iam detach-role-policy --role-name ComprehendAuroraAccessRole --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
+aws iam detach-role-policy --role-name $STACKNAME-ComprehendAuroraAccessRole-$STACKREGION --policy-arn $(aws iam list-policies --query "Policies[?PolicyName=='$STACKNAME-ComprehendAuroraPolicy-$STACKREGION'].Arn" --output text)
 
-aws iam detach-role-policy --role-name SageMakerAuroraAccessRole --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`SagemakerAuroraPolicy`].Arn' --output text)
+aws iam detach-role-policy --role-name $STACKNAME-SageMakerAuroraAccessRole-$STACKREGION --policy-arn $(aws iam list-policies --query "Policies[?PolicyName=='$STACKNAME-SagemakerAuroraPolicy-$STACKREGION'].Arn" --output text)
 
-aws iam delete-role --role-name ComprehendAuroraAccessRole
+aws iam delete-role --role-name $STACKNAME-ComprehendAuroraAccessRole-$STACKREGION
 
-aws iam delete-role --role-name SagemakerAuroraAccessRole
+aws iam delete-role --role-name $STACKNAME-SagemakerAuroraAccessRole-$STACKREGION
 
-aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
+aws iam delete-policy --policy-arn $(aws iam list-policies --query "Policies[?PolicyName=='$STACKNAME-ComprehendAuroraPolicy-$STACKREGION'].Arn" --output text)
 
-aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`SagemakerAuroraPolicy`].Arn' --output text)
+aws iam delete-policy --policy-arn $(aws iam list-policies --query "Policies[?PolicyName=='$STACKNAME-SagemakerAuroraPolicy-$STACKREGION'].Arn" --output text)
 
 ```
