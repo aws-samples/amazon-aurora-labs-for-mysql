@@ -58,6 +58,18 @@ Parameters:
       - "Yes"
       - "No"
     Description: Help us improve our labs by agreeing to the collection of anonymous statistics for our labs.
+  EEEventId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EETeamId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EEModuleId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EEModuleVersion:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
 
 
 ## Metadata
@@ -79,6 +91,10 @@ Metadata:
           default: "Help Us Improve Our Labs!"
         Parameters:
           - agreeTracking
+          - EEEventId
+          - EETeamId
+          - EEModuleId
+          - EEModuleVersion
     ParameterLabels:
       vpcAZs:
         default: 'Use AZs:'
@@ -88,7 +104,14 @@ Metadata:
         default: 'Enable Aurora ML Labs?'
       agreeTracking:
         default: 'Allow Data Collection?'
-
+      EEEventId:
+        default: 'EventEngine Event'
+      EETeamId:
+        default: 'EventEngine Team'
+      EEModuleId:
+        default: 'EventEngine Module'
+      EEModuleVersion:
+        default: 'EventEngine Version'
 
 ## Conditions
 Conditions:
@@ -696,7 +719,7 @@ Resources:
                       - !Split
                         - "/"
                         - !Ref 'AWS::StackId'
-                    - '" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc'
+                    - '" && echo "export STACKUUID=\"$STACKUUID\"" >> /home/ubuntu/.bashrc'
               - !Sub |
                 export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
                 export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
@@ -705,7 +728,7 @@ Resources:
                   - condDeployDBCluster
                   - !Sub |
                     # set DB cluster user and password as env variables
-                    export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "{secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
+                    export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
                     export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
                     export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
                     echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
@@ -857,7 +880,7 @@ Resources:
     Properties:
       ServiceNamespace: 'rds'
       ScalableDimension: 'rds:cluster:ReadReplicaCount'
-      ResourceId: !Sub 'cluster:${dbCluster}'
+      ResourceId: !GetAtt resLabSupport.DBClusterScalableTarget
       MaxCapacity: !FindInMap [ ClusterSettings, scaling, maxCapacity ]
       MinCapacity: !FindInMap [ ClusterSettings, scaling, minCapacity ]
       RoleARN: !GetAtt roleScalableTarget.Arn
@@ -1099,15 +1122,15 @@ Resources:
                     try:
                       # track analytics
                       payload = {
-                        'StackUUID': event["ResourceProperties"]["StackUUID"],
-                        'StackName': event["ResourceProperties"]["StackName"],
-                        'StackRegion': event["ResourceProperties"]["StackRegion"],
-                        'DeployedCluster': event["ResourceProperties"]["DeployedCluster"],
-                        'DeployedML': event["ResourceProperties"]["DeployedML"],
-                        'EventTimestamp': datetime.datetime.utcnow().isoformat(),
-                        'EventScope': 'Stack',
-                        'EventAction': event["RequestType"],
-                        'EventMessage': "Stack-level operation"
+                        'stack_uuid': event["ResourceProperties"]["StackUUID"],
+                        'stack_name': event["ResourceProperties"]["StackName"],
+                        'stack_region': event["ResourceProperties"]["StackRegion"],
+                        'deployed_cluster': event["ResourceProperties"]["DeployedCluster"],
+                        'deployed_ml': event["ResourceProperties"]["DeployedML"],
+                        'event_timestamp': datetime.datetime.utcnow().isoformat(),
+                        'event_scope': 'Stack',
+                        'event_action': event["RequestType"],
+                        'event_message': "Stack-level operation"
                       }
                       r = http.request('POST', environ["ANALYTICS_ENDPOINT"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
                       print("[INFO]", "ApiGateway response" ,json.loads(r.data.decode('utf-8')))
