@@ -6,6 +6,7 @@
       "applicationautoscaling:*",
       "cloudformation:*",
       "cloudwatch:*",
+      "ec2:*",
       "events:*",
       "iam:*",
       "kms:*",
