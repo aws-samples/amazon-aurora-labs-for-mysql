@@ -9,14 +9,14 @@ This lab will walk you through the process of provisioning the infrastructure ne
 3. Associate the IAM role with the Aurora cluster.
 4. Add the Comprehend role to the db cluster parameter group.
 5. Apply the new parameter to the database cluster.
-6. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function.        
+6. Connect to the Aurora cluster and execute SQL commands to create and use Comprehend function.        
 
 ## 1. Create IAM role required by Aurora to Talk to Comprehend
 
 If you are not already connected to the Session Manager workstation, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below which will create the role.
 
 ``` shell
-aws iam create-role --role-name ComprehendAuroraAccessRole \
+aws iam create-role --role-name $STACKNAME-ComprehendAuroraAccessRole-$STACKREGION \
 --assume-role-policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"rds.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
 ```
  
@@ -24,28 +24,28 @@ aws iam create-role --role-name ComprehendAuroraAccessRole \
 
 Run followings command to create a new policy and attach to the role we created in the last step.
 
-```
-aws iam create-policy --policy-name ComprehendAuroraPolicy \
+``` shell
+aws iam create-policy --policy-name $STACKNAME-ComprehendAuroraPolicy-$STACKREGION \
 --policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowAuroraToComprehendService\",\"Effect\":\"Allow\",\"Action\":[\"comprehend:DetectSentiment\",\"comprehend:BatchDetectSentiment\"],\"Resource\":\"*\"}]}"
 
-aws iam attach-role-policy --role-name ComprehendAuroraAccessRole \
---policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
+aws iam attach-role-policy --role-name $STACKNAME-ComprehendAuroraAccessRole-$STACKREGION \
+--policy-arn $(aws iam list-policies --query "Policies[?PolicyName=='$STACKNAME-ComprehendAuroraPolicy-$STACKREGION'].Arn" --output text)
 
 ```
 
 ## 3. Associate the IAM role with the Aurora cluster
 
-Add the role to the list of associated roles for a DB cluster by using following commands. Replacing the ==[dbCluster]== placeholder with the name of your DB cluster. If  created the Aurora DB cluster manually, you would find the cluster name on the DB cluster details page in the RDS console. If you provisioned the DB cluster using the CloudFormation template, you can find the value for the cluster name parameter in the stack outputs. 
+Add the role to the list of associated roles for a DB cluster by using following commands.  
 
 ``` shell
-aws rds add-role-to-db-cluster --db-cluster-identifier [dbCluster] \
---role-arn $(aws iam list-roles --query 'Roles[?RoleName==`ComprehendAuroraAccessRole`].Arn' --output text)
+aws rds add-role-to-db-cluster --db-cluster-identifier labstack-cluster \
+--role-arn $(aws iam list-roles --query "Roles[?RoleName=='$STACKNAME-ComprehendAuroraAccessRole-$STACKREGION'].Arn" --output text)
 
 ```
-Run the following command and wait until the output shows as **"available"**, before moving on to the next step.  Replacing the ==[dbCluster]== placeholder with the name of your DB cluster.
+Run the following command and wait until the output shows as **"available"**, before moving on to the next step.
 
 ``` shell
-aws rds describe-db-clusters --db-cluster-identifier [dbCluster] \
+aws rds describe-db-clusters --db-cluster-identifier labstack-cluster \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
@@ -58,25 +58,25 @@ Set the ==aws_default_comprehend_role== cluster-level parameter to thw Comprehen
 ``` shell
 aws rds modify-db-cluster-parameter-group \
 --db-cluster-parameter-group-name $DBCLUSTERPG \
---parameters "ParameterName=aws_default_comprehend_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`ComprehendAuroraAccessRole`].Arn' --output text),ApplyMethod=pending-reboot" 
+--parameters "ParameterName=aws_default_comprehend_role,ParameterValue=$(aws iam list-roles --query "Roles[?RoleName=='$STACKNAME-ComprehendAuroraAccessRole-$STACKREGION'].Arn" --output text),ApplyMethod=pending-reboot" 
 ```
 
 ## 5. Apply the new parameter to the database cluster.
-Reboot the cluster for the change to take effect by executing the commands below. Replacing the ==[dbCluster]== placeholder with the  name of your DB cluster.
+Reboot the cluster for the change to take effect by executing the commands below.
 
 ``` shell
-aws rds failover-db-cluster --db-cluster-identifier [dbCluster]
+aws rds failover-db-cluster --db-cluster-identifier labstack-cluster
 ```
-Run the following command and wait until the output shows as **"available"**, before moving on to the next step.  Replacing the ==[dbCluster]== placeholder with the name of your DB cluster.
+Run the following command and wait until the output shows as **"available"**, before moving on to the next step.  
 
 ``` shell
-aws rds describe-db-clusters --db-cluster-identifier [dbCluster] \
+aws rds describe-db-clusters --db-cluster-identifier labstack-cluster \
 --query 'DBClusters[*].[Status]' --output text
 ```
 <span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
 
 
-## 6. Connect to the Aurora cluster and execute SQL commands to create and use comprehend function
+## 6. Connect to the Aurora cluster and execute SQL commands to create and use Comprehend function
 
 Run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora MySQL instance.
 
@@ -84,10 +84,10 @@ Run the command below, replacing the ==[clusterEndpoint]== placeholder with the 
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mltest
 ```
 
-Aurora has the built-in comprehend function which will make a call to the Comprehend service, pass the comments from the table and return the appropriate results.
+Aurora has the built-in Comprehend function which will make a call to the Comprehend service, pass the comments from the table and return the appropriate results.
 Run the following SQL query to run sentiment analysis on the comments table.
 
-```sql
+``` sql
 SELECT comment_text,
 aws_comprehend_detect_sentiment(comment_text, 'en') AS sentiment,
 aws_comprehend_detect_sentiment_confidence(comment_text, 'en') AS confidence
