@@ -36,12 +36,6 @@ Install project dependencies (from [project root] folder):
 npm install
 ```
 
-Install dependencies for the individual AWS Lambda functions. For each function in `[project root]/website/lambda/[function name]/src/` run
-
-```
-npm install
-```
-
 ### Build and Deploy the Project
 
 To build the website only, locally, from the root folder of the project run:
