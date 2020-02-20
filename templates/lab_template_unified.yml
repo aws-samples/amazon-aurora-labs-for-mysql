@@ -57,7 +57,7 @@ Parameters:
     AllowedValues:
       - "Yes"
       - "No"
-    Description: Help us improve our labs by agreeing to the collection of anonymous statistics for our labs.
+    Description: Help us improve our labs by agreeing to the collection of anonymous usage statistics for our labs.
   EEEventId:
     Type: String
     Description: Please leave blank, reserved for EventEngine use.
@@ -103,7 +103,7 @@ Metadata:
       deployML:
         default: 'Enable Aurora ML Labs?'
       agreeTracking:
-        default: 'Allow Data Collection?'
+        default: 'Collect Usage Data?'
       EEEventId:
         default: 'EventEngine Event'
       EETeamId:
@@ -708,6 +708,7 @@ Resources:
                 echo "* configured aws cli" >> /debug.log
 
                 # set environment variables
+                export ANALYTICSURI="https://[[apigw]]/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
                 export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ubuntu/.bashrc
                 export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
                 export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
@@ -1083,7 +1084,7 @@ Resources:
       Environment:
         Variables:
           REGION: !Ref 'AWS::Region'
-          ANALYTICS_ENDPOINT: 'https://[[apigw]]/track'
+          ANALYTICSURI: 'https://[[apigw]]/track'
       Code:
         ZipFile: |
           # Dependencies
@@ -1122,18 +1123,23 @@ Resources:
                     try:
                       # track analytics
                       payload = {
-                        'stack_uuid': event["ResourceProperties"]["StackUUID"],
-                        'stack_name': event["ResourceProperties"]["StackName"],
-                        'stack_region': event["ResourceProperties"]["StackRegion"],
-                        'deployed_cluster': event["ResourceProperties"]["DeployedCluster"],
-                        'deployed_ml': event["ResourceProperties"]["DeployedML"],
+                        'stack_uuid': event["ResourceProperties"]["StackUUID"] if ("StackUUID" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                        'stack_name': event["ResourceProperties"]["StackName"] if ("StackName" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                        'stack_region': event["ResourceProperties"]["StackRegion"] if ("StackRegion" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                        'deployed_cluster': event["ResourceProperties"]["DeployedCluster"] if ("DeployedCluster" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                        'deployed_ml': event["ResourceProperties"]["DeployedML"] if ("DeployedML" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
                         'event_timestamp': datetime.datetime.utcnow().isoformat(),
                         'event_scope': 'Stack',
-                        'event_action': event["RequestType"],
-                        'event_message': "Stack-level operation"
+                        'event_action': event["RequestType"] if "RequestType" in event else None,
+                        'event_message': "Stack-level operation",
+                        'ee_event_id': event["ResourceProperties"]["EEEventId"] if ("EEEventId" in event["ResourceProperties"] and event["ResourceProperties"]["EEEventId"]) else None,
+                        'ee_team_id': event["ResourceProperties"]["EETeamId"] if ("EETeamId" in event["ResourceProperties"] and event["ResourceProperties"]["EETeamId"]) else None,
+                        'ee_module_id': event["ResourceProperties"]["EEModuleId"] if ("EEModuleId" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleId"]) else None,
+                        'ee_module_version': event["ResourceProperties"]["EEModuleVersion"] if ("EEModuleVersion" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleVersion"]) else None
                       }
-                      r = http.request('POST', environ["ANALYTICS_ENDPOINT"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-                      print("[INFO]", "ApiGateway response" ,json.loads(r.data.decode('utf-8')))
+                      r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+                      print("[INFO]", "Event payload", payload)
+                      print("[INFO]", "ApiGateway response", json.loads(r.data.decode('utf-8')))
                     except Exception as e:
                       # errors in tracker interaction should not prevent operation of the function in critical path
                       print("[ERROR]", e)
@@ -1168,6 +1174,10 @@ Resources:
       DeployedCluster: !Ref deployCluster
       DeployedML: !Ref deployML
       Cluster: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
+      EEEventId: !Ref EEEventId
+      EETeamId: !Ref EETeamId
+      EEModuleId: !Ref EEModuleId
+      EEModuleVersion: !Ref EEModuleVersion
 
 
 ## Outputs
