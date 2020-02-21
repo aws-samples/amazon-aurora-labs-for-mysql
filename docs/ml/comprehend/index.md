@@ -62,18 +62,22 @@ aws rds modify-db-cluster-parameter-group \
 ```
 
 ## 5. Apply the new parameter to the database cluster.
-Reboot the cluster for the change to take effect by executing the commands below.
+Reboot the db instance so the change can take effect, by executing the commands below.
 
 ``` shell
-aws rds failover-db-cluster --db-cluster-identifier labstack-cluster
+aws rds reboot-db-instance --db-instance-identifier $(aws rds describe-db-clusters --db-cluster-identifier labstack-cluster --query 'DBClusters[*].[DBClusterMembers[?IsClusterWriter==`true`].DBInstanceIdentifier]' --output text)
+
+
 ```
 Run the following command and wait until the output shows as **"available"**, before moving on to the next step.  
 
 ``` shell
-aws rds describe-db-clusters --db-cluster-identifier labstack-cluster \
---query 'DBClusters[*].[Status]' --output text
+aws rds describe-db-instances --db-instance-identifier \
+$(aws rds describe-db-clusters --db-cluster-identifier labstack-cluster --query 'DBClusters[*].[DBClusterMembers[?IsClusterWriter==`true`].DBInstanceIdentifier]' --output text) --query 'DBInstances[*].[DBInstanceStatus]' --output text
+
+
 ```
-<span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
+<span class="image">![Reader Load](/ml/sagemaker/3-db-sintance-available.png?raw=true)</span>
 
 
 ## 6. Connect to the Aurora cluster and execute SQL commands to create and use Comprehend function
