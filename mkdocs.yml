@@ -12,7 +12,7 @@
 site_name: Amazon Aurora Labs for MySQL
 site_description: Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features.
 site_author: 'amazon-aurora-labs-for-mysql@amazon.com'
-site_url: 'https://awsauroralabsmysql.com'
+site_url: 'https://awsauroralabsmy.com'
 
 # Repository
 repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
@@ -38,7 +38,7 @@ extra_css:
 extra:
   social:
     - type: 'home'
-      link: 'https://awsauroralabsmysql.com'
+      link: 'https://awsauroralabsmy.com'
     - type: 'amazon'
       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
     - type: 'github'
@@ -76,7 +76,7 @@ nav:
     - Connect Application: 'global/biapp/index.md'
     - Monitor Latency: 'global/cw/index.md'
     - Failover: 'global/failover/index.md'
-    - Failback: 'global/failback/index.md' 
+    - Failback: 'global/failback/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
