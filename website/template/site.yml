@@ -145,12 +145,20 @@ Resources:
             # Request is the response, too
             request = event['Records'][0]['cf']['request']
 
-            # Check if the URI ends with '/', then append 'index.html' to it
-            if request['uri'].endswith('/'):
-                request['uri'] = request['uri'] + 'index.html'
+            # Build response
+            response = {
+                'status': '302',
+                'statusDescription': 'Found',
+                'headers': {
+                    'location': [{
+                        'key': 'Location',
+                        'value': 'https://awsauroralabsmy.com' + request['uri']
+                    }]
+                }
+            }
 
-            # Return modified request
-            return request
+            # Return response
+            return response
       Description: 'Injects index.html into any URI request for subfolders in the path'
       MemorySize: 128
       Timeout: 5
@@ -167,20 +175,90 @@ Resources:
       Description: 'Injects index.html into any URI request for subfolders in the path'
       FunctionName: !Ref funcIndexDoc
 
+## Create execution role for IndexDoc function
+  roleRedirect:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-redirect-${AWS::Region}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+                - 'edgelambda.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+
+  ## Index dodcument function
+  funcRedirect:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-redirect-${AWS::Region}'
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      InlineCode: |
+        # Lambda function handler
+        def lambda_handler(event, context):
+            # Request is the response, too
+            request = event['Records'][0]['cf']['request']
+
+            # Build response
+            response = {
+                'status': '302',
+                'statusDescription': 'Found',
+                'headers': {
+                    'location': [{
+                        'key': 'Location',
+                        'value': 'https://awsauroralabsmy.com' + request['uri']
+                    }]
+                }
+            }
+
+            # Return response
+            return response
+      Description: 'Redirects requests against this domain to the new domain for this site.'
+      MemorySize: 128
+      Timeout: 5
+      Role: !GetAtt roleRedirect.Arn
+      Tags:
+        Name: !Sub '${AWS::StackName}-redirect-${AWS::Region}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
+  ## Index document function version
+  funcRedirectVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      Description: 'Redirects requests against this domain to the new domain for this site.'
+      FunctionName: !Ref funcRedirect
+
   ## CloudFront distribution
   cfWebsite:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
       DistributionConfig:
         Comment: !Sub '${AWS::StackName}-cdn'
-        Aliases: !If [ condProd, [ 'awsauroralabsmy.com', 'www.awsauroralabsmy.com' ], !Ref "AWS::NoValue" ]
+        Aliases: !If [ condProd, [ 'awsauroralabsmysql.com', 'www.awsauroralabsmysql.com' ], !Ref "AWS::NoValue" ]
         DefaultRootObject: index.html
         Enabled: true
         IPV6Enabled: true
         PriceClass: PriceClass_All
         ViewerCertificate:
           CloudFrontDefaultCertificate: !If [ condProd, !Ref "AWS::NoValue", true ]
-          AcmCertificateArn: !If [ condProd, !Sub 'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/f81ee321-c868-48c3-8bb8-06a058b06846', !Ref "AWS::NoValue" ]
+          AcmCertificateArn: !If [ condProd, !Sub 'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/09a8aa1c-1e30-45e8-b201-a7d4aee7541f', !Ref "AWS::NoValue" ]
           MinimumProtocolVersion: 'TLSv1.1_2016'
           SslSupportMethod: !If [ condProd, 'sni-only', !Ref "AWS::NoValue" ]
         Restrictions:
@@ -206,63 +284,11 @@ Resources:
               Forward: none
           LambdaFunctionAssociations:
             - EventType: origin-request
-              LambdaFunctionARN: !Ref funcIndexDocVersion
-        CacheBehaviors:
-            - AllowedMethods: [ GET, HEAD ]
-              CachedMethods: [ GET, HEAD ]
-              Compress: true
-              MaxTTL: 86400
-              MinTTL: 0
-              DefaultTTL: 3600
-              TargetOriginId: !Sub ${s3Website}-templates
-              PathPattern: /templates/*
-              ViewerProtocolPolicy: redirect-to-https
-              ForwardedValues:
-                QueryString: false
-                Cookies:
-                  Forward: none
-            - AllowedMethods: [ GET, HEAD ]
-              CachedMethods: [ GET, HEAD ]
-              Compress: true
-              MaxTTL: 86400
-              MinTTL: 0
-              DefaultTTL: 3600
-              TargetOriginId: !Sub ${s3Website}-scripts
-              PathPattern: /scripts/*
-              ViewerProtocolPolicy: redirect-to-https
-              ForwardedValues:
-                QueryString: false
-                Cookies:
-                  Forward: none
-            - AllowedMethods: [ GET, HEAD ]
-              CachedMethods: [ GET, HEAD ]
-              Compress: true
-              MaxTTL: 86400
-              MinTTL: 0
-              DefaultTTL: 3600
-              TargetOriginId: !Sub ${s3Website}-support
-              PathPattern: /support/*
-              ViewerProtocolPolicy: redirect-to-https
-              ForwardedValues:
-                QueryString: false
-                Cookies:
-                  Forward: none
+              LambdaFunctionARN: !Ref funcRedirectVersion
         Origins:
           - Id: !Sub ${s3Website}-site
             DomainName: !Sub '${s3Website}.s3.amazonaws.com'
             OriginPath: /website
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
-          - Id: !Sub ${s3Website}-templates
-            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
-          - Id: !Sub ${s3Website}-scripts
-            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
-          - Id: !Sub ${s3Website}-support
-            DomainName: !Sub '${s3Website}.s3.amazonaws.com'
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${oaiWebsite}'
       Tags:
@@ -280,6 +306,6 @@ Outputs:
   ContentBucket:
     Value: !Ref s3Website
   DistroEndpoint:
-    Value: !If [ condProd, 'awsauroralabsmy.com', !GetAtt cfWebsite.DomainName ]
+    Value: !If [ condProd, 'awsauroralabsmysql.com', !GetAtt cfWebsite.DomainName ]
   Region:
     Value: !Ref 'AWS::Region'

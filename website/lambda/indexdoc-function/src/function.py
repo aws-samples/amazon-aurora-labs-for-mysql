@@ -18,9 +18,17 @@ def lambda_handler(event, context):
     # Request is the response, too
     request = event['Records'][0]['cf']['request']
 
-    # Check if the URI ends with '/', then append 'index.html' to it
-    if request['uri'].endswith('/'):
-        request['uri'] = request['uri'] + 'index.html'
+    # Build response
+    response = {
+        'status': '302',
+        'statusDescription': 'Found',
+        'headers': {
+            'location': [{
+                'key': 'Location',
+                'value': 'https://awsauroralabsmy.com' + request['uri']
+            }]
+        }
+    }
 
-    # Return modified request
-    return request
+    # Return response
+    return response
