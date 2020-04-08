@@ -353,24 +353,41 @@ Resources:
         ErrorOutputPrefix: !Sub 'v1-${tagEnvironment}-errors/'
         RoleARN: !GetAtt roleWriteAnalytics.Arn
 
-  ## API endpoint fronting the tracking implementation
-  apiLabsBackend:
-    Type: AWS::ApiGateway::RestApi
+  ## HTTP API access log destination
+  httpLogs:
+    Type: AWS::Logs::LogGroup
     Properties:
-      Name: !Sub '${AWS::StackName}-labs-api'
+      LogGroupName: !Sub '${AWS::StackName}-api'
+      RetentionInDays: 7
+
+  ## HTTP API
+  ## WARNING: In place modifications of the API or stages via CFN break the API
+  ## Just redeploy the API with a new resource name, if you need to make changes
+  httpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: 'v1'
       Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-labs-api'
-        - Key: Environment
-          Value: !Ref tagEnvironment
-        - Key: Workload
-          Value: !Ref 'AWS::StackName'
+        Name: !Sub '${AWS::StackName}-api'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+      AccessLogSettings:
+        DestinationArn: !GetAtt httpLogs.Arn
+        Format: $context.requestId
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 100
+      RouteSettings:
+        "POST /track":
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 100
+      FailOnWarnings: True
 
   ## Role for API Gateway to write to the Delivery Stream
-  roleApiMethod:
+  roleProducer:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: !Sub '${AWS::StackName}-api-${AWS::Region}'
+      RoleName: !Sub '${AWS::StackName}-producer-${AWS::Region}'
       Description: Role to permit the API method to integrate with Firehose
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -380,7 +397,7 @@ Resources:
               - 'sts:AssumeRole'
             Principal:
               Service:
-                - 'apigateway.amazonaws.com'
+                - 'lambda.amazonaws.com'
       Policies:
         - PolicyName: 'inline-policy'
           PolicyDocument:
@@ -391,47 +408,93 @@ Resources:
                 - firehose:PutRecord
               Resource: "*"
 
-  ## API method to accept analytics events
-  apiAnalyticsMethod:
-    Type: 'AWS::ApiGateway::Method'
+  ## Serverless function for analytics
+  apiProducer:
+    Type: AWS::Serverless::Function
     Properties:
-      ApiKeyRequired: false
-      AuthorizationType: NONE
-      HttpMethod: POST
-      Integration:
-        Type: AWS
-        Credentials: !GetAtt roleApiMethod.Arn
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:firehose:action/PutRecord'
-        IntegrationHttpMethod: POST
-        RequestTemplates:
-          application/json: #now the mapping template for an incoming JSON
-            Fn::Join:
-              - ""
-              - - "#set( $b64 = $util.base64Encode(\"$input.body\") )\n"
-                - "{\n"
-                - "  \"DeliveryStreamName\": \""
-                - Ref: fireAnalyticsStream
-                - "\",\n"
-                - "  \"Record\": { \"Data\": \"$b64\" }\n}"
-        RequestParameters:
-          integration.request.header.Content-Type: "'application/x-amz-json-1.1'"
-        IntegrationResponses:
-          - StatusCode: 200
-            ResponseTemplates:
-              application/json: '{"status":"OK"}'
-      MethodResponses:
-        - StatusCode: 200
-      ResourceId: !GetAtt apiLabsBackend.RootResourceId
-      RestApiId: !Ref apiLabsBackend
+      FunctionName: !Sub ${AWS::StackName}-producer
+      Description: Validates and emits event to Firehose.
+      Handler: index.handler
+      Role: !GetAtt roleProducer.Arn
+      Runtime: python3.7
+      Timeout: 30
+      Tags:
+        Name: !Sub ${AWS::StackName}-producer
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+      Environment:
+        Variables:
+          REGION: !Ref 'AWS::Region'
+          STREAM: !Ref fireAnalyticsStream
+      Events:
+        ExplicitApi: # warning: creates a public endpoint
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref httpApi
+            Method: POST
+            Path: /track
+            TimeoutInMillis: 30000
+            PayloadFormatVersion: "2.0"
+            RouteSettings:
+              ThrottlingBurstLimit: 200
+              ThrottlingRateLimit: 1000
+      InlineCode: |
+        # Dependencies
+        from os import environ
+        import boto3
+        import json
+        import base64
 
-  ## API deployment
-  ApiGatewayDeployment:
-    Type: 'AWS::ApiGateway::Deployment'
-    DependsOn:
-      - apiAnalyticsMethod
-    Properties:
-      RestApiId: !Ref apiLabsBackend
-      StageName: track
+        print("[INFO]", "Initialize function")
+        session = boto3.session.Session(region_name=environ["REGION"])
+        firehose = session.client('firehose')
+
+        # Lambda handler function / main function
+        def handler(event, context):
+          print("[INFO]", "Invocation start")
+
+          # try/catch
+          try:
+            # Get payload in body
+            payload = event["body"]
+            payload = json.loads(payload)
+
+            # Validate payload
+            if ("stack_uuid" in payload and "stack_region" in payload and "event_timestamp" in payload and "event_scope" in payload and "event_action" in payload):
+              # Prepare
+              data = json.dumps(payload) + "\n"
+              data = data.encode('utf-8')
+
+              # Send to Firehose
+              result = firehose.put_record(
+                DeliveryStreamName=environ["STREAM"],
+                Record={
+                    'Data': data
+                }
+              )
+
+              # Produce response
+              print("[INFO]", json.dumps(payload))
+              response = {
+                "statusCode": 200,
+                "body": "Event submitted successfully"
+              }
+            else:
+              print("[ERROR]", "Request received from client does not pass validation")
+              response = {
+                "statusCode": 400,
+                "body": { "message": "Bad request received from client" }
+              }
+          except Exception as e:
+            print("[ERROR]", e)
+            response = {
+              "statusCode": 500,
+              "body": { "message": "Internal execution error" }
+            }
+
+          # Return response
+          return response
+
 
 ## Outputs
 Outputs:
@@ -444,4 +507,4 @@ Outputs:
   Region:
     Value: !Ref 'AWS::Region'
   TrackEndpoint:
-    Value: !Sub '${apiLabsBackend}.execute-api.${AWS::Region}.amazonaws.com'
+    Value: !Sub '${httpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'

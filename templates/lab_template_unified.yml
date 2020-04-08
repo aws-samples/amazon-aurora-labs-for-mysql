@@ -1076,7 +1076,7 @@ Resources:
       Description: Custom Resource to provide support operations for the Aurora MySQL labs.
       Handler: index.handler
       Role: !GetAtt roleLabSupport.Arn
-      Runtime: python3.6
+      Runtime: python3.7
       Timeout: 30
       Tags:
         - Key: Name
@@ -1084,7 +1084,7 @@ Resources:
       Environment:
         Variables:
           REGION: !Ref 'AWS::Region'
-          ANALYTICSURI: 'https://[[apigw]]/track'
+          ANALYTICSURI: 'https://[[apigw]]/v1/track'
       Code:
         ZipFile: |
           # Dependencies
