@@ -1128,7 +1128,7 @@ Resources:
                         'stack_region': event["ResourceProperties"]["StackRegion"] if ("StackRegion" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
                         'deployed_cluster': event["ResourceProperties"]["DeployedCluster"] if ("DeployedCluster" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
                         'deployed_ml': event["ResourceProperties"]["DeployedML"] if ("DeployedML" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
-                        'event_timestamp': datetime.datetime.utcnow().isoformat(),
+                        'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
                         'event_scope': 'Stack',
                         'event_action': event["RequestType"] if "RequestType" in event else None,
                         'event_message': "Stack-level operation",
@@ -1138,8 +1138,6 @@ Resources:
                         'ee_module_version': event["ResourceProperties"]["EEModuleVersion"] if ("EEModuleVersion" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleVersion"]) else None
                       }
                       r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-                      print("[INFO]", "Event payload", payload)
-                      print("[INFO]", "ApiGateway response", json.loads(r.data.decode('utf-8')))
                     except Exception as e:
                       # errors in tracker interaction should not prevent operation of the function in critical path
                       print("[ERROR]", e)
