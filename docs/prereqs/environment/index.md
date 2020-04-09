@@ -29,17 +29,28 @@ To simplify the getting started experience with the labs, we have created founda
 
 Please choose the most appropriate CloudFormation template based on the labs you want to run, and click **Launch Stack**:
 
-Option | One-Click Launch | Download Template
---- | --- | ---
-**I will create the DB cluster manually** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-no-cluster.yml" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a> | [lab-no-cluster.yml](https://[[website]]/templates/lab-no-cluster.yml)
-**Create an Aurora Provisioned DB cluster for me automatically** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-with-cluster.yml" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a> | [lab-with-cluster.yml](https://[[website]]/templates/lab-with-cluster.yml)
+Option | One-Click Launch
+--- | ---
+**I will create the DB cluster manually** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-template-unified.yml&param_deployCluster=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
+**Create an Aurora Provisioned DB cluster for me automatically** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-template-unified.yml&param_deployCluster=Yes" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
 
-In the field named **Stack Name**, ensure the value `labstack` is preset. For the **vpcAZs** parameter select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available. Scroll to the bottom of the page, check the box that reads: **I acknowledge that AWS CloudFormation might create IAM resources with custom names** and then click **Create stack**.
+??? tip "Can I see the CloudFormation template?"
+    Yes, we encourage you to download the CloudFormation template, review the resources that are being created and how they are configured.
+
+    [Download the CloudFormation template](https://[[website]]/templates/lab-template-unified.yml)
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
 
-<span class="image">![Create Stack](2-create-stack.png?raw=true)</span>
+In the field named **Stack Name**, ensure the value `labstack` is preset. For the **Use AZs** parameter (Regional Settings section) select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
+
+If you are planning to run the Aurora Machine Learning integration labs, please also select **Yes** for the **Enable Aurora ML Labs?** parameter (Lab Features section).
+
+<span class="image">![Create Stack](2-create-stack-params.png?raw=true)</span>
+
+Scroll to the bottom of the page, check the box that reads: **I acknowledge that AWS CloudFormation might create IAM resources with custom names** and then click **Create stack**.
+
+<span class="image">![Create Stack](2-create-stack-confirm.png?raw=true)</span>
 
 The stack will take approximatively 20 minutes to provision, you can monitor the status on the **Stack detail** page. You can monitor the progress of the stack creation process by refreshing the **Events** tab. The latest event in the list will indicate `CREATE_COMPLETE` for the stack resource.
 
