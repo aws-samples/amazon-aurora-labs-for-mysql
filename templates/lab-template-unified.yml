@@ -708,7 +708,7 @@ Resources:
                 echo "* configured aws cli" >> /debug.log
 
                 # set environment variables
-                export ANALYTICSURI="https://[[apigw]]/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
+                export ANALYTICSURI="https://[[apigw]]/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
                 export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ubuntu/.bashrc
                 export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
                 export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
