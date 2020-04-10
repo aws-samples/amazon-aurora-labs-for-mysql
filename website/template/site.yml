@@ -541,7 +541,7 @@ Resources:
         Workload: !Ref 'AWS::StackName'
       AccessLogSettings:
         DestinationArn: !GetAtt httpLogs.Arn
-        Format: '$context.identity.sourceIp,$context.identity.caller,$context.identity.user,$context.requestTime,$context.httpMethod,$context.resourcePath,$context.protocol,$context.status,$context.responseLength,$context.requestId'
+        Format: '$context.identity.sourceIp,$context.requestTime,$context.httpMethod,$context.path,$context.protocol,$context.status,$context.responseLength,$context.requestId'
       DefaultRouteSettings:
         ThrottlingBurstLimit: 10
         ThrottlingRateLimit: 100
