@@ -96,7 +96,7 @@ Once the data load completes successfully, you can run a read-only workload to g
 Run the load generation script from the Session Manager workstation command line, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
 
 ```
-python3 loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
+python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 
 Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.

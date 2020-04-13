@@ -31,13 +31,13 @@ Please choose the most appropriate CloudFormation template based on the labs you
 
 Option | One-Click Launch
 --- | ---
-**I will create the DB cluster manually** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-template-unified.yml&param_deployCluster=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
-**Create an Aurora Provisioned DB cluster for me automatically** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-template-unified.yml&param_deployCluster=Yes" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
+**I will create the DB cluster manually** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
+**Create an Aurora Provisioned DB cluster for me automatically** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=Yes" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
 
 ??? tip "Can I see the CloudFormation template?"
     Yes, we encourage you to download the CloudFormation template, review the resources that are being created and how they are configured.
 
-    [Download the CloudFormation template](https://[[website]]/templates/lab-template-unified.yml)
+    [Download the CloudFormation template](https://[[website]]/templates/lab_template.yml)
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.

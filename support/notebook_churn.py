@@ -30,7 +30,7 @@ sess = sagemaker.Session()
 import pandas as pd
 import numpy as np
 
-churn = pd.read_csv('./Data sets/churn.txt')
+churn = pd.read_csv('./sample_churn_data.txt')
 churn.columns = ['state', 'acc_length', 'area_code', 'phone', 'int_plan', 'vmail_plan',
                 'vmail_msg', 'day_mins', 'day_calls', 'day_charge', 'eve_mins', 'eve_calls',
                 'eve_charge', 'night_mins', 'night_calls', 'night_charge', 'int_mins',
@@ -130,7 +130,7 @@ model = SKLearnModel(
     model_data=artifact,
     role=get_execution_role(),
     entry_point='script.py')
-endpoint_name = 'AuroraML-churn-endpoint'
+endpoint_name = 'auroraml-churn-endpoint'
 
 model.deploy(
     instance_type='ml.c5.large',

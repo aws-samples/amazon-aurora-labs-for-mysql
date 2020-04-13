@@ -84,7 +84,7 @@ At this time the event notifications have been configured. Ensure you have verif
 
 ## 2. Testing a manual DB cluster failover
 
-In this test you will use a [simple failover monitoring script](/scripts/simple-failover.py) to check the status of the database.
+In this test you will use a [simple failover monitoring script](/scripts/simple_failover.py) to check the status of the database.
 
 ??? tip "Learn more about the simple monitoring script"
     The script is designed to monitor the writer DB instance. It will attempt to connect to the DB cluster's **Cluster Endpoint**, and check the status of the DB instance by executing the following SQL query:
@@ -106,7 +106,7 @@ You will need to open an additional command line session to your Session Manager
 In one of the two command line sessions, start the monitoring script using the following command:
 
 ```
-python3 simple-failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
+python3 simple_failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
 You can quit the monitoring script at any time by pressing `Ctrl+C`.
@@ -198,7 +198,7 @@ quit;
 
 ## 4. Testing a failover with cluster awareness
 
-Simple DNS-based failovers work well for most use cases, and they are relatively fast. However, as you have noticed there are still several seconds of connectivity disruption due to DNS update and expiration delays, including the DNS flip-floping effect. Thus failover times can be improved further. In this test you will use a basic [cluster-aware monitoring script](/scripts/aware-failover.py), and compare it side by side with the simple monitoring script used above.
+Simple DNS-based failovers work well for most use cases, and they are relatively fast. However, as you have noticed there are still several seconds of connectivity disruption due to DNS update and expiration delays, including the DNS flip-floping effect. Thus failover times can be improved further. In this test you will use a basic [cluster-aware monitoring script](/scripts/aware_failover.py), and compare it side by side with the simple monitoring script used above.
 
 ??? tip "Learn more about the cluster-aware monitoring script"
     The script is similar to the simple monitoring script above with a few significant differences:
@@ -212,7 +212,7 @@ Assuming you still have the two command line sessions open and active, open a 3r
 In the new (third) command line session, start the cluster-aware monitoring script using the following command:
 
 ```
-python3 aware-failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
+python3 aware_failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
 You can quit the monitoring script at any time by pressing `Ctrl+C`.
@@ -252,7 +252,7 @@ As before, you will also receive two event notification emails for each failover
 !!! warning "Feature in Preview"
     Amazon RDS Proxy is currently available in a limited number of regions, in preview. It is not recommended for use in production workloads.
 
-In this test you will create an <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy.html" target="_blank">Amazon RDS Proxy</a> for your DB cluster, use the [simple monitoring script](/scripts/simple-failover.py) to connect to it, invoke a manual failover and compare the results with the previous tests that connect directly to the database.
+In this test you will create an <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy.html" target="_blank">Amazon RDS Proxy</a> for your DB cluster, use the [simple monitoring script](/scripts/simple_failover.py) to connect to it, invoke a manual failover and compare the results with the previous tests that connect directly to the database.
 
 ??? tip "Learn more about Amazon RDS Proxy"
     Amazon RDS Proxy is a fully managed, highly available database proxy for Amazon Relational Database Service (RDS) that makes applications more scalable, more resilient to database failures, and more secure. RDS Proxy minimizes application disruption from outages affecting the availability of your database, by automatically connecting to a new database instance while preserving application connections. When failovers occur, rather than rely on DNS changes to reroute requests, RDS Proxy routes requests directly to the new database instance.
@@ -291,7 +291,7 @@ Next, you will need two command line sessions open and active (if you still have
 In one of the two command line sessions, start the monitoring script using the following command:
 
 ```
-python3 simple-failover.py -e[proxy endpoint from above] -u$DBUSER -p"$DBPASS"
+python3 simple_failover.py -e[proxy endpoint from above] -u$DBUSER -p"$DBPASS"
 ```
 
 You can quit the monitoring script at any time by pressing `Ctrl+C`.

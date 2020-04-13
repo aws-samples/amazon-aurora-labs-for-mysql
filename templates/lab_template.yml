@@ -679,10 +679,10 @@ Resources:
                 pip3 install pymysql
                 pip3 install awscli
                 cd /home/ubuntu
-                curl -O https://[[website]]/scripts/loadtest.py
-                curl -O https://[[website]]/scripts/simple-failover.py
-                curl -O https://[[website]]/scripts/aware-failover.py
-                curl -O https://[[website]]/support/SMAuroraPolicy.json
+                curl -O https://[[website]]/scripts/reader_loadtest.py
+                curl -O https://[[website]]/scripts/simple_failover.py
+                curl -O https://[[website]]/scripts/aware_failover.py
+                curl -O https://[[website]]/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
                 echo "* pulled load test script" >> /debug.log
 
@@ -1003,13 +1003,13 @@ Resources:
               unset SUDO_UID
               python3 -m pip install sagemaker boto3 sagemaker_containers
               cd /home/ec2-user/SageMaker/
-              wget https://[[website]]/support/ChurnNB.py
-              wget https://[[website]]/support/DKD2e_data_sets.zip
-              sed -i "s%mlbucketplaceholder%${bucketLabData}%" ChurnNB.py
+              wget https://[[website]]/support/notebook_churn.py
+              wget https://[[website]]/support/sample_churn_data.zip
+              sed -i "s%mlbucketplaceholder%${bucketLabData}%" notebook_churn.py
               sudo mkdir -p /opt/ml/code/
               cd /home/ec2-user/SageMaker/
-              unzip -o DKD2e_data_sets.zip
-              nohup ipython ChurnNB.py>nohup.out &
+              unzip -o sample_churn_data.zip
+              nohup ipython notebook_churn.py>nohup.out &
 
 ## Create the Sagemake Jupyter book if the lab condition allows it.
   smMLNotebook:
