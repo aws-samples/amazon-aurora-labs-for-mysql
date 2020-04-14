@@ -22,7 +22,7 @@ Connect to the Aurora database just like you would to any other MySQL-based data
 If you are not already connected to the Session Manager workstation command line from previous labs, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster. If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the cluster endpoint on the DB cluster details page in the RDS console. If you have skipped that lab and provisioned the DB cluster using the CloudFormation template, you can find the value for the cluster endpoint parameter in the stack outputs.
 
 
-```
+```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
@@ -31,13 +31,13 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
     You can view and retrieve the credentials stored in the secret using the following command:
 
-    ```
+    ```shell
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
 
 Once connected to the database, use the code below to create a stored procedure we'll use later in the labs, to generate load on the DB cluster. Run the following SQL queries:
 
-```
+```sql
 DELIMITER $$
 DROP PROCEDURE IF EXISTS minute_rollup$$
 CREATE PROCEDURE minute_rollup(input_number INT)
@@ -58,7 +58,7 @@ DELIMITER ;
 
 Once connected to the DB cluster, run the following SQL queries to create an initial table:
 
-```
+```sql
 DROP TABLE IF EXISTS `sbtest1`;
 CREATE TABLE `sbtest1` (
  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -72,9 +72,9 @@ KEY `k_1` (`k`)
 
 Next, load an initial data set by importing data from an Amazon S3 bucket:
 
-```
+```sql
 LOAD DATA FROM S3 MANIFEST
-'s3-eu-west-1://aurorareinvent2018/output.manifest'
+'s3-us-east-1://awsauroralabsmy-us-east-1/samples/sbdata/sample.manifest'
 REPLACE
 INTO TABLE sbtest1
 CHARACTER SET 'latin1'
@@ -84,7 +84,7 @@ LINES TERMINATED BY '\r\n';
 
 Data loading may take several minutes, you will receive a successful query message once it completes. When completed, exit the MySQL command line:
 
-```
+```sql
 quit;
 ```
 
@@ -95,7 +95,7 @@ Once the data load completes successfully, you can run a read-only workload to g
 
 Run the load generation script from the Session Manager workstation command line, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
 
-```
+```shell
 python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 
