@@ -78,10 +78,10 @@ nav:
     - Failover: 'global/failover/index.md'
     - Failback: 'global/failback/index.md'
   - Machine Learning:
-    - Overview and Pre-requisites: 'ml/overview/index.md'
-    - Comprehend on Aurora: 'ml/comprehend/index.md'
-    - Sagemaker on Aurora: 'ml/sagemaker/index.md'
-    - Cleanup: 'ml/cleanup/index.md'
+    - Overview and Prerequisites: 'ml/overview/index.md'
+    - Use Comprehend with Aurora: 'ml/comprehend/index.md'
+    - Use Sagemaker with Aurora: 'ml/sagemaker/index.md'
+    - Cleanup Lab Resources: 'ml/cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'

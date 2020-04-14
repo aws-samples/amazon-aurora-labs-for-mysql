@@ -1,26 +1,41 @@
-Connect to the session manager using the instructions [here](/prereqs/connect/) and execute following commands to cleanup Sagemaker resources and roles.
+# Cleanup Lab Resources
 
+By using the Aurora machine learning labs, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you are done with these labs, to ensure you do not incur any unwanted charges for using these services.  
 
-``` shell
+If you are not already connected to the Session Manager workstation, please connect [following these instructions](/prereqs/connect/). Once connected, run the following commands:
 
-aws sagemaker delete-endpoint --endpoint-name AuroraML-churn-endpoint
+```shell
+aws sagemaker delete-endpoint --endpoint-name auroraml-churn-endpoint
 
-aws sagemaker delete-endpoint-config --endpoint-config-name AuroraML-churn-endpoint
+aws sagemaker delete-endpoint-config --endpoint-config-name auroraml-churn-endpoint
 
 aws sagemaker delete-model --model-name $(aws sagemaker list-models --output text --query 'Models[*].[ModelName]' | grep sagemaker-scikit-learn)
 
-aws s3 rm s3://$DATABUCKET --recursive
+aws rds remove-role-from-db-cluster --db-cluster-identifier labstack-cluster \
+--role-arn $(aws iam list-roles --query 'Roles[?RoleName==`labstack-comprehend-access`].Arn' --output text)
 
-aws iam detach-role-policy --role-name ComprehendAuroraAccessRole --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
+sleep 2m
 
-aws iam detach-role-policy --role-name SageMakerAuroraAccessRole --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`SagemakerAuroraPolicy`].Arn' --output text)
+aws rds remove-role-from-db-cluster --db-cluster-identifier labstack-cluster \
+--role-arn $(aws iam list-roles --query 'Roles[?RoleName==`labstack-sagemaker-access`].Arn' --output text)
 
-aws iam delete-role --role-name ComprehendAuroraAccessRole
+sleep 2m
 
-aws iam delete-role --role-name SagemakerAuroraAccessRole
+aws rds modify-db-cluster-parameter-group \
+--db-cluster-parameter-group-name $DBCLUSTERPG \
+--parameters "ParameterName=aws_default_comprehend_role,ParameterValue='',ApplyMethod=pending-reboot"
 
-aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`ComprehendAuroraPolicy`].Arn' --output text)
+aws rds modify-db-cluster-parameter-group \
+--db-cluster-parameter-group-name $DBCLUSTERPG \
+--parameters "ParameterName=aws_default_sagemaker_role,ParameterValue='',ApplyMethod=pending-reboot"
 
-aws iam delete-policy --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`SagemakerAuroraPolicy`].Arn' --output text)
+aws rds failover-db-cluster --db-cluster-identifier labstack-cluster
 
+aws iam delete-role-policy --role-name labstack-comprehend-access --policy-name inline-policy
+
+aws iam delete-role-policy --role-name labstack-sagemaker-access --policy-name inline-policy
+
+aws iam delete-role --role-name labstack-comprehend-access
+
+aws iam delete-role --role-name labstack-sagemaker-access
 ```

@@ -1,20 +1,25 @@
-# Machine Learning on Amazon Aurora
+# Machine Learning with Amazon Aurora
 
-Machine Learning integration with Amazon aurora currently supports Comprehend and Sagemaker. We will follow steps in this lab to create and run functions that will seamlessly and securely call Comprehend and Sagemaker in the background.
+Machine learning integration with Amazon Aurora currently supports <a href="https://aws.amazon.com/comprehend/" target="_blank">Amazon Comprehend</a> and <a href="https://aws.amazon.com/sagemaker/" target="_blank">Amazon SageMaker</a>. Aurora makes direct and secure calls to SageMaker and Comprehend that don’t go through the application layer. Aurora machine learning is based on the familiar SQL programming language, so you don’t need to build custom integrations, move data around, learn separate tools, or have prior machine learning experience.
 
-## Pre-requisites
-Before running the lab make sure you have met the following pre-requisites.
+This lab contains the following tasks:
 
-* [Deploy Environment](/prereqs/environment/)
+1. Setup a sample schema and data for ML labs
+
+This lab requires the following prerequisites:
+
+* [Deploy Environment](/prereqs/environment/) - choose **Yes** for the **Enable Aurora ML Labs?** feature option
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 
-Once you have an Amazon Aurora clustered provisioned and established a session to the bastion host, execute the commands below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora mysql  instance.
+## 1. Setup a sample schema and data for ML labs
+
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora Mysql database.
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
-Once connected, execute the following SQL queries to create the mltest database and tables and populate it with data. We will use these tables later in the lab for sentiment analysis and Sagemaker based predictions.
+Execute the following SQL queries to create the `mltest` database and tables, and populate them with data. We will use these tables in subsequent labs for inferences.
 
 ```sql
 DROP SCHEMA IF EXISTS `mltest`;
@@ -61,15 +66,20 @@ IGNORE 1 LINES
 (state,acc_length,area_code,@dummy1,int_plan,vmail_plan,vmail_msg,day_mins,day_calls,@dummy2,eve_mins,eve_calls,@dummy3,night_mins,night_calls,@dummy4,int_mins,int_calls,@dummy5,cust_service_calls,Churn);
 ```
 
-Execute the following sql statement. You should be able to see two tables, **churn** and **comments**, as shown in the screenshot. If you don't see the tables rerun the commands.
+Verify that the schema was created correctly by running the following command:
 
 ```sql
 show tables;
 ```
+
+You should be able to see two tables, **churn** and **comments**, as shown below. If you don't see the tables rerun the commands.
+
 <span class="image">![Reader Load](/ml/overview/1-tables.png?raw=true)</span>
 
-Exit from the mysql prompt by running command below, before you proceed to the next section.
+Disconnect from the DB cluster, using:
 
 ```sql
 quit;
 ```
+
+You may now proceed to the next labs and integrate Aurora with machine learning services.
