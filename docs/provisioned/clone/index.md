@@ -169,5 +169,5 @@ By running this lab, you have created additional AWS resources. We recommend you
 ```shell
 aws rds delete-db-instance --db-instance-identifier labstack-cluster-clone-instance
 
-aws rds delete-db-cluster --db-cluster-identifier labstack-cluster-clone
+aws rds delete-db-cluster --db-cluster-identifier labstack-cluster-clone --skip-final-snapshot
 ```
