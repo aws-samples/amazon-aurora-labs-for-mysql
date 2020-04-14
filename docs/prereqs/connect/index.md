@@ -41,7 +41,7 @@ Please select an EC2 instance to establish a session with. The workstation is na
 
 If you see a black command like terminal screen and a prompt, you are now connected to the workstation. Type the following commands to ensure a consistent experience, and that the connection is successful:
 
-```
+```shell
 bash
 cd ~
 ```
@@ -50,7 +50,7 @@ cd ~
 
 Let's make sure your workstation has been configured properly. Type the following command in the Session Manager command line:
 
-```
+```shell
 tail -n1 /debug.log
 ```
 
