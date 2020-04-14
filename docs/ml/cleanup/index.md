@@ -1,6 +1,6 @@
 # Cleanup Lab Resources
 
-By using the Aurora machine learning labs, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you are done with these labs, to ensure you do not incur any unwanted charges for using these services.  
+By using the Aurora machine learning labs, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed these labs, to ensure you do not incur any unwanted charges for using these services.  
 
 If you are not already connected to the Session Manager workstation, please connect [following these instructions](/prereqs/connect/). Once connected, run the following commands:
 

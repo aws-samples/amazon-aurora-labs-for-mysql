@@ -332,7 +332,7 @@ The tests above represent relatively simple failure conditions. Different failur
 
 ## 7. Cleanup lab resources
 
-By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you are done with this labs, to ensure you do not incur any unwanted charges for using these services.
+By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
 
 ```shell
 aws rds remove-source-identifier-from-subscription \

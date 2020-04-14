@@ -8,6 +8,7 @@ This lab contains the following tasks:
 2. Verify that the data set is identical
 3. Change data on the clone
 4. Verify that the data diverges
+5. Cleanup lab resources
 
 This lab requires the following prerequisites:
 
@@ -159,4 +160,14 @@ Disconnect from the DB cluster, using:
 
 ```sql
 quit;
+```
+
+## 5. Cleanup lab resources
+
+By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
+
+```shell
+aws rds delete-db-instance --db-instance-identifier labstack-cluster-clone-instance
+
+aws rds delete-db-cluster --db-cluster-identifier labstack-cluster-clone
 ```
