@@ -1,7 +1,7 @@
 {
   "name": "amazon-aurora-labs-for-mysql",
-  "version": "1.0.0",
-  "description": "Verifies the request IP address againsts a whitelist and rejects requests if the source IP does not match",
+  "version": "1.2.0",
+  "description": "Build pipeline for the Amazon Aurora Labs for MySQL project.",
   "devDependencies": {
     "grunt": "latest",
     "grunt-exec": "latest",
