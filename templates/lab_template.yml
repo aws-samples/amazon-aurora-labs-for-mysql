@@ -587,6 +587,9 @@ Resources:
                   - rds-db:connect
                   - iam:AttachRolePolicy
                   - iam:DetachRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:GetRolePolicy
                   - iam:CreatePolicy
                   - iam:DeletePolicy
                   - iam:CreateRole
