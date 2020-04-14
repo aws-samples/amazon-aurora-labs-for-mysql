@@ -23,7 +23,7 @@ If you are not already connected to the Session Manager workstation command line
 
 If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute this command:
 
-```
+```shell
 aws ssm send-command \
 --document-name [loadTestRunDoc] \
 --instance-ids [bastionInstance] \
@@ -35,7 +35,7 @@ dbPassword="$DBPASS"
 
 If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run this simplified command:
 
-```
+```shell
 aws ssm send-command \
 --document-name [loadTestRunDoc] \
 --instance-ids [bastionInstance]

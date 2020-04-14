@@ -17,6 +17,7 @@ This lab contains the following tasks:
 4. Test a failover with cluster awareness
 5. Use RDS Proxy to minimize failover disruptions
 6. More testing suggestions
+7. Cleanup lab resources
 
 This lab requires the following prerequisites:
 
@@ -31,7 +32,7 @@ To receive notifications when failover events occur with your DB cluster, you wi
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run:
 
-```
+```shell
 aws sns create-topic \
 --name labstack-aurora-failovers
 ```
@@ -40,16 +41,11 @@ If successful, the command will respond back with a **TopicArn** identifier, you
 
 <span class="image">![Create SNS Topic](1-sns-topic.png?raw=true)</span>
 
-Next, subscribe your email address to the SNS topic, using the command below, changing the placeholders as follows:
+Next, subscribe your email address to the SNS topic using the command below, changing the placeholder ==[YourEmail]== with your email address:
 
-Placeholder | Description | Where to find it
---- | --- | ---
-==[TopicArn]== | The ARN of the SNS topic | See the response to the command you ran above.
-==[YourEmail]== | Your email address | You will receive the event notifications to this email address.
-
-```
+```shell
 aws sns subscribe \
---topic-arn [TopicArn] \
+--topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`labstack-aurora-failovers`)].TopicArn' --output text) \
 --protocol email \
 --notification-endpoint '[YourEmail]'
 ```
@@ -58,16 +54,12 @@ You will receive a verification email on that address, please confirm the subscr
 
 <span class="image">![Create SNS Topic](1-subscription-verify.png?raw=true)</span>
 
-Once confirmed, or while you are waiting for the verification email to arrive, create an RDS event subscription and register the DB cluster as an event source using the command below, changing the placeholders as follows:
+Once confirmed, or while you are waiting for the verification email to arrive, create an RDS event subscription and register the DB cluster as an event source using the command below:
 
-Placeholder | Description | Where to find it
---- | --- | ---
-==[TopicArn]== | The ARN of the SNS topic | See the response to the first command you ran above (SNS topic creation).
-
-```
+```shell
 aws rds create-event-subscription \
 --subscription-name labstack-rds-failovers \
---sns-topic-arn [TopicArn] \
+--sns-topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`labstack-aurora-failovers`)].TopicArn' --output text) \
 --source-type db-cluster \
 --event-categories '["failover"]' \
 --enabled
@@ -105,7 +97,7 @@ You will need to open an additional command line session to your Session Manager
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
-```
+```shell
 python3 simple_failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
@@ -120,7 +112,7 @@ In the other command line session, you will trigger a manual failover of the clu
 
 Enter the following command in the command line session that does not run the monitoring script:
 
-```
+```shell
 aws rds failover-db-cluster \
 --db-cluster-identifier labstack-cluster
 ```
@@ -166,13 +158,13 @@ In this test you will simulate a crash of the database engine service on the DB 
 
 Connect to the cluster endpoint using a MySQL client in the command line session that does not run the monitoring script:
 
-```
+```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Now, issue the following fault injection command:
 
-```
+```sql
 ALTER SYSTEM CRASH INSTANCE;
 ```
 
@@ -191,7 +183,7 @@ Wait and observe the monitor script output. Once triggered, you should see monit
 
 You may need to exit the mysql command console, even if it is disconnected using by typing:
 
-```
+```sql
 quit;
 ```
 
@@ -211,7 +203,7 @@ Assuming you still have the two command line sessions open and active, open a 3r
 
 In the new (third) command line session, start the cluster-aware monitoring script using the following command:
 
-```
+```shell
 python3 aware_failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
@@ -222,7 +214,7 @@ You can quit the monitoring script at any time by pressing `Ctrl+C`.
 
 Enter the following command in the command line session that does not run any monitoring script, to trigger the failover:
 
-```
+```shell
 aws rds failover-db-cluster \
 --db-cluster-identifier labstack-cluster
 ```
@@ -290,7 +282,7 @@ Next, you will need two command line sessions open and active (if you still have
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
-```
+```shell
 python3 simple_failover.py -e[proxy endpoint from above] -u$DBUSER -p"$DBPASS"
 ```
 
@@ -305,7 +297,7 @@ In the other command line session, you will trigger a manual failover of the clu
 
 Enter the following command in the command line session that does not run the monitoring script:
 
-```
+```shell
 aws rds failover-db-cluster \
 --db-cluster-identifier labstack-cluster
 ```
@@ -336,3 +328,20 @@ The tests above represent relatively simple failure conditions. Different failur
 * How would production load at scale affect failure recovery time? Consider testing with the system under load.
 * How would recovery time be affected by the workload condition at the time? Consider testing failure recovery during different workload conditions, eg. a crash during a DDL operation.
 * Can you improve upon the cluster awareness to address other failure modes?
+
+
+## 7. Cleanup lab resources
+
+By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you are done with this labs, to ensure you do not incur any unwanted charges for using these services.
+
+```shell
+aws rds remove-source-identifier-from-subscription \
+--subscription-name labstack-rds-failovers \
+--source-identifier labstack-cluster
+
+aws rds delete-event-subscription \
+--subscription-name labstack-rds-failovers
+
+aws sns delete-topic \
+--topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`labstack-aurora-failovers`)].TopicArn' --output text)
+```
