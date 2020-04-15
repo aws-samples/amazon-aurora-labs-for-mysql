@@ -41,10 +41,10 @@ The following labs are currently available, part of this instructional website.
     --- | --- | --- | ---
     1 | [**Create Infrastructure**](/global/create/) | Required | Create a multi-region environment to use with Aurora Global Database.
     2 | [**Create Global Database**](/global/gdb/) | Recommended | Create a Global Database which will span across multiple regions.
-    2 | [**Connect Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the global database.
-    2 | [**Monitor Latency**](/global/cw/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated IO and the cross region replication data transfer of the global database.
-    2 | [**Failover**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario.
-    2 | [**Failback**](/global/failback/) | Optional | Fail back to the original primary region.
+    3 | [**Connect Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the global database.
+    4 | [**Monitor Latency**](/global/cw/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated IO and the cross region replication data transfer of the global database.
+    5 | [**Failover**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario.
+    6 | [**Failback**](/global/failback/) | Optional | Fail back to the original primary region.
 
 
 ??? abstract "Machine Learning with Amazon Aurora"
