@@ -28,11 +28,33 @@ The following labs are currently available, part of this instructional website.
     5 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
     6 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
 
+
 ??? abstract "Labs for Aurora Serverless DB clusters"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
     1 | [**Create an Aurora Serverless DB cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
     2 | [**Use Aurora Serverless with AWS Lambda functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
+
+
+??? abstract "Aurora Global Database Workshop"
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    1 | [**Create Infrastructure**](/global/create/) | Required | Create a multi-region environment to use with Aurora Global Database.
+    2 | [**Create Global Database**](/global/gdb/) | Recommended | Create a Global Database which will span across multiple regions.
+    2 | [**Connect Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the global database.
+    2 | [**Monitor Latency**](/global/cw/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated IO and the cross region replication data transfer of the global database.
+    2 | [**Failover**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario.
+    2 | [**Failback**](/global/failback/) | Optional | Fail back to the original primary region.
+
+
+??? abstract "Machine Learning with Amazon Aurora"
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    1 | [**Overview and Prerequisites**](/ml/overview/) | Required | Setup a sample schema and data for machine learning integration.
+    2 | [**Use Comprehend with Aurora**](/ml/comprehend/) | Recommended | Integrate Aurora with the Comprehend Sentiment Analysis API and make sentiment analysis inferences via SQL commands.
+    3 | [**Use SageMaker with Aurora**](/ml/sagemaker/) | Recommended | Integrate Aurora with SageMaker Endpoints to infer customer churn in a data set using SQL commands.
+    4 | [**Cleanup Lab Resources**](/ml/cleanup/) | Recommended | Clean up after the labs and remove unneeded AWS resources.       
+
 
 You can also discover exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
 

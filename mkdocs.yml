@@ -80,7 +80,7 @@ nav:
   - Machine Learning:
     - Overview and Prerequisites: 'ml/overview/index.md'
     - Use Comprehend with Aurora: 'ml/comprehend/index.md'
-    - Use Sagemaker with Aurora: 'ml/sagemaker/index.md'
+    - Use SageMaker with Aurora: 'ml/sagemaker/index.md'
     - Cleanup Lab Resources: 'ml/cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
