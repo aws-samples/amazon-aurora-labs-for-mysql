@@ -22,9 +22,7 @@ brew install python3
 brew install mkdocs
 brew install node
 brew install jq
-pip3 install mkdocs-material
-pip3 install pymdown-extensions
-pip3 install taskcat
+pip3 install -r requirements.txt
 
 npm install -g npm
 npm install -g grunt-cli
