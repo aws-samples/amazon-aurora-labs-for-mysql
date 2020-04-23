@@ -163,7 +163,7 @@ Subsequent labs on this site use a consistent way to access DB credentials, rega
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[secretArn]== placeholder with the ARN of the secret created above:
 
-```
+```shell
 CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'`
 export DBUSER="`echo $CREDS | jq -r '.username'`"
 export DBPASS="`echo $CREDS | jq -r '.password'`"
@@ -175,14 +175,14 @@ echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
 
 Let's make sure your DB cluster has been created properly. First let's ensure the credentials have been saved correctly in the environment variables, run:
 
-```
+```shell
 echo $DBUSER
 ```
 
 You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpont]== placeholder with the value of the cluster endpoint created in the preceding steps:
 
-```
+```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 
-You should see a response containing version number `2.07.0`.
+You should see a response containing version number `2.07.1`.

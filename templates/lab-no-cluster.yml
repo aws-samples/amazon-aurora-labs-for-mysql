@@ -14,6 +14,7 @@
 ## 2019-12-12 - Added simple failover script to, removed DNS failover script from bootstrap
 ## 2019-12-12 - Added SNS permissions to bastion policy
 ## 2020-01-29 - Updated EC2 AMIs and Aurora version
+## 2020-02-12 - Added support for Aurora ML labs
 ##
 ## Dependencies:
 ## none
@@ -24,15 +25,47 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Amazon Aurora Labs for MySQL
 
+
 ## Parameters
 Parameters:
   vpcAZs:
     Type: "List<AWS::EC2::AvailabilityZone::Name>"
-    Description: List of Availability Zones to use for the subnets in the VPC. Must pick 3 AZs in regions with 3 or more AZs.
+    Description: List of Availability Zones to use for the subnets in the VPC. Please select exactly 3 AZs in regions with 3 or more AZs, otherwise select 2.
+  deployML:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Aurora ML labs, choose 'Yes', to deploy the required resources.
+
+
+## Metadata
+Metadata:
+
+## Friendly UI grouping for parameters
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Regional Settings"
+        Parameters:
+          - vpcAZs
+      - Label:
+          default: "Lab Features"
+        Parameters:
+          - deployML
+    ParameterLabels:
+      vpcAZs:
+        default: 'Use AZs:'
+      deployML:
+        default: 'Enable Aurora ML Labs?'
+
 
 ## Conditions
 Conditions:
   cond3AZs: !Equals [ !FindInMap [ RegionalSettings, !Ref "AWS::Region", azs ], "3" ]
+  condDeployMLResources: !Equals [ !Ref deployML, "Yes" ]
+
 
 ## Mappings
 Mappings:
@@ -148,6 +181,10 @@ Mappings:
       numThreads: '4'
       numTables: '8'
       numWarehouses: '2'
+  MLSettings:
+    global:
+      notebookType: ml.m4.xlarge
+
 
 ## Resources
 Resources:
@@ -335,6 +372,45 @@ Resources:
             Action: 's3:*'
             Resource: [ 'arn:aws:s3:::*', 'arn:aws:s3:::*/*' ]
 
+## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
+  bucketLabData:
+    Type: AWS::S3::Bucket
+    Condition: condDeployMLResources
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - !Ref 'AWS::StackName'
+          - data
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref 'AWS::StackId'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref 'AWS::StackName'
+              - auroradata
+              - !Select
+                - 0
+                - !Split
+                  - "-"
+                  - !Select
+                    - 2
+                    - !Split
+                      - "/"
+                      - !Ref 'AWS::StackId'
+
 ## Create DB subnet group
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
@@ -445,6 +521,8 @@ Resources:
                 - 'ssm.amazonaws.com'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+        - 'arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess'
       Policies:
         - PolicyName: inline-policy
           PolicyDocument:
@@ -459,6 +537,15 @@ Resources:
                   - sns:*
                   - secretsmanager:*
                   - rds-db:connect
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:ListPolicies
+                  - iam:ListRoles
+                  - iam:PassRole
                 Resource: "*"
   profileBastionHost:
     Type: AWS::IAM::InstanceProfile
@@ -495,6 +582,10 @@ Resources:
           DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
           echo "* updated and upgraded packages" >> /debug.log
 
+          # install other supporting packages
+          apt-get -y install unzip
+          echo "* installed supporting packages" >> /debug.log
+
           # update SSM agent
           snap remove amazon-ssm-agent
           wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
@@ -517,8 +608,10 @@ Resources:
           sysbench --version >> /debug.log
           echo "* installed sysbench package" >> /debug.log
 
-          # install percona tpcc-like test suite
+          # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
           git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
+          cd /home/ubuntu/sysbench-tpcc
+          git checkout 288b7687877a2b52772949f13c507713db182d25
           chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
           echo "* cloned percona/sysbench-tpcc repo" >> /debug.log
 
@@ -535,6 +628,7 @@ Resources:
           curl -O https://[[website]]/scripts/loadtest.py
           curl -O https://[[website]]/scripts/simple-failover.py
           curl -O https://[[website]]/scripts/aware-failover.py
+          curl -O https://[[website]]/support/SMAuroraPolicy.json
           chown -R ubuntu:ubuntu /home/ubuntu/*.py
           echo "* pulled load test script" >> /debug.log
 
@@ -545,6 +639,13 @@ Resources:
           echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
           chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
           echo "* configured aws cli" >> /debug.log
+
+          # set environment variables
+          export DATABUCKET="${bucketLabData}"
+          echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+          export DBCLUSTERPG="${cpgClusterParams}"
+          echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
+          echo "* environemnt vars initialized" >> /debug.log
 
           # reboot
           echo "* bootstrap complete, rebooting" >> /debug.log
@@ -635,6 +736,75 @@ Resources:
             runCommand:
             - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
 
+## Create a role for the notebook.
+  roleMLNotebook:
+    Type: AWS::IAM::Role
+    Condition: condDeployMLResources
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ml-${AWS::Region}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:DeleteObject
+                  - s3:ListMultipartUploadParts
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::*/*
+                  - arn:aws:s3:::*
+
+## Create a Sagemaker Lifecycle hook, which will clone the github repo and get the Jupyter notebook and other resources needed to build the model.
+## using nohup, so the script keeps running after 5 minutes. The onstart event fails, if script doesn't finish in 5 minutes.
+  smMLNotebookHook:
+    Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
+    Condition: condDeployMLResources
+    Properties:
+      OnCreate:
+        - Content:
+            Fn::Base64: !Sub |
+              #!/bin/bash
+
+              set -e
+              sudo -u ec2-user -i <<EOF
+              unset SUDO_UID
+              python3 -m pip install sagemaker boto3 sagemaker_containers
+              cd /home/ec2-user/SageMaker/
+              wget https://[[website]]/support/ChurnNB.py
+              wget https://[[website]]/support/DKD2e_data_sets.zip
+              sed -i "s%mlbucketplaceholder%${bucketLabData}%" ChurnNB.py
+              sudo mkdir -p /opt/ml/code/
+              cd /home/ec2-user/SageMaker/
+              unzip -o DKD2e_data_sets.zip
+              nohup ipython ChurnNB.py>nohup.out &
+
+## Create the Sagemake Jupyter book if the lab condition allows it.
+  smMLNotebook:
+    Type : AWS::SageMaker::NotebookInstance
+    Condition: condDeployMLResources
+    Properties:
+      InstanceType: !FindInMap [ MLSettings, global, notebookType ]
+      RootAccess: Enabled
+      RoleArn: !GetAtt roleMLNotebook.Arn
+      NotebookInstanceName: !Sub ${AWS::StackName}-ml
+      LifecycleConfigName: !GetAtt smMLNotebookHook.NotebookInstanceLifecycleConfigName
+
 
 ## Outputs
 Outputs:
@@ -653,3 +823,9 @@ Outputs:
   loadTestRunDoc:
     Description: Load Test Execution Command Document
     Value: !Ref ssmDocSysbenchTest
+  s3BucketName:
+    Description: "S3 Bucket Name for SageMaker training data"
+    Value: !If [ condDeployMLResources, !Ref bucketLabData, "" ]
+  notebookName:
+    Description: "Jupytr Notebook Name"
+    Value: !If [ condDeployMLResources, !Ref smMLNotebook, "" ]

@@ -12,7 +12,7 @@
 site_name: Amazon Aurora Labs for MySQL
 site_description: Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features.
 site_author: 'amazon-aurora-labs-for-mysql@amazon.com'
-site_url: 'https://awsauroralabsmysql.com'
+site_url: 'https://awsauroralabsmy.com'
 
 # Repository
 repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
@@ -33,12 +33,12 @@ theme:
 # Customization
 extra_css:
   - 'assets/css/custom.css'
-#extra_javascript:
-#  - 'javascripts/extra.js'
+# extra_javascript:
+#  - 'assets/js/custom.js'
 extra:
   social:
     - type: 'home'
-      link: 'https://awsauroralabsmysql.com'
+      link: 'https://awsauroralabsmy.com'
     - type: 'amazon'
       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
     - type: 'github'
@@ -71,7 +71,17 @@ nav:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Global Database:
-    - Create an Aurora Global Database: 'global/create/index.md'
+    - Create Infrastructure: 'global/create/index.md'
+    - Create Global Database: 'global/gdb/index.md'
+    - Connect Application: 'global/biapp/index.md'
+    - Monitor Latency: 'global/cw/index.md'
+    - Failover: 'global/failover/index.md'
+    - Failback: 'global/failback/index.md'
+  - Machine Learning:
+    - Overview and Prerequisites: 'ml/overview/index.md'
+    - Use Comprehend with Aurora: 'ml/comprehend/index.md'
+    - Use SageMaker with Aurora: 'ml/sagemaker/index.md'
+    - Cleanup Lab Resources: 'ml/cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'

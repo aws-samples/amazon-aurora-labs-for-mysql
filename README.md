@@ -2,7 +2,7 @@
 
 Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features. The AWS CloudFormation templates will create the relevant resources in a user's account, the Bash and Python scripts will support the lab, by automating tasks, generating load or execute changes on resources created using AWS CloudFormation.
 
-To run and use the labs, visit the website at: https://awsauroralabsmysql.com
+To run and use the labs, visit the website at: https://awsauroralabsmy.com
 
 The instructional guides are packaged into a website that can be deployed using AWS CloudFormantion, Amazon CloudFront, Amazon S3 and AWS Lambda. If you wish to contribute to the project follow the installation and deployment steps below.
 
@@ -22,9 +22,7 @@ brew install python3
 brew install mkdocs
 brew install node
 brew install jq
-pip3 install mkdocs-material
-pip3 install pymdown-extensions
-pip3 install taskcat
+pip3 install -r requirements.txt
 
 npm install -g npm
 npm install -g grunt-cli
