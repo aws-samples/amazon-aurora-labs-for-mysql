@@ -84,5 +84,15 @@ nav:
     - Cleanup Lab Resources: 'ml/cleanup/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
+  - Win the Data:
+    - Get Started: 'win/index.md'
+    - Connect to Aurora PostgreSQL: 'win/apg-connect/index.md'
+    - Use Query Plan Management: 'win/apg-qpm/index.md'
+    - Set up Database Activity Streams: 'win/apg-das/index.md'
+    - Connect to Aurora MySQL: 'win/ams-connect/index.md'
+    - Clone an Aurora DB cluster: 'win/ams-clone/index.md'
+    - Deploy a Global Database: 'win/ams-gdb/index.md'
+    - Create a Serverless DB cluster: 'win/ams-srvless-create/index.md'
+    - Use the RDS Data API: 'win/ams-srvless-data-api/index.md'
   - Contributing: 'contribute.md'
   - License: 'license.md'
