@@ -1,14 +1,9 @@
 ---
-## Amazon Aurora Labs for MySQL
+## Consolidated template for both Aurora MySQL and PostgreSQL
 ## Infrastructure template with an Aurora cluster for lab exercises
 ##
 ## Changelog:
-## 2020-02-12 - Added support for Aurora ML labs
-## 2020-04-10 - Unified the 'with-cluster' and 'no-cluster' in a single template
-## 2020-04-10 - Added anonymized tracking to the labs
-## 2020-04-10 - Lambda support function empties the bucket (eg ML lab data on delete)
-## 2020-04-10 - Updated EC2 AMIs
-## 2020-04-30 - Switched to hardcoded AZs to support EventEngine
+## 2020-04-29 - Initial EngineVersion
 ##
 ## Dependencies:
 ## none
@@ -22,20 +17,6 @@ Description: Amazon Aurora Labs for MySQL
 
 ## Parameters
 Parameters:
-  deployCluster:
-    Default: "Yes"
-    Type: String
-    AllowedValues:
-      - "Yes"
-      - "No"
-    Description: Choose 'Yes' if you prefer to have the DB cluster created automatically (instead of creating it manually yourself).
-  deployML:
-    Default: "No"
-    Type: String
-    AllowedValues:
-      - "Yes"
-      - "No"
-    Description: If you plan to run the Aurora ML labs, choose 'Yes', to deploy the required resources.
   agreeTracking:
     Default: "Yes"
     Type: String
@@ -64,11 +45,6 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: "Lab Features"
-        Parameters:
-          - deployCluster
-          - deployML
-      - Label:
           default: "Help Us Improve Our Labs!"
         Parameters:
           - agreeTracking
@@ -79,10 +55,6 @@ Metadata:
     ParameterLabels:
       vpcAZs:
         default: 'Use AZs:'
-      deployCluster:
-        default: 'Create DB Cluster Automatically?'
-      deployML:
-        default: 'Enable Aurora ML Labs?'
       agreeTracking:
         default: 'Collect Usage Data?'
       EEEventId:
@@ -94,117 +66,28 @@ Metadata:
       EEModuleVersion:
         default: 'EventEngine Version'
 
-## Conditions
-Conditions:
-  condDeployDBCluster: !Equals [ !Ref deployCluster, "Yes" ]
-  condDeployMLResources: !Equals [ !Ref deployML, "Yes" ]
-
 
 ## Mappings
 Mappings:
   RegionalSettings:
     us-east-1:
-      bastionAmi: ami-07ebfd5b3428b6f4d
+      myAmi: ami-07ebfd5b3428b6f4d
+      pgAmi: ami-035b3c7efe6d061d5
       bastionType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
       az1: us-east-1a
       az2: us-east-1c
       az3: us-east-1e
-    us-east-2:
-      bastionAmi: ami-0fc20dd1da406780b
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Ohio
-      az1: us-east-2c
-      az2: us-east-2a
-      az3: us-east-2b
     us-west-2:
-      bastionAmi: ami-0d1cd67c26f5fca19
+      myAmi: ami-0d1cd67c26f5fca19
+      pgAmi: ami-0f2176987ee50226e
       bastionType: m5.large
       nodeType: db.r5.large
       name: Oregon
       az1: us-west-2b
       az2: us-west-2c
       az3: us-west-2d
-    ca-central-1:
-      bastionAmi: ami-0d0eaed20348a3389
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Montreal
-      az1: ca-central-1c
-      az2: ca-central-1a
-      az3: ca-central-1b
-    eu-central-1:
-      bastionAmi: ami-0b418580298265d5c
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Frankfurt
-      az1: eu-central-1b
-      az2: eu-central-1a
-      az3: eu-central-1c
-    eu-west-1:
-      bastionAmi: ami-035966e8adab4aaad
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Ireland
-      azs: "3"
-    eu-west-2:
-      bastionAmi: ami-006a0174c6c25ac06
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: London
-      az1: eu-west-2b
-      az2: eu-west-2a
-      az3: eu-west-2c
-    eu-west-3:
-      bastionAmi: ami-096b8af6e7e8fb927
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Paris
-      az1: eu-west-3c
-      az2: eu-west-3b
-      az3: eu-west-3a
-    ap-southeast-1:
-      bastionAmi: ami-09a4a9ce71ff3f20b
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Singapore
-      az1: ap-southeast-1c
-      az2: ap-southeast-1b
-      az3: ap-southeast-1a
-    ap-southeast-2:
-      bastionAmi: ami-02a599eb01e3b3c5b
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Sydney
-      az1: ap-southeast-2a
-      az2: ap-southeast-2b
-      az3: ap-southeast-2c
-    ap-south-1:
-      bastionAmi: ami-0620d12a9cf777c87
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Mumbai
-      az1: ap-south-1a
-      az2: ap-south-1b
-      az3: ap-south-1c
-    ap-northeast-1:
-      bastionAmi: ami-07f4cb4629342979c
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Tokyo
-      az1: ap-northeast-1d
-      az2: ap-northeast-1a
-      az3: ap-northeast-1c
-    ap-northeast-2:
-      bastionAmi: ami-0cd7b0de75f5a35d1
-      bastionType: m5.large
-      nodeType: db.r5.large
-      name: Seoul
-      az1: ap-northeast-2a
-      az2: ap-northeast-2b
-      az3: ap-northeast-2c
   NetworkSettings:
     global:
       vpcCidr: 172.31.0.0/16
@@ -216,12 +99,18 @@ Mappings:
       subPrv3Cidr: 172.31.12.0/24
       sshSourceCidr: 0.0.0.0/0
   ClusterSettings:
-    global:
+    mysql:
       dbSchema: mylab
       dbDriver: mysql
       dbVersion: 5.7.mysql_aurora.2.07.1
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
+    postgresql:
+      dbSchema: mylab
+      dbDriver: pgsql
+      dbVersion: 10.7
+      dbEngine: aurora-postgresql
+      dbFamily: aurora-postgresql10
     scaling:
       maxCapacity: 2
       minCapacity: 1
@@ -232,6 +121,10 @@ Mappings:
       numThreads: '4'
       numTables: '8'
       numWarehouses: '2'
+    pgbench:
+      dbSchema: pgbench
+      numFillFactor: '90'
+      numScale: '100'
   MLSettings:
     global:
       notebookType: ml.m4.xlarge
@@ -462,7 +355,7 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
-      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ] ]
+      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-db-subnet-group
@@ -484,7 +377,7 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       GroupName: !Sub ${AWS::StackName}-mysql-internal
-      GroupDescription: Aurora Lab Database Firewall
+      GroupDescription: Aurora MySQL Database Firewall
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-mysql-internal
@@ -494,6 +387,11 @@ Resources:
           ToPort: 3306
           SourceSecurityGroupId: !Ref bastionSecGroup
           Description: Allows MySQL access from bastion host
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref bastionSecGroup
+          Description: Allows PostgreSQL access from bastion host
   ruleDbSecGroupClusterIngressSelf:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -591,6 +489,7 @@ Resources:
                   - kms:*
                   - sns:*
                   - secretsmanager:*
+                  - kinesis:*
                   - rds-db:connect
                   - iam:AttachRolePolicy
                   - iam:DetachRolePolicy
@@ -615,8 +514,75 @@ Resources:
       Roles:
         - Ref: roleBastionHost
 
+## Create a random generated password and store it as a secret
+  secretClusterMasterUser:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: !Sub "Master user credentials for ${AWS::StackName}-cluster"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "masteruser"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\$`&'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-secret
+
+## Create parameter groups for cluster nodes
+  myNodeParams:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: !Sub ${AWS::StackName}-mysql
+      Family: !FindInMap [ ClusterSettings, mysql, dbFamily ]
+      Parameters:
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "10"
+        log_output: FILE
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-mysql
+
+## Create parameter groups for cluster nodes
+  pgNodeParams:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: !Sub ${AWS::StackName}-postgresql
+      Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
+      Parameters:
+        log_rotation_age: '1440'
+        log_rotation_size: '102400'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-postgresql
+
+## Create cluster parameter group
+  myClusterParams:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: !Sub ${AWS::StackName}-mysql
+      Family: !FindInMap [ ClusterSettings, mysql, dbFamily ]
+      Parameters:
+        aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-mysql
+
+## Create cluster parameter group
+  pgClusterParams:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: !Sub ${AWS::StackName}-postgresql
+      Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
+      Parameters:
+        rds.force_ssl: 0
+        shared_preload_libraries: 'pg_stat_statements,pg_hint_plan'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-postgresql
+
 ## Create the bastion host
-  bastionHost:
+  bastionMySQL:
     Type: AWS::EC2::Instance
     Properties:
       SubnetId: !Ref sub1Public
@@ -624,7 +590,7 @@ Resources:
       SecurityGroupIds: [ !Ref bastionSecGroup ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-host
+          Value: !Sub ${AWS::StackName}-mysql-bastion
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -632,7 +598,7 @@ Resources:
             Iops: 7500
             VolumeSize: 150
             VolumeType: io1
-      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionAmi ]
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", myAmi ]
       IamInstanceProfile: !Ref profileBastionHost
       UserData:
         Fn::Base64:
@@ -689,10 +655,10 @@ Resources:
                 pip3 install pymysql
                 pip3 install awscli
                 cd /home/ubuntu
-                curl -O https://[[website]]/scripts/reader_loadtest.py
-                curl -O https://[[website]]/scripts/simple_failover.py
-                curl -O https://[[website]]/scripts/aware_failover.py
-                curl -O https://[[website]]/support/sagemaker_policy.json
+                curl -O https://awsauroralabsmy.com/scripts/reader_loadtest.py
+                curl -O https://awsauroralabsmy.com/scripts/simple_failover.py
+                curl -O https://awsauroralabsmy.com/scripts/aware_failover.py
+                curl -O https://awsauroralabsmy.com/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
                 echo "* pulled load test script" >> /debug.log
 
@@ -705,7 +671,7 @@ Resources:
                 echo "* configured aws cli" >> /debug.log
 
                 # set environment variables
-                export ANALYTICSURI="https://[[apigw]]/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
+                export ANALYTICSURI="https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
                 export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ubuntu/.bashrc
                 export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
                 export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
@@ -720,102 +686,55 @@ Resources:
                     - '" && echo "export STACKUUID=\"$STACKUUID\"" >> /home/ubuntu/.bashrc'
               - !Sub |
                 export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
-                export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
+                export DBCLUSTERPG="${myClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
                 echo "* environemnt vars initialized" >> /debug.log
-              - Fn::If:
-                  - condDeployDBCluster
-                  - !Sub |
-                    # set DB cluster user and password as env variables
-                    export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
-                    export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
-                    export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
-                    echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
-                    echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
-                    echo "* db credentials initialized" >> /debug.log
-                  - ""
-              - !Sub |
+
+                # set DB cluster user and password as env variables
+                export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
+                export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
+                export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
+                echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
+                echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+                echo "* db credentials initialized" >> /debug.log
+
                 # reboot
                 echo "* bootstrap complete, rebooting" >> /debug.log
                 shutdown -r now
 
-## Create parameter groups for cluster nodes
-  pgNodeParams:
-    Type: AWS::RDS::DBParameterGroup
-    Properties:
-      Description: !Sub ${AWS::StackName}-node-params
-      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
-      Parameters:
-        innodb_stats_persistent_sample_pages: "256"
-        slow_query_log: "1"
-        long_query_time: "10"
-        log_output: FILE
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName}-node-params
-
-## Create cluster parameter group
-  cpgClusterParams:
-    Type: AWS::RDS::DBClusterParameterGroup
-    Properties:
-      Description: !Sub ${AWS::StackName}-cluster-params
-      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
-      Parameters:
-        aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName}-cluster-params
-
-## Create a random generated password and store it as a secret
-  secretClusterMasterUser:
-    Type: AWS::SecretsManager::Secret
-    Condition: condDeployDBCluster
-    Properties:
-      Description: !Sub "Master user credentials for ${AWS::StackName}-cluster"
-      GenerateSecretString:
-        SecretStringTemplate: '{"username": "masteruser"}'
-        GenerateStringKey: 'password'
-        PasswordLength: 10
-        ExcludeCharacters: '"@/\$`&'
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName}-secret
-
 ## Create Aurora cluster
-  dbCluster:
+  myCluster:
     Type: AWS::RDS::DBCluster
-    Condition: condDeployDBCluster
     Properties:
-      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
-      EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
+      Engine: !FindInMap [ ClusterSettings, mysql, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, mysql, dbVersion ]
       DBSubnetGroupName: !Ref dbSubnets
-      DBClusterParameterGroupName: !Ref cpgClusterParams
-      DBClusterIdentifier: !Sub ${AWS::StackName}-cluster
+      DBClusterParameterGroupName: !Ref myClusterParams
+      DBClusterIdentifier: !Sub ${AWS::StackName}-mysql-cluster
       BackupRetentionPeriod: 1
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
-      DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
+      DatabaseName: !FindInMap [ ClusterSettings, mysql, dbSchema ]
       StorageEncrypted: true
       VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
-      BacktrackWindow: 86400
+      BacktrackWindow: 0
       EnableIAMDatabaseAuthentication: true
       AssociatedRoles:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-cluster
+          Value: !Sub ${AWS::StackName}-mysql-cluster
 
-## Deploy the first cluster node (always the writer)
-  dbNodeWriter:
+## Deploy cluster node
+  myNode1:
     Type: AWS::RDS::DBInstance
-    Condition: condDeployDBCluster
     Properties:
-      DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-node-01
+      DBClusterIdentifier: !Ref myCluster
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-mysql-node-1
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
-      DBParameterGroupName: !Ref pgNodeParams
-      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      DBParameterGroupName: !Ref myNodeParams
+      Engine: !FindInMap [ ClusterSettings, mysql, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -823,20 +742,18 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-node-01
+          Value: !Sub ${AWS::StackName}-mysql-node-1
 
-## Deploy a reader node
-  dbNodeSecondary:
+## Deploy cluster node
+  myNode2:
     Type: AWS::RDS::DBInstance
-    Condition: condDeployDBCluster
-    DependsOn: [ dbNodeWriter ]
     Properties:
-      DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-node-02
+      DBClusterIdentifier: !Ref myCluster
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-mysql-node-2
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
-      DBParameterGroupName: !Ref pgNodeParams
-      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      DBParameterGroupName: !Ref myNodeParams
+      Engine: !FindInMap [ ClusterSettings, mysql, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
       PubliclyAccessible: false
@@ -844,59 +761,140 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-node-02
+          Value: !Sub ${AWS::StackName}-mysql-node-2
 
-## Role to overcome current limitations in CFN ScalableTarget implemetation
-## This role is *NOT* actively used by any resource and service, but must be present
-  roleScalableTarget:
-    Type: AWS::IAM::Role
-    Condition: condDeployDBCluster
+## Create Aurora cluster
+  pgCluster:
+    Type: AWS::RDS::DBCluster
     Properties:
-      RoleName: !Sub ${AWS::StackName}-aas-target-${AWS::Region}
-      Description: Role to integrate the Aurora DB cluster with Application AutoScaling.
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - sts:AssumeRole
-            Principal:
-              Service:
-                - rds.application-autoscaling.amazonaws.com
+      Engine: !FindInMap [ ClusterSettings, postgresql, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, postgresql, dbVersion ]
+      Port: 5432
+      DBSubnetGroupName: !Ref dbSubnets
+      DBClusterParameterGroupName: !Ref pgClusterParams
+      DBClusterIdentifier: !Sub ${AWS::StackName}-postgres-cluster
+      BackupRetentionPeriod: 7
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
+      DatabaseName: !FindInMap [ ClusterSettings, postgresql, dbSchema ]
+      StorageEncrypted: true
+      VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-aas-target-${AWS::Region}
+          Value: !Sub ${AWS::StackName}-postgres-cluster
 
-## Register the scalable target
-## Bug fix: when the stack name contains uppercase letters,
-## the DB cluster identifier is actually lowercased, but the resource ID
-## still contains uppercase, so you get a mismatch on the scalable target ResourceId
-  dbScalableTarget:
-    Type: AWS::ApplicationAutoScaling::ScalableTarget
-    Condition: condDeployDBCluster
-    DependsOn: [ dbNodeSecondary ]
+## Deploy cluster node
+  pgNode1:
+    Type: AWS::RDS::DBInstance
     Properties:
-      ServiceNamespace: 'rds'
-      ScalableDimension: 'rds:cluster:ReadReplicaCount'
-      ResourceId: !GetAtt resLabSupport.DBClusterScalableTarget
-      MaxCapacity: !FindInMap [ ClusterSettings, scaling, maxCapacity ]
-      MinCapacity: !FindInMap [ ClusterSettings, scaling, minCapacity ]
-      RoleARN: !GetAtt roleScalableTarget.Arn
+      DBClusterIdentifier: !Ref pgCluster
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-postgres-node-1
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: !FindInMap [ ClusterSettings, postgresql, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-postgres-node-1
 
-## Add scaling policy
-  dbScalingPolicy:
-    Type : AWS::ApplicationAutoScaling::ScalingPolicy
-    Condition: condDeployDBCluster
+## Deploy cluster node
+  pgNode2:
+    Type: AWS::RDS::DBInstance
     Properties:
-      PolicyName: !Sub ${AWS::StackName}-autoscale-readers
-      PolicyType: TargetTrackingScaling
-      ScalingTargetId: !Ref dbScalableTarget
-      TargetTrackingScalingPolicyConfiguration:
-        PredefinedMetricSpecification:
-          PredefinedMetricType: RDSReaderAverageCPUUtilization
-        ScaleInCooldown: 180
-        ScaleOutCooldown: 180
-        TargetValue: !FindInMap [ ClusterSettings, scaling, cpuLoadTarget ]
+      DBClusterIdentifier: !Ref pgCluster
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-postgres-node-2
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: !FindInMap [ ClusterSettings, postgresql, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-postgres-node-2
+
+## Create the bastion host
+  bastionPostgreSQL:
+    Type: AWS::EC2::Instance
+    DependsOn: [ pgNode1, pgNode2 ]
+    Properties:
+      SubnetId: !Ref sub1Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
+      SecurityGroupIds: [ !Ref bastionSecGroup ]
+#      KeyName: !Ref ec2KeyPair
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-postgres-bastion
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            Iops: 7500
+            VolumeSize: 150
+            VolumeType: io1
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", pgAmi ]
+      IamInstanceProfile: !Ref profileBastionHost
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          cd /home/ec2-user/
+          yum -y install autoconf readline-devel gcc zlib-devel
+          wget https://ftp.postgresql.org/pub/source/v10.7/postgresql-10.7.tar.gz
+          tar -xzf postgresql-10.7.tar.gz
+          cd postgresql-10.7
+          wget https://s3.amazonaws.com/aurora-pgbench-patches/pgbench-init-timing.patch
+          yum -y install patch
+          patch -p1 -b  < pgbench-init-timing.patch
+          wget https://s3.amazonaws.com/aurora-pgbench-patches/pgbench10-ppoll.patch
+          patch -p1 -b < pgbench10-ppoll.patch
+          yum -y install autoconf
+          autoconf
+          ./configure
+          make -j 4 all
+          make install
+          cd /home/ec2-user/
+          curl https://codeload.github.com/akopytov/sysbench/tar.gz/b23a7db377916e424cb555108dc5f784f615993b|tar xz
+          mv sysbench-b23a7db377916e424cb555108dc5f784f615993b sysbench
+          cd sysbench
+          yum -y install automake
+          yum -y install libtool
+          ./autogen.sh
+          CFLAGS="-L/usr/local/pgsql/lib/ -I /usr/local/pgsql/include/" | ./configure --with-pgsql --without-mysql --with-pgsql-includes=/usr/local/pgsql/include/ --with-pgsql-libs=/usr/local/pgsql/lib/
+          make install
+          cd sysbench/tests
+          make install
+          export LD_LIBRARY_PATH=/usr/local/pgsql/lib
+          python get-pip.py --user
+          pip install awscli --upgrade --user
+          pip install boto3
+          pip install aws_encryption_sdk
+          yum install -y jq
+          username=$(aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --query SecretString  --region ${AWS::Region} --output text | jq -r .password)
+          echo "the password is: $username" > /tmp/mypassword
+          export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH
+          export PATH=/home/ec2-user/postgresql-10.7/src/bin/psql:$PATH
+          echo "export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH" >> /home/ec2-user/.bash_profile
+          echo "export PATH=/home/ec2-user/postgresql-10.7/src/bin/psql:$PATH" >> /home/ec2-user/.bash_profile
+          curl https://d2yoo9plh0ksz8.cloudfront.net/my_script.py > /home/ec2-user/das-script.py
+          chown ec2-user:ec2-user /home/ec2-user/das-script.py
+          chmod u+x  /home/ec2-user/das-script.py
+          curl https://d2yoo9plh0ksz8.cloudfront.net/clone_setup.sql > /home/ec2-user/clone_setup.sql
+          chown ec2-user:ec2-user /home/ec2-user/clone_setup.sql
+          chmod u+x /home/ec2-user/clone_setup.sql
+          export username
+          PGPASSWORD=$username
+          export PGPASSWORD
+          psql -h ${pgCluster.Endpoint.Address} -p 5432 -U masteruser -d mylab -f clone_setup.sql > clone_setup.output
+          cd /home/ec2-user/postgresql-10.7/src/bin/pgbench
+          nohup ./pgbench -i --fillfactor=100 --scale=100 --host=${pgCluster.Endpoint.Address} --username=masteruser mylab &>> /tmp/nohup.out
 
 ## Create sysbench prep SSM document
   ssmDocSysbenchTest:
@@ -913,15 +911,15 @@ Resources:
           clusterEndpoint:
             type: String
             description: Aurora Cluster Endpoint
-            default: !If [ condDeployDBCluster, !GetAtt dbCluster.Endpoint.Address, "" ]
+            default: !GetAtt myCluster.Endpoint.Address
           dbUser:
             type: String
             description: DB User
-            default: !If [ condDeployDBCluster, !Join [ '', [ '{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ] ], "" ]
+            default: !Join [ '', [ '{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ] ]
           dbPassword:
             type: String
             description: DB Password
-            default: !If [ condDeployDBCluster, !Join [ '', [ '{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ] ], "" ]
+            default: !Join [ '', [ '{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ] ]
           dbSchema:
             type: String
             description: DB Schema
@@ -929,7 +927,7 @@ Resources:
           dbDriver:
             type: String
             description: DB Driver
-            default: !FindInMap [ ClusterSettings, global, dbDriver ]
+            default: !FindInMap [ ClusterSettings, mysql, dbDriver ]
             allowedValues: [ mysql, pgsql ]
           runTime:
             type: String
@@ -959,81 +957,53 @@ Resources:
             runCommand:
             - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
 
-## Create a role for the notebook.
-  roleMLNotebook:
-    Type: AWS::IAM::Role
-    Condition: condDeployMLResources
+## Create pgbench SSM document
+  ssmDocPgbenchTest:
+    Type: AWS::SSM::Document
     Properties:
-      RoleName: !Sub ${AWS::StackName}-ml-${AWS::Region}
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - sts:AssumeRole
-            Principal:
-              Service:
-                - sagemaker.amazonaws.com
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-      Policies:
-        - PolicyName: inline-policy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:ListBucket
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                  - s3:DeleteObject
-                  - s3:ListMultipartUploadParts
-                  - s3:PutObject
-                Resource:
-                  - arn:aws:s3:::*/*
-                  - arn:aws:s3:::*
+      DocumentType: Command
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-ml-${AWS::Region}
-
-## Create a Sagemaker Lifecycle hook, which will clone the github repo and get the Jupyter notebook and other resources needed to build the model.
-## using nohup, so the script keeps running after 5 minutes. The onstart event fails, if script doesn't finish in 5 minutes.
-  smMLNotebookHook:
-    Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
-    Condition: condDeployMLResources
-    Properties:
-      NotebookInstanceLifecycleConfigName: !Sub ${AWS::StackName}-notebook-hook
-      OnCreate:
-        - Content:
-            Fn::Base64: !Sub |
-              #!/bin/bash
-
-              set -e
-              sudo -u ec2-user -i <<EOF
-              unset SUDO_UID
-              python3 -m pip install sagemaker boto3 sagemaker_containers
-              cd /home/ec2-user/SageMaker/
-              wget https://[[website]]/support/notebook_churn.py
-              wget https://[[website]]/support/sample_churn_data.zip
-              sed -i "s%mlbucketplaceholder%${bucketLabData}%" notebook_churn.py
-              sudo mkdir -p /opt/ml/code/
-              cd /home/ec2-user/SageMaker/
-              unzip -o sample_churn_data.zip
-              nohup ipython notebook_churn.py>nohup.out &
-
-## Create the Sagemake Jupyter book if the lab condition allows it.
-  smMLNotebook:
-    Type : AWS::SageMaker::NotebookInstance
-    Condition: condDeployMLResources
-    Properties:
-      InstanceType: !FindInMap [ MLSettings, global, notebookType ]
-      RootAccess: Enabled
-      RoleArn: !GetAtt roleMLNotebook.Arn
-      NotebookInstanceName: !Sub ${AWS::StackName}-notebook
-      LifecycleConfigName: !GetAtt smMLNotebookHook.NotebookInstanceLifecycleConfigName
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName}-notebook
+          Value: !Sub ${AWS::StackName}-pgbench-test
+      Content:
+        schemaVersion: '2.2'
+        description: SysBench Percona TPCC-LIKE Preparation
+        parameters:
+          clusterEndpoint:
+            type: String
+            description: Aurora Cluster Endpoint
+            default: !GetAtt pgCluster.Endpoint.Address
+          dbUser:
+            type: String
+            description: DB User
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+          dbPassword:
+            type: String
+            description: DB Password
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
+          dbSchema:
+            type: String
+            description: DB Schema
+            default: !FindInMap [ ClusterSettings, pgbench, dbSchema ]
+          dbDriver:
+            type: String
+            description: DB Driver
+            default: !FindInMap [ ClusterSettings, postgresql, dbDriver ]
+            allowedValues: [ mysql, pgsql ]
+          numFillFactor:
+            type: String
+            description: Tables
+            default: !FindInMap [ ClusterSettings, pgbench, numFillFactor ]
+          numScale:
+            type: String
+            description: Scale
+            default: !FindInMap [ ClusterSettings, pgbench, numScale ]
+        mainSteps:
+        - action: aws:runShellScript
+          name: SysBenchTpcPostgresql
+          inputs:
+            runCommand:
+            - 'cd /home/ec2-user/postgresql-10.7/src/bin/pgbench && ./pgbench -i --fillfactor={{ numFillFactor }} --scale={{ numScale }} --host={{ clusterEndpoint }} --user-name={{ dbUser }} --password="{{ dbPassword }}" '
 
 ## Create role for use with the lab support function
   roleLabSupport:
@@ -1096,7 +1066,7 @@ Resources:
       Environment:
         Variables:
           REGION: !Ref 'AWS::Region'
-          ANALYTICSURI: 'https://[[apigw]]/v1/track'
+          ANALYTICSURI: 'https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track'
       Code:
         ZipFile: |
           # Dependencies
@@ -1193,9 +1163,9 @@ Resources:
           - "/"
           - !Ref 'AWS::StackId'
       AgreeTracking: !Ref agreeTracking
-      DeployedCluster: !Ref deployCluster
-      DeployedML: !Ref deployML
-      Cluster: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
+      DeployedCluster: Yes
+      DeployedML: No
+      Cluster: "mysql+postgresql"
       EEEventId: !Ref EEEventId
       EETeamId: !Ref EETeamId
       EEModuleId: !Ref EEModuleId
@@ -1207,33 +1177,54 @@ Outputs:
   vpcId:
     Description: Aurora Lab VPC
     Value: !Ref vpc
-  bastionInstance:
-    Description: Bastion Instance ID
-    Value: !Ref bastionHost
-  clusterName:
-    Description: Cluster Name
-    Value: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
-  clusterEndpoint:
-    Description: Aurora Cluster Endpoint
-    Value: !If [ condDeployDBCluster, !GetAtt dbCluster.Endpoint.Address, "" ]
-  readerEndpoint:
-    Description: Aurora Reader Endpoint
-    Value: !If [ condDeployDBCluster, !GetAtt dbCluster.ReadEndpoint.Address, "" ]
-  loadTestRunDoc:
-    Description: Load Test Execution Command Document
-    Value: !Ref ssmDocSysbenchTest
   dbSubnetGroup:
     Description: Database Subnet Group
     Value: !Ref dbSubnets
   dbSecurityGroup:
     Description: Database Security Group
     Value: !Ref dbSecGroupCluster
+  s3BucketName:
+    Description: "S3 Bucket Name for storing lab data"
+    Value: !Ref bucketLabData
   secretArn:
     Description: Database Credentials Secret ARN
-    Value: !If [ condDeployDBCluster, !Ref secretClusterMasterUser, "" ]
-  s3BucketName:
-    Description: "S3 Bucket Name for SageMaker training data"
-    Value: !Ref bucketLabData
-  notebookName:
-    Description: "Jupytr Notebook Name"
-    Value: !If [ condDeployMLResources, !Ref smMLNotebook, "" ]
+    Value: !Ref secretClusterMasterUser
+  bastionMySQL:
+    Description: MySQL - Bastion Instance ID
+    Value: !Ref bastionMySQL
+  mysqlClusterName:
+    Description: MySQL - Cluster Name
+    Value: !Ref myCluster
+  mysqlClusterEndpoint:
+    Description: MySQL - Aurora Cluster Endpoint
+    Value: !GetAtt myCluster.Endpoint.Address
+  mysqlReaderEndpoint:
+    Description: MySQL - Aurora Reader Endpoint
+    Value: !GetAtt myCluster.ReadEndpoint.Address
+  mysqlRunDoc:
+    Description: MySQL - Load Test Execution Command Document
+    Value: !Ref ssmDocSysbenchTest
+  bastionPostgreSQL:
+    Description: PostgreSQL - Bastion Instance ID
+    Value: !Ref bastionPostgreSQL
+  postgresClusterParamGroup:
+    Description: PostgreSQL - Cluster Parameter Group
+    Value: !Ref pgClusterParams
+  postgresNodeParamsGroup:
+    Description: PostgreSQL - Instance Parameter Group
+    Value: !Ref pgNodeParams
+  postgresDbName:
+    Description: PostgreSQL - Database Name
+    Value: !FindInMap [ ClusterSettings, postgresql, dbSchema ]
+  postgresClusterName:
+    Description: PostgreSQL - Cluster Name
+    Value: !Ref pgCluster
+  postgresClusterEndpoint:
+    Description: PostgreSQL - Aurora Cluster Endpoint
+    Value: !GetAtt pgCluster.Endpoint.Address
+  postgresReaderEndpoint:
+    Description: PostgreSQL - Aurora Reader Endpoint
+    Value: !GetAtt pgCluster.ReadEndpoint.Address
+  postgresRunDoc:
+    Description: PostgreSQL - Load Test Execution Command Document
+    Value: !Ref ssmDocPgbenchTest
