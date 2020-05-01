@@ -89,7 +89,8 @@ Mappings:
       az2: us-west-2c
       az3: us-west-2d
     eu-west-1:
-      bastionAmi: ami-035966e8adab4aaad
+      myAmi: ami-035966e8adab4aaad
+      pgAmi: ami-08d658f84a6d84a80
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
