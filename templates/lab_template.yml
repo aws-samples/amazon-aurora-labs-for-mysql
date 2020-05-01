@@ -148,7 +148,9 @@ Mappings:
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
-      azs: "3"
+      az1: eu-west-1a
+      az2: eu-west-1b
+      az3: eu-west-1c
     eu-west-2:
       bastionAmi: ami-006a0174c6c25ac06
       bastionType: m5.large
