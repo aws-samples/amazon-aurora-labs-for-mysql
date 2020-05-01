@@ -464,7 +464,7 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
-      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ] ]
+      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-db-subnet-group
