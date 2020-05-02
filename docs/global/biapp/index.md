@@ -5,7 +5,7 @@ Amazon Aurora provides both MySQL and PostgreSQL compatible database engines. Th
 For the purpose of this workshop, we will be using <a href="https://superset.incubator.apache.org/" target="_blank">Apache Superset (incubating)</a> as the BI web application. Superset is an open source, business intelligence and data exploration platform designed to be visual, intuitive and interactive.
 
 ??? tip "Connecting to EC2 Instances"
-    Those who have been familiar with AWS for a while may remember that connecting to a remote Amazon EC2 instance requires opening inbound SSH or Powershell ports, provisioning SSH keys and management of certificates. With AWS Systems Manager Session Manager, you can connect to an EC2 instance with just few clicks and experience a secure browser-based CLI, without having to provision or create SSH keys.
+    These labs have been updated such that it is no longer necessary to connect into the application EC2 host to configure Apache Superset. However, you may still do so via AWS Systems Manager Session Manager. Those who have been familiar with AWS for a while may remember that connecting to a remote Amazon EC2 instance requires opening inbound SSH or Powershell ports, provisioning SSH keys and management of certificates. With AWS Systems Manager Session Manager, you can connect to an EC2 instance with just few clicks and experience a secure browser-based CLI, without having to provision or manage SSH keys.
 
 ## Gathering Aurora Global Database Endpoint Details
 
@@ -39,60 +39,13 @@ Before we begin, we will return to our RDS console (the Aurora Global Database w
 
    Note: As Secondary cluster's current role is a read-only DB cluster, you will notice that the writer Endpoint status will remain on *Creating* - this is expected behavior and will remain until this cluster is promoted to primary, as this DB cluster is not on a writeable mode and the writer endpoint will remain unuseable until later in the workshop.
 
-## Primary Region - Application Instance Setup
+## Primary Region - Application Configuration
 
 We will work on configuring our BI Application instance on the primary region.
 
 >  **`Region 1 (Primary)`**
 
-* Open <a href="https://console.aws.amazon.com/systems-manager" target="_blank">Systems Manager</a> in the AWS Management Console. Ensure you are in your assigned region.
-
-* Within the Systems Manager console, select **Session Manager** on the left menu. Click on the **Start Session** button.
-
-* You should now see your EC2 hosts that are running which you can connect to. Select ``gdb1-superset-host``, then click on the **Start Session** button. This will open a new browser tab with the terminal session. Copy and paste the following commands into the terminal, and press Enter after pasting.
-
-   * Let's start with enabling bash on the terminal view
-
-```
-source ~/.bashrc
-```
-
-   * We will now create an admin user for the Apache Superset application
-
-```
-fabmanager create-admin --app superset
-```
-
-   * You will be prompted for the following:
-      * Username (press enter for default)
-      * First Name (press enter for default)
-      * Last Name (press enter for default)
-      * Email (press enter for default)
-      * Password (create your Apache Superset admin password, <span style="color:red;">don't forget this!</span>)
-      * Repeat for Confirmation (confirm your password)
-    
-   * Once complete you will receive the message that admin has been created
-
-       <span class="image">![Superset Commands](./superset-flask.png)</span>
-
-   * Next, we will run the following commands to initiate and run the Superset application in the background. Include the final ampersand "&" while copying and pasting.
-
-```
-superset db upgrade
-superset load_examples
-superset init
-nohup gunicorn -b 0.0.0.0:8088 --limit-request-line 0 --limit-request-field_size 0 superset:app &
-```
-
-   * The application will take a minute or two to build samples and initialize. Remember to press ENTER to submit the last command. Once you see the message similar to that below, Superset is running, with the service running by a web server ``gunicorn`` on TCP port 8088. Press ENTER again after the below output to return to the terminal.
-
-```
-nohup: ignoring input and appending output to ‘/home/ssm-user/nohup.out’
-```
-
->  **`Region 1 (Primary)`**
-
-* Return to your AWS Management Console. Remain in primary region. Using the Service menu, click on or type to search for **CloudFormation**. This will bring up the CloudFormation console.
+* Open <a href="https://console.aws.amazon.com/cloudformation" target="_blank">CloudFormation</a> in the AWS Management Console. Ensure you are in your assigned region.
 
 * Click on **Stacks**, and select the workshop stack that was originally deployed for this particular region. Click on the **Outputs** tab.
 
@@ -102,13 +55,13 @@ nohup: ignoring input and appending output to ‘/home/ssm-user/nohup.out’
 
   ![Sample CloudFormation Output](cfn-output-ec2dns.png) (Your outputs will be different in value)
 
-* Open a new browser tab or window. Paste the DNS name value into your address bar, because Superset is running on TCP port 8088, add ``:8088`` in the end, then press enter. Your browser address bar should resemble the following URL:
+* Open a new browser tab or window. Since Apache Superset is being served by the EC2 instance via a HTTP server application on port 80, simply paste the DNS name value into your address bar, Your browser address bar should resemble the following URL format:
 
     ```
-    http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com:8088
+    http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com
     ```
 
-* You should see the login page for Superset. Type in ```admin``` for **Username** and the password you have entered from previous setup step.
+* You should see the login page for Superset. Type in ```admin``` for **Username** and the default password ```auroragdb321``` as the application **Password** (unless you have changed this value during CloudFormation deployment).
 
     <span class="image">![Superset Login](./superset-login.png)</span>
 
@@ -139,55 +92,11 @@ The secondary region setup will be very similar.
 
 >  **`Region 2 (Secondary)`**
 
-* We will repeat some very similar steps on the instance for the secondary region.
+* Open <a href="https://console.aws.amazon.com/rds" target="_blank">RDS</a> in the AWS Management Console. Ensure you are in your assigned region. Verify that the secondary region Aurora DB cluster and DB instance -- which we named ``gdb2-cluster`` and ``gdb2-node1`` -- have been created successfully and their status shows available to connect. If either still shows as *Creating*, refresh this page and proceed to the next step when both show *Available*.
 
-* Open <a href="https://console.aws.amazon.com/systems-manager" target="_blank">Systems Manager</a> in the AWS Management Console. Ensure you are in your assigned region.
+  <span class="image">![Auurora GDB Status](gdb-status.png)</span>
 
-* Within the Systems Manager console, select **Session Manager** on the left menu. Click on the **Start Session** button. 
-
-* You should now see your EC2 hosts that are running which you can connect to. Select ``gdb2-superset-host``, then click on the **Start Session** button. This will open a new browser tab with the terminal session. Copy and paste the following commands into the terminal, and press Enter after pasting.
-
-   * Let's start with enabling bash on the terminal view
-
-```
-source ~/.bashrc
-```
-   * We will now create an admin user for the Apache Superset application. Recommended that you reuse the same password that you have used previously in the Primary Region instance for the purpose of this workshop.
-
-```
-fabmanager create-admin --app superset
-```
-      
-   * You will be prompted for the following:
-      * Username (press enter for default)
-      * First Name (press enter for default)
-      * Last Name (press enter for default)
-      * Email (press enter for default)
-      * Password (create your Apache Superset admin password, for this lab we recommend using the same one as before <span style="color:red;">don't forget this!</span>)
-      * Repeat for Confirmation (confirm your password)
-    
-   * Once complete you will receive the message that admin has been created
-
-       ![Superset Commands](./superset-flask.png)
-
-   * Next, we will run the following commands to initiate and run the Superset application in the background. Include the final ampersand "&" while copying and pasting.
-
-```
-superset db upgrade
-superset load_examples
-superset init
-nohup gunicorn -b 0.0.0.0:8088 --limit-request-line 0 --limit-request-field_size 0 superset:app &
-```
-
-   * The application will take a minute or two to build samples and initialize. Remember to press ENTER to submit the last command. Once you see the message similar to that below, Superset is running, with the service running by a web server ``gunicorn`` on TCP port 8088. Press ENTER again after the below output to return to the terminal.
-
-```
-nohup: ignoring input and appending output to ‘/home/ssm-user/nohup.out’
-```
-
->  **`Region 2 (Secondary)`**
-
-* Return to your AWS Management Console. Remain in secondary region. Using the Service menu, click on or type to search for **CloudFormation**. This will bring up the CloudFormation console.
+* Open <a href="https://console.aws.amazon.com/cloudformation" target="_blank">CloudFormation</a> in the AWS Management Console. Ensure you are in your assigned region.
 
 * Click on **Stacks**, and select the workshop stack that was originally deployed for this particular region. Click on the **Outputs** tab.
 
@@ -199,13 +108,13 @@ nohup: ignoring input and appending output to ‘/home/ssm-user/nohup.out’
     
   ![Sample CloudFormation Output](cfn-output-ec2dns.png) (Your outputs will be different in value)
 
-* Open a new browser tab or window. Paste the DNS name value into your address bar, because Superset is running on TCP port 8088, add ``:8088`` in the end, then press enter. Your browser address bar should resemble the following URL:
+* Open a new browser tab or window. Since Apache Superset is being served by the EC2 instance via a HTTP server application on port 80, simply paste the DNS name value into your address bar, Your browser address bar should resemble the following URL format:
 
     ```
-    http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com:8088
+    http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com
     ```
 
-* You should see the login page for Superset. Type in ```admin``` for **Username** and the password you have entered from previous setup step.
+* You should see the login page for Superset. Type in ```admin``` for **Username** and the default password ```auroragdb321``` as the application **Password** (unless you have changed this value during CloudFormation deployment).
 
     <span class="image">![Superset Login](./superset-login.png)</span>
 
@@ -236,12 +145,12 @@ At this point, you should have the 2 BI application instances, launched in 2 dis
 
 > **`Region 1 (Primary)`**
 
-* **Apache Superset Primary URL**: ```http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com:8088```
+* **Apache Superset Primary URL**: ```http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com```
 * **Aurora Cluster Primary Writer Endpoint**: ```gdb1-cluster.cluster-abcdefghijk.xx-region-X.rds.amazonaws.com```
 
 > **`Region 2 (Secondary)`**
 
-* **Apache Superset Secondary URL**: ```http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com:8088```
+* **Apache Superset Secondary URL**: ```http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com```
 * **Aurora Cluster Secondary Reader Endpoint**: ```gdb2-cluster.cluster-ro-abcdefghijk.xx-region-X.rds.amazonaws.com```
 * **Aurora Cluster Secondary Writer Endpoint (for failover)**: ```gdb2-cluster.cluster-abcdefghijk.xx-region-X.rds.amazonaws.com```
 
