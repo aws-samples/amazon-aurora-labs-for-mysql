@@ -16,7 +16,7 @@ This is an *EXTRA CHALLENGE* module. You will only see high level instructions. 
 
 * We were previously simulating a large scale regional/service level interruption by associating a **Network ACL (NACL)** rule that denies all network traffic. Let's revert this to end the traffic block. Go to your **VPC** Console and assign the private subnets to associate the original default NACLs.
 
-* Due to the data being stale and being outdated compared to the Secondary Region Aurora DB Cluster, the previous Aurora DB Cluster and DB Instance in the Primary Region are no longer needed. Using the RDS console, let's delete them (both DB Cluster and DB Instance in primary region **gdb1-cluster** and **gdb1-node1**) and take a final snapshot of the database before it is terminated. If it still remains, we will delete the empty Global DB identifier, named as **reinvent-dat348-gdb**
+* Due to the data being stale and being outdated compared to the Secondary Region Aurora DB Cluster, the previous Aurora DB Cluster and DB Instance in the Primary Region are no longer needed. Using the RDS console, let's delete them (both DB Cluster and DB Instance in primary region **gdb1-cluster** and **gdb1-node1**) and take a final snapshot of the database before it is terminated. If it still remains, we will delete the empty Global DB identifier, named as **auroralabs-gdb**
 
 | Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
 | ------- | ------ | ------ | ------ | ----- |
@@ -27,7 +27,7 @@ This is an *EXTRA CHALLENGE* module. You will only see high level instructions. 
 
 >  **`Region 2 (Secondary)`**
 
-* We will now Add Region for the DB Cluster in the previously secondary region **gdb2-cluster**. We will add the original primary region into this new Global Database, utilizing the existing VPC, Security Group, Parameter Groups (instance and cluster), and Role settings. We will name the DB Instance **gdb1-node2-restored** and name the DB Cluster **gdb1-cluster-restored**. We will name the Global Database identifier as **reinvent-dat348-gdb-restoring**
+* We will now Add Region for the DB Cluster in the previously secondary region **gdb2-cluster**. We will add the original primary region into this new Global Database, utilizing the existing VPC, Security Group, Parameter Groups (instance and cluster), and Role settings. We will name the DB Instance **gdb1-node2-restored** and name the DB Cluster **gdb1-cluster-restored**. We will name the Global Database identifier as **auroralabs-gdb-restoring**
 
 * Allow 10-15 minutes for the new region replica in the previously primary region to be restored.
 
@@ -53,7 +53,7 @@ This is an *EXTRA CHALLENGE* module. You will only see high level instructions. 
 
 >  **`Region 2 (Secondary)`**
 
-* As both **gdb1-cluster-restored** and **gdb2-cluster** are now their own regional DB Clusters in their own respective regions, and we want to utilize the Primary Region as the master *Writer* in order to restore the original configuration.  Using the RDS console, let's delete them (both DB Cluster and DB Instance in Secondary Region  **gdb2-cluster** and **gdb2-node1**) and take a final snapshot of the database before it is terminated. If it still remains, we will delete the empty Global DB identifier, named as **reinvent-dat348-gdb-restoring**
+* As both **gdb1-cluster-restored** and **gdb2-cluster** are now their own regional DB Clusters in their own respective regions, and we want to utilize the Primary Region as the master *Writer* in order to restore the original configuration.  Using the RDS console, let's delete them (both DB Cluster and DB Instance in Secondary Region  **gdb2-cluster** and **gdb2-node1**) and take a final snapshot of the database before it is terminated. If it still remains, we will delete the empty Global DB identifier, named as **auroralabs-gdb-restoring**
 
 | Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
 | ------- | ------ | ------ | ------ | ----- |
@@ -64,7 +64,7 @@ This is an *EXTRA CHALLENGE* module. You will only see high level instructions. 
 
 >  **`Region 1 (Primary)`**
 
-* We will now Add Region for the DB Cluster in the primary region **gdb1-cluster-restored**. We will add the secondary region back into the Global Database, utilizing the existing VPC, Security Group, Parameter Groups (instance and cluster), and Role settings. We will name the DB Instance **gdb2-node2-restored** and name the DB Cluster **gdb2-cluster-restored**. We will name the Global Database identifier as **reinvent-dat348-gdb-restored**.
+* We will now Add Region for the DB Cluster in the primary region **gdb1-cluster-restored**. We will add the secondary region back into the Global Database, utilizing the existing VPC, Security Group, Parameter Groups (instance and cluster), and Role settings. We will name the DB Instance **gdb2-node2-restored** and name the DB Cluster **gdb2-cluster-restored**. We will name the Global Database identifier as **auroralabs-gdb-restored**.
 
 | Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
 | ------- | ------ | ------ | ------ | ----- |

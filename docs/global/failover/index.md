@@ -38,7 +38,7 @@ SELECT * FROM mylab.failovertest1;
 
 ## Failure Injection
 
-Although we can simulate an in-region failure with the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.FaultInjectionQueries.html" target="_blank">Aurora-specific fault injection queries</a> like ```ALTER SYSTEM CRASH;``` - in this case we want to simulate a longer term and larger scale failure (however infrequent) and the best way to do this is to stop all ingress/egress data traffic in and out of the Aurora Global Database's primary DB cluster. The initial CloudFormation template created a NACL with specific DENY ALL traffic that will block all ingress/egress traffic out of the associated subnets.
+Although we can simulate an in-region failure with the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.FaultInjectionQueries.html" target="_blank">Aurora-specific fault injection queries</a> like ```ALTER SYSTEM CRASH;``` - in this case we want to simulate a longer term and larger scale failure (however infrequent) and the best way to do this is to stop all ingress/egress data traffic in and out of the Aurora Global Database's primary DB cluster. The initial CloudFormation template created a VPC NACL with specific DENY ALL traffic that will block all ingress/egress traffic out of the associated subnets. This will essentially emulate a wider failure that will render our primary region DB cluster unavailable.
 
 >  **`Region 1 (Primary)`**
 
@@ -51,10 +51,12 @@ Although we can simulate an in-region failure with the <a href="https://docs.aws
 * Click on **Actions** menu, and then select **Edit subnet associations**
     <span class="image">![NACLs Review](failover-nacl1.png)</span>
 
-* As the Aurora Cluster is set to use the private subnets (governed by DB subnet group), all of which labeled with the prefix **gdb1-prv-sub-X**, select all subnets that begin with that prefix description. Then click on the **Edit** button to confirm the associations. (Note: you may have to drag the first column wider to fully see the subnet names)
+* As the Aurora DB cluster is set to use the private subnets (governed by RDS DB subnet group), all of which labeled with the prefix **gdb1-prv-sub-X**, select all subnets that begin with that prefix description. You can also simply use the search box to filter on any subnets with the name **prv** and then select them. Next, click on the **Edit** button to confirm the associations. (Note: you may have to drag the first column wider to fully see the subnet names)
     <span class="image">![NACLs Review](failover-nacl2.png)</span>
 
-* Once associated. Go back to your browser tab with your primary region's Apache Superset SQL Editor. Click on the &#8644; refresh button next to **Schema**.
+* Once associated, the NACL rules take effect immediately and will render the resources within the private subnets unreachable. 
+
+* Go back to your browser tab with your primary region's Apache Superset SQL Editor. Click on the &#8644; refresh button next to **Schema**.
 
 * You will notice that you can no longer access the primary cluster, and the schema refresh will eventually time out. We have successfully injected failure to render our Primary DB Cluster unreachable.
 
@@ -69,7 +71,7 @@ As we are simulating a prolonged regional infrastructure or service level failur
 * Within the RDS console, select **Databases** on the left menu. This will bring you to the list of Databases already deployed. You should see **gdb2-cluster**  and **gdb2-node1** .
 
     ??? tip "Why does the status of my primary DB cluster and DB instance still report as <i>Available</i>?"
-        You might also notice that in your RDS console it will still report the primary region DB cluster and DB instance still as *Available*, that is because we are merely simulating a failure by blocking all networking access via NACLs, and the blast radius of such a simulation is limited only to your AWS Account; the RDS/Aurora service and its internal health checks are provided by the service control plane itself and will still report the DB cluster and DB instance as healthy because there is no *real outage*.
+        You might also notice that in your RDS console it will still report the primary region DB cluster and DB instance still as *Available*, that is because we are merely simulating a failure by blocking all networking access via NACLs, and the blast radius of such a simulation is limited only to your AWS Account, specifically to your VPC and its affected subnets; the RDS/Aurora service and its internal health checks are provided by the service control plane itself and will still report the DB cluster and DB instance as healthy because there is no *real outage*.
 
 * Select the secondary DB Cluster **gdb2-cluster**. Click on the **Actions** menu, then select **Remove from Global**
     <span class="image">![Aurora Promote Secondary](failover-aurora-promote1.png)</span>

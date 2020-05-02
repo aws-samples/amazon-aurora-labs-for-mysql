@@ -57,9 +57,7 @@ For the sake of time, in the previous CloudFormation scripts, we have automatica
    1. Ensure the **DB cluster parameter group** and **DB parameter groups** are set to the ones with the ``gdb2-`` prefix.
      <span class="image">![GDB Settings 3](gdb-settings3.png)</span>
 
-   1. Near the bottom, under **Monitoring**, Enable Enhanced Monitoring. We will vend metrics down to ``1-second`` **Granularity**. Click on the drop-down menu and change **Monitoring Role** to the IAM role you have under ``gdb2-monitor-<xx-region-x>`` name.
-
-   1. For **Log exports**, we will enable and publish all log types to centralize and gather them into Amazon CloudWatch Logs.
+   1. Near the bottom, under **Monitoring**, select the checkbox for **Enable Enhanced Monitoring**. We will vend metrics down to ``60-second`` **Granularity**. Click on the drop-down menu and change **Monitoring Role** to the IAM role you have under ``gdb2-monitor-<xx-region-x>`` name.
      <span class="image">![GDB Settings 4](gdb-settings4.png)</span>
   
     !!! warning "Please validate and review all settings before moving on" 
