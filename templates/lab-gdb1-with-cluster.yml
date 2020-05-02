@@ -13,6 +13,7 @@
 ## 2019-09-19 - Fixed resource names to enable EE
 ## 2019-09-23 - Removed custom Lambda resource, using native role assignment
 ## 2019-09-23 - Removed !Sub references on static names to pass linter
+##
 ## 2019-10-01 - edchan@ Forked for Global Database Infrastructure
 ## 2019-10-18 - Updates to Allowed Regions (Global database Availability)
 ## 2019-11-10 - Added Apache Superset EC2 launch
@@ -20,6 +21,8 @@
 ## 2019-11-29 - Primary Region disabled encryption (else Global DB will fail on adding fresh region)
 ## 2020-02-01 - Aurora 5.7 (2.07) DBcluster, DBclusterparametergroup, DBparametergroup  changes
 ## 2020-02-04 - Force Superset Version 0.30.0
+## 2020-04-17 - Superset Configuration Automation; dbMasterPassword parameter applied to Superset
+## 2020-04-30 - Fixed bootstrapping script for EC2 userdata to force dependency packages versions
 ##
 ## Dependencies:
 ## none
@@ -37,7 +40,7 @@ Parameters:
     Type: String
     Default: 'gdb1'
   dbMasterPassword:
-    Description: The Aurora global database masteruser (admin) account password
+    Description: The Aurora global database and Superset masteruser/admin account password
     Type: String
     MinLength: 8
     MaxLength: 40
@@ -134,14 +137,14 @@ Mappings:
       azs: "3"
   NetworkSettings:
     global:
-      # Region 1 CIDR on 172.31.0.0/16 in the event peering is required
-      vpcCidr: 172.31.0.0/16
-      subPub1Cidr: 172.31.0.0/24
-      subPub2Cidr: 172.31.1.0/24
-      subPub3Cidr: 172.31.2.0/24
-      subPrv1Cidr: 172.31.10.0/24
-      subPrv2Cidr: 172.31.11.0/24
-      subPrv3Cidr: 172.31.12.0/24
+      # Region 1 CIDR on 172.21.0.0/16 in the event peering is required
+      vpcCidr: 172.21.0.0/16
+      subPub1Cidr: 172.21.0.0/24
+      subPub2Cidr: 172.21.1.0/24
+      subPub3Cidr: 172.21.2.0/24
+      subPrv1Cidr: 172.21.10.0/24
+      subPrv2Cidr: 172.21.11.0/24
+      subPrv3Cidr: 172.21.12.0/24
       sshSourceCidr: 0.0.0.0/0
   ClusterSettings:
     global:
@@ -389,6 +392,11 @@ Resources:
           Value: !Sub "${gdbPrefix}-superset-host"
       SecurityGroupIngress:
         - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: Allows Default Webport (80) access      
+        - IpProtocol: tcp
           FromPort: 8088
           ToPort: 8088
           CidrIp: 0.0.0.0/0
@@ -546,9 +554,8 @@ Resources:
         - DeviceName: /dev/sda1
           Ebs:
             DeleteOnTermination: true
-            Iops: 7500
-            VolumeSize: 150
-            VolumeType: io1
+            VolumeSize: 80
+            VolumeType: gp2
       ImageId: !Ref amiIdLatestAmzn2
       IamInstanceProfile: !Ref profileBastionHost
       UserData:
@@ -557,12 +564,15 @@ Resources:
           cd /tmp
 
           # update SSM & upgrade packages
+          echo "$(date "+%F %T") Updating SSM agent and python packages" >> /debug.log           
           sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
           sudo systemctl start amazon-ssm-agent
           source ~/.bashrc
-          sudo yum update -y
-          sudo yum install python37 -y
-          echo "* updated SSM agent and upgraded packages" >> /debug.log
+          sudo yum update -y >> /debug.log
+          echo "$(date "+%F %T") Updated SSM agent" >> /debug.log
+          sudo amazon-linux-extras install postgresql10 vim epel
+          sudo yum install gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq -y >> /debug.log
+          echo "$(date "+%F %T") Installed Python and MySQL/pgSQL dependencies" >> /debug.log
 
           # path management
           export PATH=/usr/local/bin:$PATH
@@ -570,16 +580,32 @@ Resources:
           alias python=python37
           alias pip=pip3
 
-          # install superset and mysql client
-          sudo yum install gcc gcc-c++ python3-devel cyrus-sasl-devel mysql mysql-devel jq -y
-          sudo pip3 install cchardet==1.0.0
-          sudo pip3 install superset==0.30.0
-          sudo pip3 install mysql
-          echo "* installed application packages" >> /debug.log
+          # downgrade/force installation packages to last good known versions for superset and dependencies
+          # desired path: wget https://awsauroralabsmy.com/support/superset-requirements.txt
+          wget https://awsauroralabsmy.com/support/superset-requirements.txt
+          sudo pip3 install -r superset-requirements.txt >> /debug.log
+          echo "$(date "+%F %T") Force installed to frozen application packages list" >> /debug.log
 
-          # reboot
-          echo "* bootstrap complete, rebooting" >> /debug.log
-          shutdown -r now
+          # create an admin user
+          echo "$(date "+%F %T") Setting up admin user ( admin / [pw from parameters] )" >> /debug.log
+          superset fab create-admin \
+                        --username admin \
+                        --firstname Superset \
+                        --lastname Admin \
+                        --email admin@superset.com \
+                        --password ${dbMasterPassword}              
+
+          # initialize the superset database
+          echo "$(date "+%F %T") Applying DB Initialization" >> /debug.log
+          superset db upgrade
+          superset load_examples
+          superset init
+          echo "$(date "+%F %T") Superset Configuration and Initialization Complete" >> /debug.log
+
+          # starts web server with gunicorn; forcing on port 80 (default 8088)
+          echo "$(date "+%F %T") Serving web traffic with gunicorn" >> /debug.log
+          nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
+
 
 ## Create parameter groups for cluster nodes
   pgNodeParams:
@@ -625,6 +651,7 @@ Resources:
 ## Create Aurora cluster
   dbCluster:
     Type: AWS::RDS::DBCluster
+    DeletionPolicy: Delete
     Properties:
       Engine: aurora-mysql
       EngineMode: provisioned
@@ -649,6 +676,7 @@ Resources:
 ## Deploy the first cluster node (always the writer)
   dbNodeWriter:
     Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
     Properties:
       DBClusterIdentifier: !Ref dbCluster
       DBInstanceIdentifier: !Sub ${gdbPrefix}-node1
