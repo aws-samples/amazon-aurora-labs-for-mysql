@@ -6,7 +6,7 @@
 
 | Region 1 | Region 1 Location | Deploy |
 | --- | --- | --- |
-| us-east-1 | N. Virginia |  <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=gdb1&templateURL=https://s3.amazonaws.com/[[bucket]]]]/templates/lab-gdb1-with-cluster.yml" target="_blank"><img src="../../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Primary"></a> |
+| us-east-1 | N. Virginia |  <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=gdb1&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-gdb1-with-cluster.yml" target="_blank"><img src="../../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Primary"></a> |
 | us-east-2 | Ohio | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/create/review?stackName=gdb1&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-gdb1-with-cluster.yml" target="_blank"><img src="../../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Primary"></a> |
 | us-west-2 | Oregon | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=gdb1&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-gdb1-with-cluster.yml" target="_blank"><img src="../../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Primary"></a> |
 
