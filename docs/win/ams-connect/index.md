@@ -44,26 +44,18 @@ Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/sessi
 
 <span class="image">![Session Manager](1-session-manager.png?raw=true)</span>
 
-Check the box next to **Enable Run As support for Linux instances**, and enter `ubuntu` in the text field. This will instruct Session Manager to connect to the workstation using the `ubuntu` operating system user account. Click **Save**.
-
-!!! note
-    You will only need to set the preferences once for the purposes of the labs. However, if you use Session Manager for other use cases you may need to revert the changes back as needed.
-
-<span class="image">![Session Preferences](1-session-prefs.png?raw=true)</span>
-
-Next, navigate to the **Sessions** tab, and click the **Start session** button.
+Click the **Start session** button.
 
 <span class="image">![Start Session](1-start-session.png?raw=true)</span>
 
-Please select an EC2 instance to establish a session with. The workstation is named `labstack-mysql-bastion`, select it and click **Start session**.
+Please select the correct EC3 instance to establish a session with. The workstation is named `labstack-mysql-bastion`, select it and click **Start session**.
 
 <span class="image">![Connect Instance](1-connect-session.png?raw=true)</span>
 
-If you see a black command like terminal screen and a prompt, you are now connected to the workstation. Type the following commands to ensure a consistent experience, and that the connection is successful:
+If you see a black command like terminal screen and a prompt, you are now connected to the workstation. Type the following command to use the correct user account and context for the labs:
 
 ```shell
-bash
-cd ~
+sudo su -l ubuntu
 ```
 
 ## 3. Verify lab environment
