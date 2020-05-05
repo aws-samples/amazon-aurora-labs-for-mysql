@@ -126,8 +126,8 @@ Mappings:
       cpuLoadTarget: 20
     sysbench:
       dbSchema: sbtpcc
-      runTime: '300'
-      numThreads: '4'
+      runTime: '3600'
+      numThreads: '2'
       numTables: '8'
       numWarehouses: '2'
     pgbench:

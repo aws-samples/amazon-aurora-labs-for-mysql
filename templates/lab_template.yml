@@ -94,6 +94,7 @@ Metadata:
       EEModuleVersion:
         default: 'EventEngine Version'
 
+
 ## Conditions
 Conditions:
   condDeployDBCluster: !Equals [ !Ref deployCluster, "Yes" ]
@@ -643,48 +644,51 @@ Resources:
             - - !Sub |
                 #!/bin/bash -xe
 
+                # start bootstrap
+                echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
+
                 # update & upgrade packages
                 apt-get update
                 DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
-                echo "* updated and upgraded packages" >> /debug.log
+                echo "$(date "+%F %T") * updated and upgraded packages" >> /debug.log
 
                 # install other supporting packages
                 apt-get -y install unzip
-                echo "* installed supporting packages" >> /debug.log
+                echo "$(date "+%F %T") * installed supporting packages" >> /debug.log
 
                 # update SSM agent
                 snap remove amazon-ssm-agent
                 wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
                 DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
-                echo "* update ssm-agent to latest" >> /debug.log
+                echo "$(date "+%F %T") * update ssm-agent to latest" >> /debug.log
 
                 # install jq
                 apt-get -y install jq
-                echo "* installed jq package" >> /debug.log
+                echo "$(date "+%F %T") * installed jq package" >> /debug.log
 
                 # install mysql client tools
                 apt-get -y install mysql-client
                 mysql --version >> /debug.log
-                echo "* installed mysql-client package" >> /debug.log
+                echo "$(date "+%F %T") * installed mysql-client package" >> /debug.log
 
                 # install sysbench
                 curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | sudo bash
                 apt-get update
                 apt-get -y install sysbench
                 sysbench --version >> /debug.log
-                echo "* installed sysbench package" >> /debug.log
+                echo "$(date "+%F %T") * installed sysbench package" >> /debug.log
 
                 # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
                 git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
                 cd /home/ubuntu/sysbench-tpcc
                 git checkout 288b7687877a2b52772949f13c507713db182d25
                 chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
-                echo "* cloned percona/sysbench-tpcc repo" >> /debug.log
+                echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
 
                 # download demo databases
                 git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
                 chown -R ubuntu:ubuntu /home/ubuntu/samples
-                echo "* cloned test databases repo" >> /debug.log
+                echo "$(date "+%F %T") * cloned test databases repo" >> /debug.log
 
                 # install python pip and aws cli
                 apt-get -y install python3-pip
@@ -696,7 +700,7 @@ Resources:
                 curl -O https://[[website]]/scripts/aware_failover.py
                 curl -O https://[[website]]/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
-                echo "* pulled load test script" >> /debug.log
+                echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log
 
                 # configure AWS CLI
                 mkdir /home/ubuntu/.aws
@@ -704,7 +708,7 @@ Resources:
                 echo "[default]" >> /home/ubuntu/.aws/config
                 echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
                 chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
-                echo "* configured aws cli" >> /debug.log
+                echo "$(date "+%F %T") * configured aws cli" >> /debug.log
 
                 # set environment variables
                 export ANALYTICSURI="https://[[apigw]]/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
@@ -723,7 +727,7 @@ Resources:
               - !Sub |
                 export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
                 export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
-                echo "* environemnt vars initialized" >> /debug.log
+                echo "$(date "+%F %T") * environemnt vars initialized" >> /debug.log
               - Fn::If:
                   - condDeployDBCluster
                   - !Sub |
@@ -733,12 +737,13 @@ Resources:
                     export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
                     echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
                     echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
-                    echo "* db credentials initialized" >> /debug.log
+                    echo "$(date "+%F %T") * db credentials initialized" >> /debug.log
                   - ""
               - !Sub |
                 # reboot
-                echo "* bootstrap complete, rebooting" >> /debug.log
+                echo "$(date "+%F %T") * bootstrap complete, rebooting" >> /debug.log
                 shutdown -r now
+
 
 ## Create parameter groups for cluster nodes
   pgNodeParams:
