@@ -53,9 +53,9 @@ On the upper right corner of the AWS Console, click on your existing secondary r
 
 | Region 2 | Region 2 Location | Deploy |
 | --- | --- | --- |
-| us-east-1 | N. Virginia |  <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=gdb2&templateURL=https://s3.amazonaws.com/ams-labs-prod-content-us-east-1/templates/lab-gdb2-no-cluster.yml" target="_blank"><img src="../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Secondary"></a> |
-| us-east-2 | Ohio | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/create/review?stackName=gdb2&templateURL=https://s3.amazonaws.com/ams-labs-prod-content-us-east-1/templates/lab-gdb2-no-cluster.yml" target="_blank"><img src="../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Secondary"></a> |
-| us-west-2 | Oregon | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=gdb2&templateURL=https://s3.amazonaws.com/ams-labs-prod-content-us-east-1/templates/lab-gdb2-no-cluster.yml" target="_blank"><img src="../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Secondary"></a> |
+| us-east-1 | N. Virginia |  <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=gdb2&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-gdb2-no-cluster.yml" target="_blank"><img src="../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Secondary"></a> |
+| us-east-2 | Ohio | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/create/review?stackName=gdb2&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-gdb2-no-cluster.yml" target="_blank"><img src="../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Secondary"></a> |
+| us-west-2 | Oregon | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=gdb2&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab-gdb2-no-cluster.yml" target="_blank"><img src="../../assets/images/cloudformation-launch-stack.png" alt="Deploy - Secondary"></a> |
 
 Choose the region above matching your assigned secondary region to deploy the workshop environment. You can also download the [lab-gdb2-no-cluster.yml](/templates/lab-gdb2-no-cluster.yml) template and manually upload it to CloudFormation in your secondary region.
 
