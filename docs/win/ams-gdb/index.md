@@ -61,6 +61,5 @@ aws ssm send-command \
 
 The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
-<span class="image">![SSM Command](1-ssm-command.png?raw=true)</span>
 
 ## 3. Create an Aurora Global cluster
