@@ -10,7 +10,7 @@ This lab contains the following tasks:
 
 This lab requires the following lab modules to be completed first:
 
-* [Deploy Environment](/prereqs/environment/) (using the `lab-no-cluster.yml` template is sufficient)
+* [Deploy Environment](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
 * [Create an Aurora Serverless DB Cluster](/serverless/create/)
 
 
