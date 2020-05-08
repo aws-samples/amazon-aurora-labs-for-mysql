@@ -1,7 +1,6 @@
 # Deploying an Aurora Global Database
 
-
-
+Amazon Aurora <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html" target="_blank">Global Database</a> is designed for globally distributed applications, allowing a single Amazon Aurora database to span multiple AWS regions. It replicates your data with no impact on database performance, enables fast local reads with low latency in each region, and provides disaster recovery from region-wide outages.
 
 This lab contains the following tasks:
 
@@ -181,5 +180,44 @@ Click **Save Dashboard** to save your changes.
 
 ## 5. Promote the secondary region
 
+In the event of a DR condition where you application in the primary region is impaired, either due to application reasons (e.g. bad deployment), or infrastructure reasons, you can fail over operations to the secondary cluster. You can promote the secondary cluster to be an independent writable and readable DB cluster. Doing so allows you to continue operations in the DR region and discontinues replication from the old primary DB cluster in the other region. This operation has no dependency on the old primary region, such that you can perform it even if the old primary region is unavailable.
+
+??? tip "Failovers and replica promotion in Aurora"
+    Aurora supports automated failovers only within a single DB cluster, inside a single region. DB instances within a cluster share the same storage volume, therefore an automated failover results in not loss of committed data, only data changes produced by in-flight transactions will be lost. This is consistent with ACID requirements of a relational database.
+
+    Once you promote a Global Database secondary DB cluster, it is removed from the global cluster and becomes a stand-alone regional DB cluster. In a DR scenario, or DR testing scenario, you may want to eventually fail-back your application to the original region. Once promoted you cannot, add the new DB cluster back to the old global cluster as a secondary region. Restarting or reversing the flow of replication is not supported. Failing back to the original region, requires you create a new global database, based on the newly promoted DB cluster, adding a secondary DB cluster in the original region for it, promoting that secondary DB cluster, and repeating the process to create a new secondary in the DR region again.
+
+Next you will promote the secondary region to a stand alone DB cluster.
+
+Open the <a href="https://console.aws.amazon.com/rds/home?region=us-east-1#database:id=labstack-mysql-secondary;is-cluster=true" target="_blank">Amazon RDS service console</a> in the secondary region (N. Virginia) at the secondary DB cluster details page.
+
+From the **Actions** dropdown button, choose **Remove from Global**.
+
+::TODO:: screenshot
+
+Confirm at the prompt that you wish to perform this operation, by clicking **Remove and promote**. The process can take up to a minute to complete.
+
+::TODO:: screenshot
+
+Once completed, you will notice that the DB cluster `labstack-mysql-secondary` is no longer part of the global cluster, and appears as an independent cluster with a **Regional** role. The single DB instance, member of this cluster has now a **Writer** role. At this point you can leverage this DB cluster for both reads and writes.
+
+::TODO:: screenshot
 
 ## 6. Cleanup lab resources
+
+By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
+
+With the RDS console of the secondary region open from above, select the DB instance of the newly promoted DB cluster, named `labstack-mysql-node-3`. From the **Actions** dropdown button, choose **Delete**.
+
+::TODO:: screenshot
+
+**Uncheck** the checkbox next to **Create final snapshot?**. In a real life scenario, we recommend you create a final snapshot just in case you delete the DB cluster prematurely. However we will no longer need this DB cluster in this workshop.
+
+**Check** the box next to **I acknowledge that upon instance deletion, automated backups, including system snapshots and point-in-time recovery, will no longer be available.**, and type `delete me` in the text box to confirm you want to delete the DB cluster. These steps are precautions to ensure customers do not delete resources accidentally.
+
+:: TODO:: screenshot
+
+Both the DB instance as well as the DB cluster will be deleted by this operation.
+
+!!! note
+    Unlike in the DB cluster cloning lab before, the RDS service console **combines both API calls** to delete the DB instance and to delete the DB cluster in a single operation, if you are deleting the last DB instance of a DB cluster.
