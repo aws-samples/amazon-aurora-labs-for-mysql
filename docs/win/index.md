@@ -22,13 +22,13 @@ Click **Open Console**. For the purposes of this workshop, you will not need to 
 
 ## Get the environment parameters
 
-Once you have opened the AWS Management Console for the first time, go ahead and open the <a href="https://eu-west-1.console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks" target="_blank">AWS CloudFormation</a> console and click on the `labstack` stack.
+Once you have opened the AWS Management Console for the first time, go ahead and open the <a href="https://eu-west-1.console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks" target="_blank">AWS CloudFormation</a> console and click on the `mod-XXXXXXXXXXXXXXXX` stack.
 
-::TODO:: Screenshot
+<span class="image">![Stack List](cfn-stack-list.png?raw=true)</span>
 
 If the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==
 
-<span class="image">![Stack Outputs](stack-outputs.png?raw=true)</span>
+<span class="image">![Stack Outputs](cfn-stack-outputs.png?raw=true)</span>
 
 ## Start the labs
 
@@ -44,9 +44,9 @@ Time permitting, you will run the following hands-on labs. Start with  [connecti
 --- | --- | --- | ---
 1 | [**Connect to Aurora PostgreSQL**](/win/apg-connect/) | Connect to the lab environment for the Aurora PostgreSQL labs.
 2 | [**Use Query Plan Management**](/win/apg-qpm/) | Learn how to use the query plan management features of Aurora PostgreSQL.
-3 | [**Set up Database Activity Streams**](/win/apg-das/) |
+3 | [**Set up Database Activity Streams**](/win/apg-das/) | Enable Database Activity Streams, read and process events from the activity stream.
 4 | [**Connect to Aurora MySQL**](/win/ams-connect/) | Connect to the DB cluster for the first time and load an initial data set
 5 | [**Clone an Aurora DB cluster**](/win/ams-clone/) | Clone an Aurora DB cluster and observing the divergence of the data set.
-6 | [**Deploy a Global Database**](/win/ams-gdb) |
+6 | [**Deploy a Global Database**](/win/ams-gdb/) | Learn how to operate an Aurora Global Database cluster
 7 | [**Create a Serverless DB cluster**](/win/ams-srvless-create/) | Optional. Connect to your serverless cluster using the RDS Data API and Lambda functions.
 8 | [**Use the RDS Data API**](/win/ams-srvless-data-api/) | Optional. Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.

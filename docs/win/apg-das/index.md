@@ -115,9 +115,13 @@ cd /home/ec2-user/postgresql-10.7/src/bin/pgbench
 
 ## 4. Read activity from the stream
 
-A python script with sample code to read the activity stream has already been saved on your EC2 workstation at this location `/home/ec2-user/das-script.py`. You will be required to replace the value for `RESOURCE_ID` with the **Resource id** value from your cluster configuration as shown below and also replace the value for `STREAM_NAME` with the **Kinesis stream**.
+A python script with sample code to read the activity stream has already been saved on your EC2 workstation at this location `/home/ec2-user/das-script.py`.
 
-??? tip "Copy and paste python script code"
+You will be required to replace the value for `RESOURCE_ID` with the **Resource id** value from your cluster configuration as shown below and also replace the value for `STREAM_NAME` with the **Kinesis stream**.
+
+<span class="image">![1-das-53](1-das-53.png?raw=true)</span>
+
+??? tip "Create your own python script code"
     You can also copy and paste the script text below to create a new python file and replace the value for `RESOURCE_ID` with the **Resource id** value from your cluster configuration as shown below and also replace the value for `STREAM_NAME` with the **Kinesis stream**.
 
     ```shell
@@ -201,9 +205,7 @@ A python script with sample code to read the activity stream has already been sa
         main()
     ```
 
-<span class="image">![1-das-53](1-das-53.png?raw=true)</span>
-
-Run the python script (either `das-script.py` or `das_script.py` depending on how you created it) in the command line:
+Once you have replaced the `RESOURCE_ID` with the **Resource id** value and `STREAM_NAME` with the **Kinesis stream**, run the python script (either `das-script.py` or `das_script.py` depending on how you created it) in the command line:
 
 ```shell
 python das_script.py

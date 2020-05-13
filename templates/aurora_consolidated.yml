@@ -12,7 +12,7 @@
 ## This sample code is made available under the MIT-0 license. See the LICENSE file.
 
 AWSTemplateFormatVersion: 2010-09-09
-Description: Amazon Aurora Labs for MySQL
+Description: Amazon Aurora Labs
 
 
 ## Parameters
