@@ -28,48 +28,38 @@ DB name	| `mylab`
 DB username	| `masteruser`
 DB password	| See below for steps how to retrieve
 
-## 2. Retrieve database credentials from AWS Secret Manager
+## 2. Retrieve database credentials from AWS Secrets Manager
 
-1. Search for the secret name as shown in the output of the stack and select the secret name.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/secretsmanager/home?region=eu-west-1#/listSecrets" target="_blank">AWS Secrets Manager service console</a>, and search for the secret name shown in the output of the stack (normally there is only one secret listed in the correct region). Click on the name of that secret.
 
-<span class="image">![1-qpm-secrets-1](1-qpm-secrets-1.png?raw=true)</span>
+<span class="image">![Listing of Secrets](secret-list.png?raw=true)</span>
 
-## 2. Click on the Retrieve secret value to get the Database user and the password to connect to the Aurora Database.
+On the secret's detail page, click on the **Retrieve secret value** button. Note down the **username** and **password**, you will need them in later labs.
 
-<span class="image">![1-qpm-secrets-2](1-qpm-secrets-2.png?raw=true)</span>
+<span class="image">![Secret Details](secret-details.png?raw=true)</span>
 
-<span class="image">![1-qpm-secrets-3](1-qpm-secrets-3.png?raw=true)</span>
+<span class="image">![Secret Credentials](secret-credentials.png?raw=true)</span>
 
-<span class="image">![1-qpm-secrets-4](1-qpm-secrets-4.png?raw=true)</span>
+## 3. Connect to the EC2 workstation using AWS Systems Manager
 
-## 3. Connecting to the EC2 bastion instance with Systems Manager
+Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a> and click **Start session**.
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>.
+<span class="image">![SSM Listing](ssm-listing.png?raw=true)</span><br>
 
-<span class="image">![1-ssm1_1](../prerequisites/ssm1_1.png?raw=true)</span><br>
+Select the instance named `auroralab-postgres-bastion`, then click **Start session**.
 
-<span class="image">![1-ssm1_2](../prerequisites/ssm1_2.png?raw=true)</span><br>
+<span class="image">![SSM Select Instance](ssm-select.png?raw=true)</span><br>
 
-Click **Start session**
-
-<span class="image">![1-ssm1_3](../prerequisites/ssm1_3.png?raw=true)</span><br>
-
-Click **Start session**
-
-Select the instance named `labstack-postgres-bastion`, then click **Start session**.
-
-<span class="image">![1-ssm1_4](../prerequisites/ssm1_4.png?raw=true)</span><br>
-
-By default the system manager connects using the login **ssm-user**. You need to switch to the **ec2-user**:
+By default Session Manager connects using the login **ssm-user**. You need to switch to **ec2-user** using the following command:
 
 ```shell
-sh-4.2$ whoami
-ssm-user
-sh-4.2$ sudo su -
-Last login: Thu Feb 27 02:28:24 UTC 2020 on pts/1
-[root@ip-x.x.x.x ~]# su - ec2-user
-Last login: Wed Feb 26 18:04:46 UTC 2020 on pts/0
-[ec2-user@x.x.x.x ~]$ whoami
-ec2-user
+sudo su -l ec2-user
 ```
-<span class="image">![1-ssm1_5](../prerequisites/ssm1_5.png?raw=true)</span><br>
+
+You can verify that you are using the correct **ec2-user** account by using the following command:
+
+```shell
+whoami
+```
+
+<span class="image">![SSM Terminal](ssm-terminal.png?raw=true)</span><br>

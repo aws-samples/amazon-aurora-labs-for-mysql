@@ -37,10 +37,7 @@ DB password	| Preset as environment variable `DBPASS`
 
 ## 2. Connect to your workstation instance
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>. Click **Configure Preferences**.
-
-!!! warning "Console Differences"
-    The introduction screen with the **Configure Preferences** and **Start Session** buttons only appears when you start using Session Manager for the first time in a new account. Once you have started using this service the console will display the session listing view instead, and the preferences page is accessible by clicking on the **Preferences** tab. From there, click the **Edit** button if you wish to change settings.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>.
 
 <span class="image">![Session Manager](1-session-manager.png?raw=true)</span>
 
