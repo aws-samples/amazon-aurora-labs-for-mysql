@@ -90,7 +90,7 @@ Mappings:
       az3: us-west-2d
     eu-west-1:
       myAmi: ami-035966e8adab4aaad
-      pgAmi: ami-08d658f84a6d84a80
+      pgAmi: ami-0862aabda3fb488b5
       bastionType: m5.large
       nodeType: db.r5.large
       name: Ireland
@@ -152,7 +152,7 @@ Resources:
       CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-vpc
+          Value: auroralab-vpc
 
 ## Create an IGW & attach it to the VPC
   vpcIgw:
@@ -160,7 +160,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-igw
+          Value: auroralab-igw
   attachIgwVpc:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -177,7 +177,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-1
+          Value: auroralab-pub-sub-1
   sub2Public:
     Type: AWS::EC2::Subnet
     Properties:
@@ -187,7 +187,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-2
+          Value: auroralab-pub-sub-2
   sub3Public:
     Type: AWS::EC2::Subnet
     Properties:
@@ -197,7 +197,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub-3
+          Value: auroralab-pub-sub-3
 
 ## Associate the public subnets with a public route table
   rtbPublic:
@@ -206,7 +206,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-public-rtb
+          Value: auroralab-public-rtb
   rteToIgw:
     Type: AWS::EC2::Route
     DependsOn: attachIgwVpc
@@ -240,7 +240,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-1
+          Value: auroralab-prv-sub-1
   sub2Private:
     Type: AWS::EC2::Subnet
     Properties:
@@ -250,7 +250,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-2
+          Value: auroralab-prv-sub-2
   sub3Private:
     Type: AWS::EC2::Subnet
     Properties:
@@ -260,7 +260,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-prv-sub-3
+          Value: auroralab-prv-sub-3
 
 ## Create a NAT Gateway & EIP
   natEip:
@@ -281,7 +281,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-nat-rtb
+          Value: auroralab-nat-rtb
   rteToNgw:
     Type: AWS::EC2::Route
     Properties:
@@ -328,7 +328,7 @@ Resources:
       BucketName: !Join
         - "-"
         - - !Ref 'AWS::StackName'
-          - auroradata
+          - auroralab
           - !Select
             - 0
             - !Split
@@ -348,7 +348,7 @@ Resources:
           Value: !Join
             - "-"
             - - !Ref 'AWS::StackName'
-              - data
+              - auroralab
               - !Select
                 - 0
                 - !Split
@@ -363,33 +363,33 @@ Resources:
   dbSubnets:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: !Sub ${AWS::StackName}-db-subnet-group
+      DBSubnetGroupDescription: auroralab-db-subnet-group
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-db-subnet-group
+          Value: auroralab-db-subnet-group
 
 ## Create bastion security group
   bastionSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub ${AWS::StackName}-bastion-host
+      GroupName: auroralab-bastion-host
       GroupDescription: Aurora Lab SSH Security Group
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-host
+          Value: auroralab-bastion-host
 
 ## Create DB security group
   dbSecGroupCluster:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref vpc
-      GroupName: !Sub ${AWS::StackName}-mysql-internal
+      GroupName: auroralab-mysql-internal
       GroupDescription: Aurora MySQL Database Firewall
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-internal
+          Value: auroralab-db-internal
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
@@ -412,7 +412,7 @@ Resources:
   roleEnhancedMonitoring:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-monitor-${AWS::Region}
+      RoleName: !Sub auroralab-monitor-${AWS::Region}
       Description: Allows your Aurora DB cluster to deliver Enhanced Monitoring metrics.
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -427,13 +427,13 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-monitor-${AWS::Region}
+          Value: !Sub auroralab-monitor-${AWS::Region}
 
 ## Create external integration role
   roleServiceIntegration:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-integrate-${AWS::Region}
+      RoleName: !Sub auroralab-integrate-${AWS::Region}
       Description: Allows your Aurora DB cluster to integrate with other AWS services, such as Amazon S3 for import/export.
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -463,13 +463,13 @@ Resources:
                   - arn:aws:s3:::*
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-integrate-${AWS::Region}
+          Value: !Sub auroralab-integrate-${AWS::Region}
 
 ## Create role for bastion host
   roleBastionHost:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-bastion-${AWS::Region}
+      RoleName: !Sub auroralab-bastion-${AWS::Region}
       Description: Permits user interaction with AWS APIs from the EC2-based workstation.
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -515,7 +515,7 @@ Resources:
                 Resource: "*"
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-bastion-${AWS::Region}
+          Value: !Sub auroralab-bastion-${AWS::Region}
   profileBastionHost:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -527,7 +527,7 @@ Resources:
   secretClusterMasterUser:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Description: !Sub "Master user credentials for ${AWS::StackName}-cluster"
+      Description: "Master user credentials for auroralab-cluster"
       GenerateSecretString:
         SecretStringTemplate: '{"username": "masteruser"}'
         GenerateStringKey: 'password'
@@ -535,13 +535,13 @@ Resources:
         ExcludeCharacters: '"@/\$`&'
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-secret
+          Value: auroralab-secret
 
 ## Create parameter groups for cluster nodes
   myNodeParams:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-mysql
+      Description: auroralab-mysql
       Family: !FindInMap [ ClusterSettings, mysql, dbFamily ]
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
@@ -550,45 +550,45 @@ Resources:
         log_output: FILE
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql
+          Value: auroralab-mysql
 
 ## Create parameter groups for cluster nodes
   pgNodeParams:
     Type: AWS::RDS::DBParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-postgresql
+      Description: auroralab-postgresql
       Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
       Parameters:
         log_rotation_age: '1440'
         log_rotation_size: '102400'
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-postgresql
+          Value: auroralab-postgresql
 
 ## Create cluster parameter group
   myClusterParams:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-mysql
+      Description: auroralab-mysql
       Family: !FindInMap [ ClusterSettings, mysql, dbFamily ]
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql
+          Value: auroralab-mysql
 
 ## Create cluster parameter group
   pgClusterParams:
     Type: AWS::RDS::DBClusterParameterGroup
     Properties:
-      Description: !Sub ${AWS::StackName}-postgresql
+      Description: auroralab-postgresql
       Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
       Parameters:
         rds.force_ssl: 0
         shared_preload_libraries: 'pg_stat_statements,pg_hint_plan'
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-postgresql
+          Value: auroralab-postgresql
 
 ## Create the bastion host
   bastionMySQL:
@@ -599,7 +599,7 @@ Resources:
       SecurityGroupIds: [ !Ref bastionSecGroup ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-bastion
+          Value: auroralab-mysql-bastion
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -718,7 +718,7 @@ Resources:
       EngineVersion: !FindInMap [ ClusterSettings, mysql, dbVersion ]
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref myClusterParams
-      DBClusterIdentifier: !Sub ${AWS::StackName}-mysql-cluster
+      DBClusterIdentifier: auroralab-mysql-cluster
       BackupRetentionPeriod: 1
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
@@ -732,14 +732,14 @@ Resources:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-cluster
+          Value: auroralab-mysql-cluster
 
 ## Deploy cluster node
   myNode1:
     Type: AWS::RDS::DBInstance
     Properties:
       DBClusterIdentifier: !Ref myCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-mysql-node-1
+      DBInstanceIdentifier: auroralab-mysql-node-1
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref myNodeParams
@@ -751,14 +751,14 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-node-1
+          Value: auroralab-mysql-node-1
 
 ## Deploy cluster node
   myNode2:
     Type: AWS::RDS::DBInstance
     Properties:
       DBClusterIdentifier: !Ref myCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-mysql-node-2
+      DBInstanceIdentifier: auroralab-mysql-node-2
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref myNodeParams
@@ -770,7 +770,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-mysql-node-2
+          Value: auroralab-mysql-node-2
 
 ## Create Aurora cluster
   pgCluster:
@@ -781,7 +781,7 @@ Resources:
       Port: 5432
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref pgClusterParams
-      DBClusterIdentifier: !Sub ${AWS::StackName}-postgres-cluster
+      DBClusterIdentifier: auroralab-postgres-cluster
       BackupRetentionPeriod: 7
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
@@ -790,14 +790,14 @@ Resources:
       VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-postgres-cluster
+          Value: auroralab-postgres-cluster
 
 ## Deploy cluster node
   pgNode1:
     Type: AWS::RDS::DBInstance
     Properties:
       DBClusterIdentifier: !Ref pgCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-postgres-node-1
+      DBInstanceIdentifier: auroralab-postgres-node-1
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
@@ -809,14 +809,14 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-postgres-node-1
+          Value: auroralab-postgres-node-1
 
 ## Deploy cluster node
   pgNode2:
     Type: AWS::RDS::DBInstance
     Properties:
       DBClusterIdentifier: !Ref pgCluster
-      DBInstanceIdentifier: !Sub ${AWS::StackName}-postgres-node-2
+      DBInstanceIdentifier: auroralab-postgres-node-2
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
@@ -828,7 +828,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-postgres-node-2
+          Value: auroralab-postgres-node-2
 
 ## Create the bastion host
   bastionPostgreSQL:
@@ -841,7 +841,7 @@ Resources:
 #      KeyName: !Ref ec2KeyPair
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-postgres-bastion
+          Value: auroralab-postgres-bastion
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -912,7 +912,7 @@ Resources:
       DocumentType: Command
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-sysbench-test
+          Value: auroralab-sysbench-test
       Content:
         schemaVersion: '2.2'
         description: SysBench Percona TPCC-LIKE Preparation
@@ -973,7 +973,7 @@ Resources:
       DocumentType: Command
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pgbench-test
+          Value: auroralab-pgbench-test
       Content:
         schemaVersion: '2.2'
         description: SysBench Percona TPCC-LIKE Preparation
@@ -1018,7 +1018,7 @@ Resources:
   roleLabSupport:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-support-${AWS::Region}
+      RoleName: !Sub auroralab-support-${AWS::Region}
       Description: Role to permit the Lambda support function to interact with relevant AWS APIs.
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -1057,13 +1057,13 @@ Resources:
                   - !Sub 'arn:aws:s3:::${bucketLabData}'
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-support-${AWS::Region}
+          Value: !Sub auroralab-support-${AWS::Region}
 
 ## Create Lambda function to implement support operations
   funcLabSupport:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-support
+      FunctionName: auroralab-support
       Description: Custom Resource to provide support operations for the Aurora MySQL labs.
       Handler: index.handler
       Role: !GetAtt roleLabSupport.Arn
@@ -1071,7 +1071,7 @@ Resources:
       Timeout: 600
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-support
+          Value: auroralab-support
       Environment:
         Variables:
           REGION: !Ref 'AWS::Region'
