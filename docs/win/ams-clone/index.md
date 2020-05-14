@@ -24,18 +24,17 @@ If you are not already connected to the Session Manager workstation command line
 aws rds restore-db-cluster-to-point-in-time \
 --restore-type copy-on-write \
 --use-latest-restorable-time \
---source-db-cluster-identifier labstack-mysql-cluster \
---db-cluster-identifier labstack-mysql-clone \
+--source-db-cluster-identifier auroralab-mysql-cluster \
+--db-cluster-identifier auroralab-mysql-clone \
 --vpc-security-group-ids [dbSecurityGroup] \
---db-subnet-group-name [dbSubnetGroup] \
---backtrack-window 86400
+--db-subnet-group-name [dbSubnetGroup]
 ```
 
 Next, check the status of the creation of your clone, by using the following command. The cloning process can take several minutes to complete. See the example output below.
 
 ```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-mysql-clone \
+--db-cluster-identifier auroralab-mysql-clone \
 | jq -r '.DBClusters[0].Status, .DBClusters[0].Endpoint'
 ```
 
@@ -53,15 +52,15 @@ Add a DB instance to the cluster once the status of the cluster becomes **availa
 aws rds create-db-instance \
 --db-instance-class db.r5.large \
 --engine aurora-mysql \
---db-cluster-identifier labstack-mysql-clone \
---db-instance-identifier labstack-mysql-clone-instance
+--db-cluster-identifier auroralab-mysql-clone \
+--db-instance-identifier auroralab-mysql-clone-instance
 ```
 
 Check the creation of the DB instance within the cluster, by using the following command:
 
 ```shell
 aws rds describe-db-instances \
---db-instance-identifier labstack-mysql-clone-instance \
+--db-instance-identifier auroralab-mysql-clone-instance \
 | jq -r '.DBInstances[0].DBInstanceStatus'
 ```
 
@@ -162,7 +161,7 @@ quit;
 By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
 
 ```shell
-aws rds delete-db-instance --db-instance-identifier labstack-mysql-clone-instance
+aws rds delete-db-instance --db-instance-identifier auroralab-mysql-clone-instance
 
-aws rds delete-db-cluster --db-cluster-identifier labstack-mysql-clone --skip-final-snapshot
+aws rds delete-db-cluster --db-cluster-identifier auroralab-mysql-clone --skip-final-snapshot
 ```

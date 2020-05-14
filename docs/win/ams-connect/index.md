@@ -37,15 +37,11 @@ DB password	| Preset as environment variable `DBPASS`
 
 ## 2. Connect to your workstation instance
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/systems-manager/session-manager?region=eu-west-1" target="_blank">Systems Manager: Session Manager service console</a>. Click the **Start session** button.
 
 <span class="image">![Session Manager](1-session-manager.png?raw=true)</span>
 
-Click the **Start session** button.
-
-<span class="image">![Start Session](1-start-session.png?raw=true)</span>
-
-Please select the correct EC3 instance to establish a session with. The workstation is named `labstack-mysql-bastion`, select it and click **Start session**.
+Please select the correct EC3 instance to establish a session with. The workstation is named `auroralab-mysql-bastion`, select it and click **Start session**.
 
 <span class="image">![Connect Instance](1-connect-session.png?raw=true)</span>
 
@@ -65,6 +61,7 @@ tail -n1 /debug.log
 
 You should see the output: `* bootstrap complete, rebooting`, if that is not the output you see, please wait a few more minutes and retry.
 
+
 ## 4. Connect to the DB cluster
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect.
@@ -79,7 +76,7 @@ mysql -h[mysqlClusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ??? tip "Can I see the AWS Secrets Manager credentials?"
     You can view and retrieve the credentials stored in the secret using the following command:
 
-    ```shell
+    ```
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
 
