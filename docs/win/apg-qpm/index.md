@@ -36,47 +36,54 @@ This lab requires the following prerequisites:
 
 Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1" target="_blank">Amazon RDS service console</a>. In the navigation pane, choose **Parameter groups**.
 
-<span class="image">![1-qpm-guide-1](1-qpm-guide-1.png?raw=true)</span>
+<span class="image">![RDS Dashboard](rds-dashboard.png?raw=true)</span>
 
-In the list, choose the parameter group for your Aurora PostgreSQL DB cluster. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresClusterParamGroup]==. It is in the format `labstack-pgclusterparams-XXXXXXXXX`.
+In the list, choose the parameter group for your Aurora PostgreSQL DB cluster. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresClusterParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgclusterparams-XXXXXXXXX`.
 
 !!! note
     Aurora DB clusters use two parameter groups, one at the DB cluster level, with settings that apply cluster-wide, one at the DB instance level, with settings that apply to that specific instance only. Since the values in the default parameter groups cannot be changed, your cluster is using a custom DB cluster parameter group and a custom DB instance parameter group.
 
     Please make sure you select the parameter group of **Type** `DB cluster parameter group` at this step, you will change the instance level one after that.
 
-<span class="image">![1-qpm-guide-2](1-qpm-guide-2.png?raw=true)</span>
+<span class="image">![RDS Parameter Groups](rds-param-groups-list.png?raw=true)</span>
 
 Click on the DB cluster parameter group selected above and then click on **Edit parameters**.
 
-<span class="image">![1-qpm-guide-3](1-qpm-guide-3.png?raw=true)</span>
+<span class="image">![RDS Parameter Group Details](rds-param-groups-detail.png?raw=true)</span>
 
-Set the value of the **rds.enable_plan_management** parameter to `1` and click on “Save changes”.
+Set the value of the **rds.enable_plan_management** parameter to `1` and click **Save changes**.
 
-<span class="image">![1-qpm-guide-4](1-qpm-guide-4.png?raw=true)</span>
+<span class="image">![RDS Parameter Group Changes](rds-param-groups-change.png?raw=true)</span>
 
-Go back to the list of parameters, and select the DB instance parameter group. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresInstanceParamGroup]==. It is in the format `labstack-pgnodeparams-XXXXXXXXX`. Similarly, open your database level parameter group and click on “Edit parameters”.
+Go back to the list of parameters, and select the DB instance parameter group. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresInstanceParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgnodeparams-XXXXXXXXX`. Similarly, open your database level parameter group and click on **Edit parameters**.
 
-<span class="image">![1-qpm-guide-5](1-qpm-guide-5.png?raw=true)</span>
+<span class="image">![RDS Parameter Groups](rds-param-groups-list-node.png?raw=true)</span>
 
-<span class="image">![1-qpm-guide-6](1-qpm-guide-6.png?raw=true)</span>
+Using the same steps as above with the DB cluster parameter group, set the following parameters to the indicated values:
 
-Modify the value for the **apg_plan_mgmt.capture_plan_baselines** parameter to `automatic` and **apg_plan_mgmt.use_plan_baselines** to `true`.
+Name | Value
+--- | ---
+**apg_plan_mgmt.capture_plan_baselines** | `automatic`
+**apg_plan_mgmt.use_plan_baselines** | `true`
 
 !!! note
   Please note that these parameters can be set at either the cluster level or at the database level. The default recommendation would be to set it at the Aurora cluster level.
 
-<span class="image">![1-qpm-guide-7](1-qpm-guide-7.png?raw=true)</span>
+Click **Preview changes** to verify the changes, and then click **Save changes**.
 
-<span class="image">![1-qpm-guide-8](1-qpm-guide-8.png?raw=true)</span>
+<span class="image">![RDS Parameter Groups](rds-param-groups-preview.png?raw=true)</span>
 
-Click on the “Preview changes” to verify the changes and click save changes.
+You need to restart the DB instance for these changes to take effect. In the navigation pane, choose **Databases**.
 
-<span class="image">![1-qpm-guide-9](1-qpm-guide-9.png?raw=true)</span>
+In the `auroralab-postgres-cluster` DB cluster, choose the DB instance that is listed with the **Role** of `Writer`. Click on the **Actions** dropdown, and click **Reboot**.
 
-<span class="image">![1-qpm-guide-10](1-qpm-guide-10.png?raw=true)</span>
+<span class="image">![RDS Reboot DB Instance](rds-db-reboot.png?raw=true)</span>
 
-Wait for the status of the instance to change to `available`, then restart your DB instance to enable this new setting.
+Confirm by clicking **Reboot** at the prompt.
+
+<span class="image">![RDS Reboot DB Instance](rds-db-reboot-confirm.png?raw=true)</span>
+
+Wait for the **Status** of the DB instance to change to `Available` again. This will take several seconds, you may also refresh the listing or web page a few times to get a timely updates.
 
 
 ## 2. Connect to the DB cluster
@@ -88,18 +95,20 @@ If you are not already connected to the Session Manager workstation command line
 Run the following commands:
 
 ```shell
-cd /home/ec2-user/postgresql-10.7/src/bin/psql
+psql -h [postgresClusterEndpoint] -p 5432 -U masteruser -d mylab
+```
 
-export PATH=/home/ec2-user/postgresql-10.7/src/bin/:$PATH
+You will be prompted for the password you have retrieved in the previous lab from the secret in AWS Secrets Manager.
 
-./psql -h [postgresClusterEndpoint] -p 5432 -U masteruser -d mylab
+To verify, you have connected successfully, run the following query:
 
-mylab=> select aurora_version(), version();
+```sql
+SELECT aurora_version(), version();
 ```
 
 You should see the following output if you have connected successfully:
 
-```
+```text
  aurora_version |                                   version                                   
 ----------------+-----------------------------------------------------------------------------
  2.3.5          | PostgreSQL 10.7 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 4.9.3, 64-bit
@@ -111,100 +120,144 @@ You should see the following output if you have connected successfully:
 Create the **apg_plan_mgmt** extension for your DB instance, using the following SQL commands, while still connected to the database:
 
 ```sql
-mylab=> CREATE EXTENSION apg_plan_mgmt;
-CREATE EXTENSION
+CREATE EXTENSION apg_plan_mgmt;
 ```
 
-Verify that the extension has been created:
+Next, verify that the extension has been created:
 
 ```sql
-mylab=> select extname,extversion from pg_extension where extname='apg_plan_mgmt';
+SELECT extname, extversion FROM pg_extension WHERE extname = 'apg_plan_mgmt';
+```
+
+You should see the following result, if successful:
+
+```text
     extname    | extversion
 ---------------+------------
  apg_plan_mgmt | 1.0.1
 ```
 
-Query to make sure that all QPM-related parameters are modified to the appropriate value.
+Validate that all QPM-related parameters are modified to the appropriate value.
+
+Check if Query Plan Management is enabled:
 
 ```sql
-mylab=> show rds.enable_plan_management;
+SHOW rds.enable_plan_management;
+```
+
+Expected result:
+
+```text
  rds.enable_plan_management
 ----------------------------
  1
+```
 
-mylab=> show apg_plan_mgmt.capture_plan_baselines;
+Check if plan capture is automatic:
+
+```sql
+SHOW apg_plan_mgmt.capture_plan_baselines;
+```
+
+Expected result:
+
+```text
  apg_plan_mgmt.capture_plan_baselines
 --------------------------------------
  automatic
+```
 
-mylab=> show apg_plan_mgmt.use_plan_baselines;
+Check if plan usage is enabled:
+
+```sql
+SHOW apg_plan_mgmt.use_plan_baselines;
+```
+
+Expected result:
+
+```text
  apg_plan_mgmt.use_plan_baselines
 ----------------------------------
  on
 ```
 
-## 4. Run a synthetic workload with automatic capture
+Disconnect from the database using the following command:
 
-The Cloud Formation template used for this workshop creates an EC2 bastion host bootstrapped with PostgreSQL tools (Pgbench, psql and sysbench etc.). The template will also initialize the database with pgbench (scale=100) data.
-
-Connect to an additional Session Manager workstation command line session. See [Connect to Aurora PostgreSQL](/win/apg-connect/), for steps how to create a Session Manager command line session. Use pgbench (a PostgreSQL benchmarking tool) to generate a simulated workload, which runs same queries for a specified period. With automatic capture enabled, QPM captures plans for each query that runs at least twice.
-
-Run the following commnds on the second command line session:
-
-```shell
-export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH
-
-cd /home/ec2-user/postgresql-10.7/src/bin/pgbench
-
-./pgbench  --progress-timestamp -M prepared -n -T 100 -P 1  -c 500 -j 500  --host=[postgresClusterEndpoint] -b tpcb-like@1 -b select-only@20 --username=masteruser mylab
+```sql
+\q
 ```
 
-Query the **apg_plan_mgmt.dba_plans** table to view the managed statements and the execution plans for the SQL statements started with the pgbench tool.
+## 4. Run a synthetic workload with automatic capture
+
+The Cloud Formation template used for this workshop creates an EC2 bastion host bootstrapped with PostgreSQL tools (Pgbench, psql and sysbench etc.). The template will also initialize the database with pgbench (scale=100) data. You will use pgbench (a PostgreSQL benchmarking tool) to generate a simulated workload, which runs same queries for a specified period. With automatic capture enabled, QPM captures plans for each query that runs at least twice.
 
 ```shell
-cd /home/ec2-user/postgresql-10.7/src/bin/psql
+pgbench  --progress-timestamp -M prepared -n -T 100 -P 1  -c 500 -j 500  --host=[postgresClusterEndpoint] -b tpcb-like@1 -b select-only@20 --username=masteruser mylab
+```
 
-export PATH=/home/ec2-user/postgresql-10.7/src/bin/:$PATH
+Re-connect to the database using the following command:
 
-./psql -h [postgresClusterEndpoint] -p 5432 -U  masteruser -d mylab
+```shell
+psql -h [postgresClusterEndpoint] -p 5432 -U masteruser -d mylab
+```
 
-mylab=> SELECT sql_hash,
+You will be prompted for the password you have retrieved in the previous lab from the secret in AWS Secrets Manager.
+
+Next, query the **apg_plan_mgmt.dba_plans** table to view the managed statements and the execution plans for the SQL statements issued with the pgbench tool.
+
+```sql
+SELECT sql_hash,
        plan_hash,
        status,
        enabled,
        sql_text
 FROM   apg_plan_mgmt.dba_plans;
+```
 
+Results:
+
+```text
   sql_hash   |  plan_hash  |   status   | enabled |                                               sql_text                                                
 -1677381765	-225188843	 Approved   	 t       	UPDATE pgbench_branches SET bbalance = bbalance + $1 WHERE bid = $2;
 -60114982	300482084	 Approved   	 t       	 INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP);
 1319555216	30042398	 Approved   	 t       	select count(*) from pgbench_branches;
 
 -2033469270	-1987991358	 Approved   	 t       	 UPDATE pgbench_tellers SET tbalance = tbalance + $1 WHERE tid = $2;
+[......]
 ```
 
-Capturing all plans with automatic capture has little runtime overhead and can be enabled in production. We are turning off the automatic capture to make sure that we don’t capture SQL statements outside the pgbench workload. This can be turned off by setting the **apg_plan_mgmt.capture_plan_baselines** parameter to `off` from the DB instance-level parameter group.
+Capturing all plans with automatic capture has little runtime overhead and can be enabled in production.
 
-<span class="image">![1-qpm-guide-11](1-qpm-guide-11.png?raw=true)</span>
+Turn `off` automatic capture to make sure SQL statements outside the pgbench workload are not captured. Back in the RDS service console, follow the same steps as in section **1. Enable QPM and automatic plan capture in your DB cluster parameters** to set **apg_plan_mgmt.capture_plan_baselines** parameter to `off` in the DB instance-level parameter group.
+
+<span class="image">![Turn off Automatic Plan Capture](rds-param-groups-change-off.png?raw=true)</span>
 
 Verify that the parameter has been updated:
 
 ```sql
-mylab=> show apg_plan_mgmt.capture_plan_baselines;
+SHOW apg_plan_mgmt.capture_plan_baselines;
+```
+
+Expected result:
+
+```text
  apg_plan_mgmt.capture_plan_baselines
 --------------------------------------
  Off
 ```
 
-Verify that the execution plan of the managed statement is the plan captured by QPM.
-
-We have manually executed the explain plan on one of the managed statements (highlighted in the yellow above). The explain plan output does show the SQL hash and the plan hash matches with the QPM approved plan for that statement.
+Next, verify that the execution plan of the managed statement is the plan captured by QPM. Manually execute the explain plan on one of the managed statements from the result set above. The explain plan output show the SQL hash and the plan hash match with the QPM approved plan for that statement.
 
 ```sql
-mylab=> explain (hashes true)  
+EXPLAIN (hashes true)  
 UPDATE pgbench_tellers
 SET    tbalance = tbalance + 100
 WHERE  tid = 200;
+```
+
+Expected result:
+
+```text
                          QUERY PLAN                                             
 ----------------------------------------------------------------------
  Update on pgbench_tellers  (cost=0.14..8.16 rows=1 width=358)
@@ -213,10 +266,13 @@ WHERE  tid = 200;
  SQL Hash: -2033469270, Plan Hash: -1987991358
 ```
 
+The **Plan Hash** is the same value when comparing the value in the list of captured plans, and the explain output: `-1987991358`.
+
 In addition to automatic plan capture, QPM also offers manual capture, which offers a mechanism to capture execution plans for known problematic queries. Capturing the plans automatically is recommended generally. However, there are situations where capturing plans manually would be the best option, such as:
 
 1. You don't want to enable plan management at the Database level, but you do want to control a few critical SQL statements only.
 2. You want to save the plan for a specific set of literals or parameter values that are causing a performance problem.
+
 
 ## 5. QPM plan adaptability with plan evolution mechanism
 
@@ -237,14 +293,13 @@ To do this, you set **apg_plan_mgmt.capture_plan_baselines** to `off` by default
 Enable manual plan capture to instruct QPM to capture the execution plan of the desired SQL statements manually:
 
 ```sql
-mylab=> SET apg_plan_mgmt.capture_plan_baselines = manual;
-SET
+SET apg_plan_mgmt.capture_plan_baselines = manual;
 ```
 
 Run an explain plan for the query so that QPM can capture the plan of the query (the following output for the explain plan is truncated for brevity):
 
 ```sql
-mylab=> explain (hashes true)
+EXPLAIN (hashes true)
 SELECT Sum(delta),
        	    Sum(bbalance)
 FROM   pgbench_history h,
@@ -254,6 +309,11 @@ WHERE  b.bid = h.bid
        AND mtime BETWEEN (SELECT Min(mtime)
                           FROM   pgbench_history mn) AND (SELECT Max(mtime)
                                                           FROM  pgbench_history mx);
+```
+
+Expected results:
+
+```text
                       QUERY PLAN                                                  
 ----------------------------------------------------------------------
  Aggregate  (cost=23228.13..23228.14 rows=1 width=16)
@@ -283,19 +343,23 @@ SQL Hash: 1561242727, Plan Hash: -1990695905
 Disable manual capture of the plan after you capture the execution plan for the desired SQL statement:
 
 ```sql
-mylab=> SET apg_plan_mgmt.capture_plan_baselines = off;
-SET
+SET apg_plan_mgmt.capture_plan_baselines = off;
 ```
 
 View the captured query plan for the query that ran previously. The plan_outline column in the table `apg_plan_mgmt.dba_plans` shows the entire plan for the SQL. For brevity, the plan_outline isn't shown here. Instead, **plan_hash_value** from the explain plan preceding is compared with **plan_hash** from the output of the `apg_plan_mgmt.dba_plans` query.
 
 ```sql
-mylab=> SELECT sql_hash,
+SELECT sql_hash,
        		 plan_hash,
        		status,
        		estimated_total_cost "cost",
        		sql_text
 FROM apg_plan_mgmt.dba_plans;
+```
+
+Expected result:
+
+```text
   sql_hash  		|  plan_hash  		|  status  	| cost 	|  sql_text                                                                                                         
 
 ------------+-------------+----------+---------+-----------------------------------------------------------
@@ -305,14 +369,13 @@ FROM apg_plan_mgmt.dba_plans;
 To instruct the query optimizer to use the approved or preferred captured plans for your managed statements, set the parameter **apg_plan_mgmt.use_plan_baselines** to `true`:
 
 ```sql
-mylab=> SET apg_plan_mgmt.use_plan_baselines = true;
-SET
+SET apg_plan_mgmt.use_plan_baselines = true;
 ```
 
 View the explain plan output to see that the QPM approved plan is used by the query optimizer:
 
 ```sql
-mylab=> explain (hashes true)
+EXPLAIN (hashes true)
 SELECT Sum(delta),
        	    Sum(bbalance)
 FROM   pgbench_history h,
@@ -322,7 +385,11 @@ WHERE  b.bid = h.bid
        AND mtime BETWEEN (SELECT Min(mtime)
                           FROM   pgbench_history mn) AND (SELECT Max(mtime)
                                                           FROM  pgbench_history mx);
+```
 
+Expected results:
+
+```text
                       QUERY PLAN                                                  
 ----------------------------------------------------------------------
  Aggregate  (cost=23228.13..23228.14 rows=1 width=16)
@@ -352,14 +419,13 @@ SQL Hash: 1561242727, Plan Hash: -1990695905
 Create a new index on the `pgbench_history` table column **mtime** to change the planner configuration and force the query optimizer to generate a new plan:
 
 ```sql
-mylab=> create index pgbench_hist_mtime on pgbench_history(mtime);
-CREATE INDEX
+CREATE INDEX pgbench_hist_mtime ON pgbench_history(mtime);
 ```
 
 View the explain plan output to see that QPM detects a new plan but still uses the approved plan and maintains the plan stability:
 
 ```sql
-mylab=> explain (hashes true)
+EXPLAIN (hashes true)
 SELECT Sum(delta),
        	    Sum(bbalance)
 FROM   pgbench_history h,
@@ -369,7 +435,11 @@ WHERE  b.bid = h.bid
        AND mtime BETWEEN (SELECT Min(mtime)
                           FROM   pgbench_history mn) AND (SELECT Max(mtime)
                                                           FROM  pgbench_history mx);
+```
 
+Expected results:
+
+```text
                       QUERY PLAN                                                  
 Aggregate  (cost=23228.13..23228.14 rows=1 width=16)
    InitPlan 1 (returns $1)
@@ -392,9 +462,11 @@ Aggregate  (cost=23228.13..23228.14 rows=1 width=16)
                ->  Seq Scan on pgbench_branches b  (cost=0.00..14.14 rows=3 width=8)
                      Filter: (bid = ANY ('{1,2,3}'::integer[]))
 [......]
-***Note: For this example, an approved plan was used instead of the minimum cost plan.
+ Note: An Approved plan was used instead of the minimum cost plan.
  SQL Hash: 1561242727, Plan Hash: -1990695905, Minimum Cost Plan Hash: -794604077***
 ```
+
+Please note the message at the end of the plan results: **Note: An Approved plan was used instead of the minimum cost plan.**
 
 Run the following SQL query to view the new plan and status of the plan. To ensure plan stability, QPM stores all the newly generated plans for a managed query in QPM as unapproved plans.
 
@@ -403,42 +475,57 @@ The following output shows that there are two different execution plans stored f
 The plan_outline column in the table `apg_plan_mgmt.dba_plans` shows the entire plan for the SQL. For the sake of brevity, the **plan_outline** is not shown here. Instead, **plan_hash_value** from the explain plan preceding is compared with **plan_hash** from the output of the `apg_plan_mgmt.dba_plans` query.
 
 ```sql
-mylab=> SELECT sql_hash,
+SELECT sql_hash,
        		 plan_hash,
        		status,
        		estimated_total_cost "cost",
        		sql_text
 FROM apg_plan_mgmt.dba_plans;
+```
+
+Expected results:
+
+```text
   sql_hash  		|  plan_hash  		|  status  	| cost 	|  sql_text                                                                                                         
 
 ------------+-------------+----------+---------+----------------------------
 1561242727	-1990695905	 Approved 	 23228.14     	 select sum(delta),sum(bbalance) from pgbench_history h, pgbench_branches b where b.bid=h.bid and b.bid in (1,2,3) and mtime between (select min(mtime) from pgbench_history mn) and (select max(mtime) from pgbench_history mx);
 
-1561242727	-794604077	 UnApproved 	 111.17     	 select sum(delta),sum(bbalance) from pgbench_history h, pgbench_branches b where b.bid=h.bid and b.bid in (1,2,3) and mtime between (select min(mtime) from pgbench_history mn) and (select max(mtime) from pgbench_history mx);
+1561242727	-794604077	 Unapproved 	 111.17     	 select sum(delta),sum(bbalance) from pgbench_history h, pgbench_branches b where b.bid=h.bid and b.bid in (1,2,3) and mtime between (select min(mtime) from pgbench_history mn) and (select max(mtime) from pgbench_history mx);
 ```
 
 Next is an example of plan adaptability with QPM. This example evaluates the unapproved plan based on the minimum speedup factor. It approves any captured unapproved plan that is faster by at least 10 percent than the best approved plan for the statement. For additional details, <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Optimize.Maintenance.html#AuroraPostgreSQL.Optimize.Maintenance.EvaluatingPerformance" target="_blank"> see Evaluating Plan Performance in the Aurora documentation</a>.
 
 ```sql
-mylab=> SELECT apg_plan_mgmt.Evolve_plan_baselines (sql_hash, plan_hash, 1.1, 'approve')
+SELECT apg_plan_mgmt.Evolve_plan_baselines (sql_hash, plan_hash, 1.1, 'approve')
 FROM   apg_plan_mgmt.dba_plans
 WHERE  status = 'Unapproved';
+```
 
+Expected results:
+
+```text
 NOTICE: [Unapproved] SQL Hash: 1561242727, Plan Hash: 1944377599, SELECT sum(delta),sum(bbalance) from pgbench_history h, pgbench_branches b where ...
 NOTICE:      Baseline   [Planning time 0.693 ms, Execution time 316.644 ms]
 NOTICE:      Baseline+1 [Planning time 0.695 ms, Execution time 213.919 ms]
 NOTICE:      Total time benefit: 102.723 ms, Execution time benefit: 102.725 ms, Avg Log Cardinality Error: 3.53418, Cost = 111.16..111.17
 NOTICE:      Unapproved -> Approved
 ```
+
 After QPM evaluates the plan based on the speed factor, the plan status changes to approved. At this point, the optimizer can choose that plan for that managed statement now.
 
 ```sql
-mylab=> SELECT sql_hash,
+SELECT sql_hash,
        		 plan_hash,
        		status,
        		estimated_total_cost "cost",
        		sql_text
 FROM apg_plan_mgmt.dba_plans;
+```
+
+Expected results:
+
+```text
   sql_hash  		|  plan_hash  		|  status  	| cost 	|  sql_text                                                                                                         
 
 ------------+-------------+----------+---------+-----------------------------------------------------------
@@ -450,7 +537,7 @@ FROM apg_plan_mgmt.dba_plans;
 View the explain plan output to see whether the query is using the newly approved minimum cost plan:
 
 ```sql
-mylab=> explain (hashes true)
+EXPLAIN (hashes true)
 SELECT Sum(delta),
        	    Sum(bbalance)
 FROM   pgbench_history h,
@@ -460,7 +547,11 @@ WHERE  b.bid = h.bid
        AND mtime BETWEEN (SELECT Min(mtime)
                           FROM   pgbench_history mn) AND (SELECT Max(mtime)
                                                           FROM  pgbench_history mx);
+```
 
+Expected results:
+
+```text
                                                QUERY PLAN                                                
 -----------------------------------------------------------------------------
  Aggregate  (cost=111.16..111.17 rows=1 width=16)
@@ -491,14 +582,19 @@ WHERE  b.bid = h.bid
 
 In some cases, the query optimizer doesn’t generate the best execution plan for the query. One approach to fixing this problem is to put query hints into your application code, but this approach is widely discouraged because it makes applications more brittle and harder to maintain, and in some cases, you can’t hint the SQL because it is generated by a 3rd party application. What we will show is how to use hints to control the query optimizer, but then to remove the hints and allow QPM to enforce the desired plan, without adding hints to the application code.
 
-For this purpose, PostgreSQL users can use the **pg_hint_plan** extension to provide directives such as “scan method,” “join method,” “join order,”, or “row number correction,” to the optimizer.  The resulting plan will be saved by QPM, along with any GUC parameters you choose to override (such as work_mem).  QPM remembers any GUC parameter overrides and uses them when it needs to recreate the plan. To install and learn more about how to use the pg_hint_plan extension, see the pg_hint_plan documentation.
+For this purpose, PostgreSQL users can use the **pg_hint_plan** extension to provide directives such as “scan method,” “join method,” “join order,”, or “row number correction,” to the optimizer.  The resulting plan will be saved by QPM, along with any GUC parameters you choose to override (such as **work_mem**).  QPM remembers any GUC parameter overrides and uses them when it needs to recreate the plan. To install and learn more about how to use the pg_hint_plan extension, see the pg_hint_plan documentation.
 
 Working with pg_hint_plan is incredibly useful for cases where the query can’t be modified to add hints. In this example, use a sample query to generate the execution plan that you want by adding hints to the managed statement. Then associate this execution plan with the original unmodified statement.
 
 Check if the plan capture is disabled:
 
 ```sql
-mylab=> show apg_plan_mgmt.capture_plan_baselines;
+SHOW apg_plan_mgmt.capture_plan_baselines;
+```
+
+Expected results:
+
+```text
  apg_plan_mgmt.capture_plan_baselines
 --------------------------------------
  off
@@ -510,7 +606,7 @@ Run the query with the hint to use. In the following example, use the “HashJoi
 The original plan of the query without hints is as follows:
 
 ```sql
-mylab=> EXPLAIN (hashes true)
+EXPLAIN (hashes true)
 SELECT
    *
 FROM
@@ -520,7 +616,11 @@ FROM
       ON b.bid = a.bid
 ORDER BY
    a.aid;                                                   
+```
 
+Expected results:
+
+```text
                                 QUERY PLAN                                                    
 ----------------------------------------------------------------------
  Nested Loop  (cost=0.42..181906.82 rows=1000000 width=465)
@@ -534,10 +634,8 @@ ORDER BY
 Enable pg_hint_plan and manual plan capture:
 
 ```sql
-Mylab=> SET pg_hint_plan.enable_hint = true;
-SET
-mylab=> SET apg_plan_mgmt.capture_plan_baselines = manual;
-SET
+SET pg_hint_plan.enable_hint = true;
+SET apg_plan_mgmt.capture_plan_baselines = manual;
 ```
 
 EXPLAIN the query with the hints you want to use. In the following example, use the HashJoin (a, b) hint, which is a directive for the optimizer to use a hash join algorithm to join from table a to table b:
@@ -545,7 +643,7 @@ EXPLAIN the query with the hints you want to use. In the following example, use 
 The plan that you want with a hash join is as follows:
 
 ```sql
-mylab=> /*+ HashJoin(a b) */  EXPLAIN (hashes true)
+/*+ HashJoin(a b) */  EXPLAIN (hashes true)
 SELECT
    *
 FROM
@@ -555,7 +653,11 @@ FROM
       ON b.bid = a.bid
 ORDER BY
    a.aid;
+```
 
+Expected results:
+
+```text
                             QUERY PLAN                                               
 ----------------------------------------------------------------------
  Gather Merge  (cost=240409.02..250138.04 rows=833334 width=465)
@@ -570,20 +672,23 @@ ORDER BY
  SQL Hash: 356104612, Plan Hash: 1139293728
 ```
 
-Verify that plan 1139293728 was captured, and note the status of the plan.
+Verify that plan 1139293728 was captured. Note, your specific Plan Hash value may be a different value.
 
-Next, view the captured plan and the status of the plan:
+Next, view the captured plan and the status of the plan (replacing the plan hash value with the one you have derived).
 
 ```sql
-mylab=>
 SELECT sql_hash,
        plan_hash,
        status,
        enabled,
        sql_text
-FROM   apg_plan_mgmt.dba_plans;
- Where plan_hash=1139293728;
+FROM   apg_plan_mgmt.dba_plans
+WHERE plan_hash = 1139293728;
+```
 
+Expected results:
+
+```text
   sql_hash  | plan_hash  |  status  | enabled |         sql_text          
 -----------+------------+----------+---------+---------------------------
  356104612 | 1139293728 | Approved | t       | SELECT                   +
@@ -598,25 +703,21 @@ FROM   apg_plan_mgmt.dba_plans;
 
 ```
 
-If necessary, approve the plan. In this case this is the first and only plan saved for statement 356104612, so it was saved as an **Approved** plan. If this statement already had a baseline of approved plans, then this plan would have been saved as an **Unapproved** plan.
+If necessary, approve the plan. In this case this is the first and only plan saved for statement 356104612 (your plan hash value may vary), so it was saved as an **Approved** plan. If this statement already had a baseline of approved plans, then this plan would have been saved as an **Unapproved** plan.
 
 In general, to **Reject** all existing plans for a statement and then **Approve** one specific plan, you could call **apg_plan_mgmt.set_plan_status** twice, like this:
 
 ```sql
-mylab=> SELECT apg_plan_mgmt.set_plan_status (sql_hash, plan_hash, 'Rejected') from apg_plan_mgmt.dba_plans where sql_hash = 356104612;
-SET
-mylab=> SELECT apg_plan_mgmt.set_plan_status (356104612, 1139293728, 'Approved');
-SET
+SELECT apg_plan_mgmt.set_plan_status (sql_hash, plan_hash, 'Rejected') from apg_plan_mgmt.dba_plans where sql_hash = 356104612;
+SELECT apg_plan_mgmt.set_plan_status (356104612, 1139293728, 'Approved');
 ```
 
 Remove the hint, turn off manual capture, turn on use_plan_baselines, and also verify that the desired plan is in use without the hint:
 
 ```sql
-mylab=> SET apg_plan_mgmt.capture_plan_baselines = off;
-SET
-mylab=> SET apg_plan_mgmt.use_plan_baselines = true;
-SET
-mylab=> EXPLAIN (hashes true)
+SET apg_plan_mgmt.capture_plan_baselines = off;
+SET apg_plan_mgmt.use_plan_baselines = true;
+EXPLAIN (hashes true)
 SELECT
    *
 FROM
@@ -626,6 +727,11 @@ FROM
       ON b.bid = a.bid
 ORDER BY
    a.aid;             
+```
+
+Expected results:
+
+```text
                              QUERY PLAN                                               
 ----------------------------------------------------------------------
  Gather Merge  (cost=240409.02..337638.11 rows=833334 width=465)
@@ -659,7 +765,6 @@ To do this, from the source database with the preferred execution plan, an autho
 
 ```sql
 SELECT apg_plan_mgmt.reload(); -- Refresh shared memory with new plans.
-
 DROP TABLE plans_copy; -- Drop the temporary plan table.
 ```
 

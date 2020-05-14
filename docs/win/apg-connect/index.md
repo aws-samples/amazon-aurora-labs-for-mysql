@@ -63,3 +63,9 @@ whoami
 ```
 
 <span class="image">![SSM Terminal](ssm-terminal.png?raw=true)</span><br>
+
+Next, update the `$PATH` environment variable with the location of the PostgreSQL client tools:
+
+```shell
+export PATH=/home/ec2-user/postgresql-10.7/src/bin/:/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH
+```
