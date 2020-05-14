@@ -26,43 +26,37 @@ This lab requires the following prerequisites:
 
 Database activity streams require a master key to encrypt the data key that in turn encrypts the database activity logged (see <a href="https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#enveloping" target="_blank">envelope encryption</a>). The default Amazon RDS master key can’t be used as the master key for DAS. Therefore, you need to create a new AWS KMS customer managed key (CMK) to configure the DAS.
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/kms/home?region=eu-west-1#/kms/home" target="_blank">AWS Key Management Service (KMS) console</a>. Click **Create key**.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/kms/home?region=eu-west-1#/kms/home" target="_blank">AWS Key Management Service (KMS) console</a>. Click **Create a key**.
 
-<span class="image">![1-kms-1](1-kms-1.png?raw=true)</span>
-
-<span class="image">![1-kms-3](1-kms-2.png?raw=true)</span>
-
-<span class="image">![1-kms-3](1-kms-3.png?raw=true)</span>
+<span class="image">![KMS Home](kms-home.png?raw=true)</span>
 
 On the next screen under **Configure key** choose `Symmetric` for **Key type** and click **Next**.
 
-<span class="image">![1-kms-4](1-kms-4.png?raw=true)</span>
+<span class="image">![KMS Configure](kms-configure.png?raw=true)</span>
 
-In the **Create alias and description** section, name the key `labstack-postgres-das`. Provide the following description of the key:
+In the **Create alias and description** section, name the key `auroralab-postgres-das`. Provide the following description of the key:
 
-```
+```text
 Amazon Aurora lab, CMK for Aurora PostgreSQL Database Activity Streaming (DAS)
 ```
 
 Then, click **Next**.
 
-<span class="image">![1-kms-5](1-kms-5.png?raw=true)</span>
+<span class="image">![KMS Labels](kms-labels.png?raw=true)</span>
 
-In the **Key administrators** section, select `TeamRole` as an administrator (you can search for the `TeamRole` name to find it quicker). Check the box next to `TeamRole` and click **Next**.
+In the **Key administrators** section, select `TeamRole` and `OpsRole` as an administrator (you can search for the names to find them quicker). Check the box next to `TeamRole` and `OpsRole` click **Next**.
 
-<span class="image">![1-kms-6](1-kms-6.png?raw=true)</span>
+<span class="image">![KMS Administrators](kms-admins.png?raw=true)</span>
 
-Similarly to above, in the section named **This account** select the same `TeamRole` IAM role, check the box next to it, and click **Next**.
+Similarly to above, in the section named **This account** select the `auroralab-bastion-[region]`, `TeamRole` and `OpsRole` IAM roles, check the box next to them, and click **Next**.
 
-<span class="image">![1-kms-7](1-kms-7.png?raw=true)</span>
+Review the policy for accuracy and click **Finish**.
 
-On the next screen review the policy and click **Finish**.
+<span class="image">![KMS Review](kms-review.png?raw=true)</span>
 
-<span class="image">![1-kms-8](1-kms-8.png?raw=true)</span>
+Verify the newly created KMS key on the KMS dashboard.
 
-Verify the newly created KMS key on the KMS dashboard
-
-<span class="image">![1-kms-9](1-kms-9.png?raw=true)</span>
+<span class="image">![KMS Listing](kms-listing.png?raw=true)</span>
 
 
 ## 2. Configure Database Activity Streams
@@ -76,40 +70,37 @@ Mode | Use case | Description
 Synchronous | The synchronous mode favors the accuracy of the activity stream over database performance. | In synchronous mode, when a database session generates an activity stream event, the session blocks until the event is made durable. If the event can't be made durable for some reason, the database session returns to normal activities. However, an RDS event is sent indicating that activity stream records might be lost for some time. A second RDS event is sent after the system is back to a healthy state.
 Asynchronous | Asynchronous mode favors database performance over the accuracy of the activity stream. | In asynchronous mode, when a database session generates an activity stream event, the session returns to normal activities immediately. In the background, the activity stream event is made a durable record. If an error occurs in the background task, an RDS event is sent. This event indicates the beginning and end of any time windows where activity stream event records might have been lost.
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=labstack-postgres-cluster;is-cluster=true" target="_blank">Amazon RDS service console at the cluster details page</a>. If you navigated to the RDS console by other means, click on the `labstack-postgres-cluster` in the **Databases** section of the console.
-
-<span class="image">![1-das-stream-1](1-das-stream-1.png?raw=true)</span>
+Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-postgres-cluster;is-cluster=true" target="_blank">Amazon RDS service console at the cluster details page</a>. If you navigated to the RDS console by other means, click on the `auroralab-postgres-cluster` in the **Databases** section of the console.
 
 From the **Actions** dropdown button, choose **Start activity stream**. The **Database Activity Stream** setup window appears:
 
-<span class="image">![1-das-stream-2](1-das-stream-2.png?raw=true)</span>
+<span class="image">![RDS Cluster Details](rds-cluster-detail-action.png?raw=true)</span>
 
-Set the **Master key**, to the alias of the CMK created previously (named `labstack-postgres-das`). Choose either **Asynchronous** or **Synchronous** based on preference. Choose **Apply immediately**, then click **Continue**.
+Set the **Master key**, to the alias of the CMK created previously (named `auroralab-postgres-das`). Choose either **Asynchronous** or **Synchronous** based on preference. Choose **Apply immediately**, then click **Continue**.
 
-<span class="image">![1-das-51](1-das-51.png?raw=true)</span>
+<span class="image">![RDS Enable DAS](rds-das-confirm.png?raw=true)</span>
 
-The **Status** column for the DB cluster will start showing **configuring-activity-stream**.
+The **Status** column for the DB cluster will start showing **configuring-activity-stream**. Please wait until the cluster becomes **Available** again. You may need to refresh the browser page to get the latest status timely.
 
-<span class="image">![1-das-52](1-das-52.png?raw=true)</span>
+<span class="image">![RDS Cluster Configuring](rds-cluster-configuring.png?raw=true)</span>
 
-Verify that DAS is enabled by clicking on the cluster named `**`labstack-postgres-cluster` and toggle to the **Configuration** tab.
+Verify that DAS is enabled by clicking on the cluster named `auroralab-postgres-cluster` and toggle to the **Configuration** tab.
 
-<span class="image">![1-das-53](1-das-53.png?raw=true)</span>
+<span class="image">![RDS Cluster Configuration Details](rds-cluster-config-pane.png?raw=true)</span>
+
+Note the **Resource id** and **Kinesis stream** values, you will need these value further in this lab.
+
 
 ## 3. Generate database load
 
-You will generate load on the database using the **pgbench** tool and then access the database activity in real time.
+You will generate load on the database using the **pgbench** tool and then access the database activity produced by the load generator.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/apg-connect/). Start the pgbench tool using the following sequence of commands:
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/apg-connect/). Start the pgbench tool using the following sequence of commands, replacing the ==[postgresClusterEndpoint]== placeholder with the Cluster endpoint retrieved from the **Outputs** of the CloudFormation stack (see [Connect to Aurora PostgreSQL](/win/apg-connect/)). You will also need to provide the password retrieved from the secret in AWS Secrets Manager (see [Connect to Aurora PostgreSQL](/win/apg-connect/)):
 
 ```shell
-export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH
+pgbench -i --fillfactor=90 --scale=100 --host=[postgresClusterEndpoint] --username=masteruser mylab
 
-cd /home/ec2-user/postgresql-10.7/src/bin/pgbench
-
-./pgbench -i --fillfactor=90 --scale=100 --host=labstack-cluster.cluster-xxxxxxxxx.us-west-2.rds.amazonaws.com --username=masteruser mylab
-
-./pgbench --host=labstack-cluster.cluster-xxxxxxxxx.us-west-2.rds.amazonaws.com --username=masteruser --protocol=prepared -P 60 --time=300 --client=16 --jobs=96 mylab> results1.log
+pgbench --host=[postgresClusterEndpoint] --username=masteruser --protocol=prepared -P 60 --time=300 --client=16 --jobs=96 mylab > results1.log
 ```
 
 
@@ -117,12 +108,24 @@ cd /home/ec2-user/postgresql-10.7/src/bin/pgbench
 
 A python script with sample code to read the activity stream has already been saved on your EC2 workstation at this location `/home/ec2-user/das-script.py`.
 
-You will be required to replace the value for `RESOURCE_ID` with the **Resource id** value from your cluster configuration as shown below and also replace the value for `STREAM_NAME` with the **Kinesis stream**.
+You will be required to update the script, changing the following constants (lines 14 through 16) to reflect the values in your environment:
 
-<span class="image">![1-das-53](1-das-53.png?raw=true)</span>
+Constant | Value
+--- | ---
+**REGION_NAME** | `eu-west-1`
+**RESOURCE_ID** | See the cluster **Resource id** at the end of step **2. Configure Database Activity Streams** above.
+**STREAM_NAME** | See the **Kinesis stream** name at the end of step **2. Configure Database Activity Streams** above.
 
-??? tip "Create your own python script code"
-    You can also copy and paste the script text below to create a new python file and replace the value for `RESOURCE_ID` with the **Resource id** value from your cluster configuration as shown below and also replace the value for `STREAM_NAME` with the **Kinesis stream**.
+You can edit the script using the following command:
+
+```shell
+nano das-script.py
+```
+
+Once you have finished making changes, save the script by pressing `Ctrl+X`, then typing `y` followed by `<enter>` to confirm.
+
+??? tip "How to create your own python script code"
+    You can also copy and paste the script text below to create a new python file and replace the values of the relevant constants, according to the table above.
 
     ```shell
     vi das_script.py
@@ -205,10 +208,10 @@ You will be required to replace the value for `RESOURCE_ID` with the **Resource 
         main()
     ```
 
-Once you have replaced the `RESOURCE_ID` with the **Resource id** value and `STREAM_NAME` with the **Kinesis stream**, run the python script (either `das-script.py` or `das_script.py` depending on how you created it) in the command line:
+Once you have updated the script with the correct values (or created a new one), run the python script (either `das-script.py` or `das_script.py` depending on whether you created it from scratch) in the command line:
 
 ```shell
-python das_script.py
+python das-script.py
 ```
 
 The script will read one record from the stream, and print it out on the command line, you can use a tool, such as <a href="https://jsonformatter.org/" target=_blank">jsonformatter.org</a>, to format the JSON structure to be more readable.
@@ -261,18 +264,14 @@ Your output should look similar to the following example:
 
 ## 5. Stop the activity stream
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=labstack-postgres-cluster;is-cluster=true" target="_blank">Amazon RDS service console at the cluster details page</a>, if not already open. If the cluster is not already selected, choose **Databases** and click on the DB identifier with the cluster named `labstack-postgres-cluster`.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=labstack-postgres-cluster;is-cluster=true" target="_blank">Amazon RDS service console at the cluster details page</a>, if not already open. If the cluster is not already selected, choose **Databases** and click on the DB identifier with the cluster named `auroralab-postgres-cluster`.
 
-<span class="image">![1-das-56](1-das-56.png?raw=true)</span>
+Click on the **Actions** dropdown, and select **Stop activity stream**.
 
-Click on the **Actions** dropdown, and select **Stop activity stream**
-
-<span class="image">![1-das-57](1-das-57.png?raw=true)</span>
+<span class="image">![RDS Cluster Stop](rds-cluster-detail-stop.png?raw=true)</span>
 
 On the setup screen choose **Apply immediately** and click **Continue**.
 
-<span class="image">![1-das-58](1-das-58.png?raw=true)</span>
+<span class="image">![RDS DAS Stop](rds-das-stop.png?raw=true)</span>
 
-The status column on the RDS Database home page for the cluster will start showing `configuring-activity-stream`
-
-<span class="image">![1-das-59](1-das-59.png?raw=true)</span>
+The status column on the RDS Database home page for the cluster will start showing `configuring-activity-stream`.
