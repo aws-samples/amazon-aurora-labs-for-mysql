@@ -23,7 +23,7 @@ To simplify the getting started experience with the labs, we have created founda
 
 Click **Launch Stack** below to provision a lab environment in the **N Virginia (us-east-1)** region to support the Aurora Global Database.
 
-<a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=auroralab&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=No&param_deployML=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
+<a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=auroralab&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_secondary.yml&param_deployCluster=No&param_deployML=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
 
 In the field named **Stack Name**, ensure the value `auroralab` is preset. Accept all default values for the remaining parameters.
 
