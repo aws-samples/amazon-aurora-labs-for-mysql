@@ -1,6 +1,6 @@
 {
   "name": "amazon-aurora-labs-for-mysql",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Build pipeline for the Amazon Aurora Labs for MySQL project.",
   "devDependencies": {
     "grunt": "latest",
