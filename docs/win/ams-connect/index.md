@@ -66,7 +66,7 @@ You should see the output: `* bootstrap complete, rebooting`, if that is not the
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect.
 
-If you are not already connected to the Session Manager workstation command line from previous labs, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[mysqlClusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the cluster endpoint on the DB cluster details page in the RDS console. If you have skipped that lab and provisioned the DB cluster using the CloudFormation template, you can find the value for the cluster endpoint parameter in the stack outputs.
+Run the command below, replacing the ==[mysqlClusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. You will find the value for the cluster endpoint parameter in the CloudFormation stack outputs.
 
 
 ```shell

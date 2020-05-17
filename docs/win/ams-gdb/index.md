@@ -86,7 +86,10 @@ Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. Similarly make s
 
 Next, expand the **Advanced configuration** section. Set the **DB instance identifier** to `auroralab-mysql-node-3` and the **DB cluster identifier** to `auroralab-mysql-secondary`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups with the stack name in their name (e.g. `auroralab-[...]`).
 
-Keep the `1 day` **Backup retention period**. Check the box to **Enable Performance Insights** with a **Retention period** of `Default (7 days)` and use the `[default] aws/rds` **Master key** for monitoring data encryption. Next, check the **Enable Enhanced Monitoring** box, and select a **Granularity** of `1 second`.
+Keep the `1 day` **Backup retention period**. Check the box to **Enable Performance Insights** with a **Retention period** of `Default (7 days)` and use the `[default] aws/rds` **Master key** for monitoring data encryption. Next, check the **Enable Enhanced Monitoring** box, select a **Granularity** of `1 second` and select the **Monitoring Role** value `auroralab-monitor-us-east-1`.
+
+!!! note
+    Please note there are **two** monitoring roles in the list, one for the main region (the one in the top right corner of your web page), the other for the secondary region (typically `us-east-1`). At this step, you need the secondary one.
 
 <span class="image">![RDS Cluster Add Region](rds-cluster-add-region.png?raw=true)</span>
 
