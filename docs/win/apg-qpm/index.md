@@ -55,7 +55,7 @@ Set the value of the **rds.enable_plan_management** parameter to `1` and click *
 
 <span class="image">![RDS Parameter Group Changes](rds-param-groups-change.png?raw=true)</span>
 
-Go back to the list of parameters, and select the DB instance parameter group. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresInstanceParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgnodeparams-XXXXXXXXX`. Similarly, open your database level parameter group and click on **Edit parameters**.
+Go back to the list of parameters, and select the DB instance parameter group. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresNodeParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgnodeparams-XXXXXXXXX`. Similarly, open your database level parameter group and click on **Edit parameters**.
 
 <span class="image">![RDS Parameter Groups](rds-param-groups-list-node.png?raw=true)</span>
 

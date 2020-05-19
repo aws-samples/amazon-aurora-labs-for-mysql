@@ -34,19 +34,19 @@ If the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. T
 
 For your convenience, a lab environment has already been deployed for you. The lab environment contains the following resources:
 
-1. **Two Amazon Aurora database clusters**, one running PostgreSQL, the other running MySQL. They are named **labstack-postgres-cluster** and **labstack-mysql-cluster**. Each DB cluster contains two database instances (with names ending in node-1 and node-2), deployed each in two separate Availability Zones for Multi-AZ high availability. One of the DB instances is a writer (master), the other a reader (read-only replica).
-2. **Two EC2-based workstations**, one containing the necessary software to complete the Aurora PostgreSQL labs, the other to be used for the Aurora MySQL labs. You will connect to them using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html" target="_blank">AWS Systems Manager</a> - Session Manager, following the instructions provided. You do not need to install any client software on your computer.
+1. **Two Amazon Aurora database clusters**, one running MySQL, the other running PostgreSQL. They are named **auroralab-mysql-cluster** and **auroralab-postgres-cluster**. Each DB cluster contains two database instances (with names ending in node-1 and node-2), deployed each in two separate Availability Zones for Multi-AZ high availability. One of the DB instances is a writer (master), the other a reader (read-only replica).
+2. **Two EC2-based workstations**, one containing the necessary software to complete the Aurora MySQL labs, the other to be used for the Aurora PostgreSQL labs. You will connect to them using <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html" target="_blank">AWS Systems Manager</a> - Session Manager, following the instructions provided. You do not need to install any client software on your computer.
 3. Supporting resources and network configuration, including: <a href="https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html" target="_blank">VPC</a>, subnets, gateways, subnet groups, security groups, IAM roles, credentials stored in an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" target="_blank">AWS Secrets Manager</a> secret.
 
-Time permitting, you will run the following hands-on labs. Start with  [connecting to Aurora PostgreSQL](/win/apg-connect/).
+Time permitting, you will run the following hands-on labs. Start with  [connecting to Aurora MySQL](/win/ams-connect/).
 
 # | Lab Module | Recommendation | Overview
 --- | --- | --- | ---
-1 | [**Connect to Aurora PostgreSQL**](/win/apg-connect/) | Connect to the lab environment for the Aurora PostgreSQL labs.
-2 | [**Use Query Plan Management**](/win/apg-qpm/) | Learn how to use the query plan management features of Aurora PostgreSQL.
-3 | [**Set up Database Activity Streams**](/win/apg-das/) | Enable Database Activity Streams, read and process events from the activity stream.
-4 | [**Connect to Aurora MySQL**](/win/ams-connect/) | Connect to the DB cluster for the first time and load an initial data set
-5 | [**Clone an Aurora DB cluster**](/win/ams-clone/) | Clone an Aurora DB cluster and observing the divergence of the data set.
-6 | [**Deploy a Global Database**](/win/ams-gdb/) | Learn how to operate an Aurora Global Database cluster
-7 | [**Create a Serverless DB cluster**](/win/ams-srvless-create/) | Optional. Connect to your serverless cluster using the RDS Data API and Lambda functions.
-8 | [**Use the RDS Data API**](/win/ams-srvless-data-api/) | Optional. Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.
+1 | [**Connect to Aurora MySQL**](/win/ams-connect/) | Connect to the DB cluster for the first time and load an initial data set
+2 | [**Clone an Aurora DB cluster**](/win/ams-clone/) | Clone an Aurora DB cluster and observing the divergence of the data set.
+3 | [**Deploy a Global Database**](/win/ams-gdb/) | Learn how to operate an Aurora Global Database cluster
+4 | [**Create a Serverless DB cluster**](/win/ams-srvless-create/) | Optional. Connect to your serverless cluster using the RDS Data API and Lambda functions.
+5 | [**Use the RDS Data API**](/win/ams-srvless-data-api/) | Optional. Connect to your serverless cluster using the RDS Data API and Lambda functions. Requires the previous lab.
+6 | [**Connect to Aurora PostgreSQL**](/win/apg-connect/) | Connect to the lab environment for the Aurora PostgreSQL labs.
+7 | [**Use Query Plan Management**](/win/apg-qpm/) | Learn how to use the query plan management features of Aurora PostgreSQL.
+8 | [**Set up Database Activity Streams**](/win/apg-das/) | Enable Database Activity Streams, read and process events from the activity stream.

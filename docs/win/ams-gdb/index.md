@@ -44,6 +44,9 @@ Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab.
 
 While the second region is being built up, you will use Percona's TPCC-like benchmark script based on sysbench to generate load on the DB cluster in the existing region. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test. The load generator will run for approximatively one hour.
 
+!!! note
+    You will need to run the command in the **primary region**, not the region used for step 1. Create a lab environment in a different region.
+
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/ams-connect/). Once connected, enter one of the following commands, replacing the placeholders appropriately.
 
 ```shell
@@ -72,7 +75,7 @@ The CloudFormation environment that was provisioned automatically for you, alrea
 
 Once the lab environment created above at **Step 1. Create a lab environment in a different region** has finished deploying, you may proceed.
 
-Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console.
+Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
 
 From the **Actions** dropdown button, choose **Add region**.
 
@@ -89,7 +92,7 @@ Next, expand the **Advanced configuration** section. Set the **DB instance ident
 Keep the `1 day` **Backup retention period**. Check the box to **Enable Performance Insights** with a **Retention period** of `Default (7 days)` and use the `[default] aws/rds` **Master key** for monitoring data encryption. Next, check the **Enable Enhanced Monitoring** box, select a **Granularity** of `1 second` and select the **Monitoring Role** value `auroralab-monitor-us-east-1`.
 
 !!! note
-    Please note there are **two** monitoring roles in the list, one for the main region (the one in the top right corner of your web page), the other for the secondary region (typically `us-east-1`). At this step, you need the secondary one.
+    Please note there are **two** monitoring roles in the list, one for the primary region (the one in the top right corner of your web page), the other for the secondary region (typically `us-east-1`). At this step, you need the **secondary** region one.
 
 <span class="image">![RDS Cluster Add Region](rds-cluster-add-region.png?raw=true)</span>
 
@@ -101,7 +104,12 @@ Click **Add region** to provision the global cluster.
 !!! note
     Creating a global cluster based on the existing DB cluster is a seamless operation, your workload will not experience any disruption. You can monitor the performance metrics of the load generator started above, throughout this operation to validate.
 
-The global cluster, including the secondary DB cluster and instance may take several minutes to provision. In order to connect to the DB cluster and start using it , you need to retrieve the DB cluster endpoints. Unlike a regular DB cluster, only the **Reader Endpoint** is provisioned. The **Cluster Endpoint** is not being provisioned, as secondary DB clusters only contain readers, and cannot accept writes. The **Reader Endpoint** will always resolve to one of the reader DB instances and should be used for low latency read operations within that region. In the RDS console, go to the DB cluster detail view by clicking on the cluster DB identifier for the secondary DB cluster, named `auroralab-mysql-secondary`.
+The global cluster, including the secondary DB cluster and instance may take up to 30 minutes to provision.
+
+???+ tip "While you wait..."
+    While you wait for the secondary DB cluster to provision, consider moving ahead and trying out the [Aurora Serverless labs](/win/ams-srvless-create/). You can always come back, when the secondary cluster finished deploying.
+
+In order to connect to the DB cluster and start using it, you need to retrieve the DB cluster endpoints. Unlike a regular DB cluster, only the **Reader Endpoint** is provisioned. The **Cluster Endpoint** is not being provisioned, as secondary DB clusters only contain readers, and cannot accept writes. The **Reader Endpoint** will always resolve to one of the reader DB instances and should be used for low latency read operations within that region. In the RDS console, go to the DB cluster detail view by clicking on the cluster DB identifier for the secondary DB cluster, named `auroralab-mysql-secondary`.
 
 The **Endpoints** section in the **Connectivity and security** tab of the details page displays the endpoints. Note these values down, as you will use them later.
 
@@ -171,7 +179,7 @@ In the textbox that appears on the screen, paste the following JSON code. Be sur
             "x": 0,
             "y": 0,
             "width": 6,
-            "height": 3,
+            "height": 6,
             "properties": {
                 "metrics": [
                     [ "AWS/RDS", "AuroraGlobalDBReplicationLag", "SourceRegion", "eu-west-1" ]
@@ -185,8 +193,8 @@ In the textbox that appears on the screen, paste the following JSON code. Be sur
         },
         {
             "type": "metric",
-            "x": 0,
-            "y": 3,
+            "x": 6,
+            "y": 0,
             "width": 18,
             "height": 6,
             "properties": {
@@ -200,24 +208,6 @@ In the textbox that appears on the screen, paste the following JSON code. Be sur
                 "title": "Global DB Replication Lag (max vs. avg, 1min)",
                 "stat": "Average",
                 "period": 60
-            }
-        },
-        {
-            "type": "metric",
-            "x": 6,
-            "y": 0,
-            "width": 12,
-            "height": 3,
-            "properties": {
-                "metrics": [
-                    [ "AWS/RDS", "AuroraGlobalDBReplicatedWriteIO", "DBClusterIdentifier", "auroralab-mysql-secondary", { "label": "Replicated Write I/Os" } ],
-                    [ ".", "AuroraGlobalDBDataTransferBytes", ".", ".", { "label": "Replicated Data Transfer Bytes" } ]
-                ],
-                "view": "singleValue",
-                "region": "us-east-1",
-                "stat": "Sum",
-                "period": 86400,
-                "title": "Replication Costs (sum, 1day)"
             }
         }
     ]

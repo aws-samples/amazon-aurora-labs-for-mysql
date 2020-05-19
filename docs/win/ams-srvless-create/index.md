@@ -1,7 +1,7 @@
 # Create an Aurora Serverless DB Cluster
 
-!! note "Optional"
-    This lab, and the subsequent lab on using the Data API, are optional, to be completed it time allows. However if you do wish to explore the Data API, in the next lab you need to complete this lab first.
+!!! note "Optional"
+    This lab, and the subsequent lab on using the Data API, are optional, to be completed if time allows. However if you do wish to explore the Data API in the next lab, you need to complete this lab first.
 
 This lab will walk you through the steps of creating an Amazon Aurora Serverless database cluster manually, and configuring the scaling parameters of the cluster.
 
