@@ -22,13 +22,11 @@ Click **Open Console**. For the purposes of this workshop, you will not need to 
 
 ## Get the environment parameters
 
-Once you have opened the AWS Management Console for the first time, go ahead and open the <a href="https://eu-west-1.console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks" target="_blank">AWS CloudFormation</a> console and click on the `mod-XXXXXXXXXXXXXXXX` stack.
+Back on the **Team Dashboard** web page (browser tab), close the **AWS Console Login** modal window (shown above) using the `x` in the top right corner, or the **OK** button, and scroll down.
 
-<span class="image">![Stack List](cfn-stack-list.png?raw=true)</span>
+You will see a set of parameters that you will need during the labs. The names that appear in the **Parameter** column here, are referenced directly in the instructions in subsequent labs, using the parameter format: ==[parameter]==. Replace the parameters with the corresponding values where indicated.
 
-If the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==
-
-<span class="image">![Stack Outputs](cfn-stack-outputs.png?raw=true)</span>
+<span class="image">![Stack Outputs](ee-outputs.png?raw=true)</span>
 
 ## Start the labs
 

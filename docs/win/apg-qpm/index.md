@@ -38,7 +38,7 @@ Open the <a href="https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-we
 
 <span class="image">![RDS Dashboard](rds-dashboard.png?raw=true)</span>
 
-In the list, choose the parameter group for your Aurora PostgreSQL DB cluster. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresClusterParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgclusterparams-XXXXXXXXX`.
+In the list, choose the parameter group for your Aurora PostgreSQL DB cluster. You will find the name of the DB cluster parameter group on the Team Dashboard web page (see previous lab modules) using the parameter ==[postgresClusterParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgclusterparams-XXXXXXXXX`.
 
 !!! note
     Aurora DB clusters use two parameter groups, one at the DB cluster level, with settings that apply cluster-wide, one at the DB instance level, with settings that apply to that specific instance only. Since the values in the default parameter groups cannot be changed, your cluster is using a custom DB cluster parameter group and a custom DB instance parameter group.
@@ -55,7 +55,7 @@ Set the value of the **rds.enable_plan_management** parameter to `1` and click *
 
 <span class="image">![RDS Parameter Group Changes](rds-param-groups-change.png?raw=true)</span>
 
-Go back to the list of parameters, and select the DB instance parameter group. You will find the name of the DB cluster parameter group in the **Outputs** section of the CloudFormation stack (see previous lab modules) using the key ==[postgresNodeParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgnodeparams-XXXXXXXXX`. Similarly, open your database level parameter group and click on **Edit parameters**.
+Go back to the list of parameters, and select the DB instance parameter group. You will find the name of the DB instance parameter group on the Team Dashboard web page (see previous lab modules) using the parameter ==[postgresNodeParamGroup]==. It is in the format `mod-XXXXXXXXXXXXXXXX-pgnodeparams-XXXXXXXXX`. Similarly, open your database level parameter group and click on **Edit parameters**.
 
 <span class="image">![RDS Parameter Groups](rds-param-groups-list-node.png?raw=true)</span>
 
@@ -90,7 +90,7 @@ Wait for the **Status** of the DB instance to change to `Available` again. This 
 
 Connect to the Aurora database just like you would to any other PostgreSQL-based database, using a compatible client tool. In this lab you will be using the `psql` command line tool to connect.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/apg-connect/). Once connected, find the DB cluster endpoint for your database in the **Outputs** of your CloudFormation stack under the key ==[postgresClusterEndpoint]==. If you have completed the connection instruction you have also retrieved the **username** and **password** for the database from Secrets Manager.
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/apg-connect/). Once connected, find the DB cluster endpoint for your database on the Team Dashboard web page under the key ==[postgresClusterEndpoint]==. If you have completed the connection instruction you have also retrieved the **username** and **password** for the database from Secrets Manager.
 
 Run the following commands:
 

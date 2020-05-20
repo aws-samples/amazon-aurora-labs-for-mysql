@@ -4,7 +4,7 @@ To interact with the Aurora database cluster, you will use an <a href="https://a
 
 This lab contains the following tasks:
 
-1. Note the CloudFormation resource chart
+1. Get the parameters from the Team Dashboard
 2. Connect to your workstation instance
 3. Verify lab environment
 4. Connect to the DB cluster
@@ -15,18 +15,18 @@ This lab requires the following prerequisites:
 * [Get Started](/win/)
 
 
-## 1. Note the CloudFormation resource chart
+## 1. Get the parameters from the Team Dashboard
 
-At the end of the getting started step, you have retrieved the **Outputs** of your CloudFormation stack. For the following Aurora MySQL labs, you will need the following values for lab resources:
+At the end of the getting started step, you have reviewed the parameters for your lab environment. For the following Aurora MySQL labs, you will need the following values for lab resources:
 
 Resource name | Value
 --- | ---
-DB Subnet Group | Refer to: ==[dbSubnetGroup]== in the stack outputs
-Security Group | Refer to: ==[dbSecurityGroup]== in the stack outputs
-EC2 Workstation | Refer to: ==[bastionMySQL]== in the stack outputs
-Cluster Endpoint | Refer to: ==[mysqlClusterEndpoint]== in the stack outputs
-Reader Endpoint	| Refer to: ==[mysqlReaderEndpoint]== in the stack outputs
-Load Generator Script | Refer to: ==[mysqlRunDoc]== in the stack outputs
+DB Subnet Group | Refer to: ==[dbSubnetGroup]== on the Team Dashboard
+Security Group | Refer to: ==[dbSecurityGroup]== on the Team Dashboard
+EC2 Workstation | Refer to: ==[bastionMySQL]== on the Team Dashboard
+Cluster Endpoint | Refer to: ==[mysqlClusterEndpoint]== on the Team Dashboard
+Reader Endpoint	| Refer to: ==[mysqlReaderEndpoint]== on the Team Dashboard
+Load Generator Script | Refer to: ==[mysqlRunDoc]== on the Team Dashboard
 DB name	| `mylab`
 DB username	| Preset as environment variable `DBUSER`
 DB password	| Preset as environment variable `DBPASS`
@@ -63,7 +63,7 @@ You should see the output: `* bootstrap complete, rebooting`, if that is not the
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect.
 
-Run the command below, replacing the ==[mysqlClusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. You will find the value for the cluster endpoint parameter in the CloudFormation stack outputs.
+Run the command below, replacing the ==[mysqlClusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. You will find the value for the cluster endpoint parameter on the Team Dashboard web page.
 
 
 ```shell

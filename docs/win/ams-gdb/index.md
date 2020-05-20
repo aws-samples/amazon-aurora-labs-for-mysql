@@ -35,7 +35,7 @@ The stack will take approximatively 10 minutes to provision, you can monitor the
 
 <span class="image">![Stack Status](2-stack-status.png?raw=true)</span>
 
-Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==
+Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==.
 
 <span class="image">![Stack Outputs](2-stack-outputs.png?raw=true)</span>
 
@@ -66,7 +66,7 @@ The command will be sent to the workstation EC2 instance which will prepare the 
 
 ## 3. Create an Aurora Global cluster
 
-The CloudFormation environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster, that you are running the load generator against. You will create a Global Database cluster using this existing DB cluster, as the **primary**.
+The lab environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster, that you are running the load generator against. You will create a Global Database cluster using this existing DB cluster, as the **primary**.
 
 ???+ info "'Global cluster' vs. 'DB cluster': What is the difference?"
     A **DB cluster** exists in one region only. It is a container for up to 16 **DB instances** that share the same storage volume. This is the traditional configuration of an Aurora cluster. Whether you are deploying a provisioned, Serverless or Multi-Master cluster, you are deploying a **DB cluster**, within a single region.

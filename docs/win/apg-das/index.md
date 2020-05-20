@@ -95,12 +95,10 @@ Note the **Resource id** and **Kinesis stream** values, you will need these valu
 
 You will generate load on the database using the **pgbench** tool and then access the database activity produced by the load generator.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/apg-connect/). Start the pgbench tool using the following sequence of commands, replacing the ==[postgresClusterEndpoint]== placeholder with the Cluster endpoint retrieved from the **Outputs** of the CloudFormation stack (see [Connect to Aurora PostgreSQL](/win/apg-connect/)). You will also need to provide the password retrieved from the secret in AWS Secrets Manager (see [Connect to Aurora PostgreSQL](/win/apg-connect/)):
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/apg-connect/). Start the pgbench tool using the following sequence of commands, replacing the ==[postgresClusterEndpoint]== placeholder with the Cluster endpoint retrieved from the Team Dashboard web page (see [Connect to Aurora PostgreSQL](/win/apg-connect/)). You will also need to provide the password retrieved from the secret in AWS Secrets Manager (see [Connect to Aurora PostgreSQL](/win/apg-connect/)):
 
 ```shell
-pgbench -i --fillfactor=90 --scale=100 --host=[postgresClusterEndpoint] --username=masteruser mylab
-
-pgbench --host=[postgresClusterEndpoint] --username=masteruser --protocol=prepared -P 60 --time=300 --client=16 --jobs=96 mylab > results1.log
+pgbench  --progress-timestamp -M prepared -n -T 60 -P 1  -c 5  --host=[postgresClusterEndpoint] -b tpcb-like@1 -b select-only@20 --username=masteruser mylab
 ```
 
 
@@ -136,6 +134,7 @@ Once you have finished making changes, save the script by pressing `Ctrl+X`, the
     import boto3
     import base64
     import json
+    import time
     import aws_encryption_sdk
     from Crypto.Cipher import AES
     from aws_encryption_sdk import DefaultCryptoMaterialsManager
@@ -143,9 +142,12 @@ Once you have finished making changes, save the script by pressing `Ctrl+X`, the
     from aws_encryption_sdk.key_providers.raw import RawMasterKeyProvider
     from aws_encryption_sdk.identifiers import WrappingAlgorithm, EncryptionKeyType
 
-    REGION_NAME = 'us-west-2'                    
-    RESOURCE_ID = 'cluster-XXXXXXXXXXX'      # cluster-ABCD123456
-    STREAM_NAME = 'aws-rds-das-cluster-XXXXXXXXXXX' # aws-rds-das-cluster-ABCD123456
+
+
+    REGION_NAME = 'eu-west-1'                    # us-east-1
+    RESOURCE_ID = 'cluster-KSBSDVYL5I3ADAJGBFINGWEH7Y'      # cluster-ABCD123456
+    STREAM_NAME = 'aws-rds-das-cluster-KSBSDVYL5I3ADAJGBFINGWEH7Y' # aws-rds-das-cluster-ABCD123456
+
 
     class MyRawMasterKeyProvider(RawMasterKeyProvider):
         provider_id = "BC"
@@ -185,7 +187,8 @@ Once you have finished making changes, save the script by pressing `Ctrl+X`, the
         response = kinesis.describe_stream(StreamName=STREAM_NAME)
         shard_iters = []
         for shard in response['StreamDescription']['Shards']:
-            shard_iter_response = kinesis.get_shard_iterator(StreamName=STREAM_NAME, ShardId=shard['ShardId'],ShardIteratorType='LATEST') # TRIM_HORIZON will
+            shard_iter_response = kinesis.get_shard_iterator(StreamName=STREAM_NAME, ShardId=shard['ShardId'],
+                                                             ShardIteratorType='TRIM_HORIZON') # TRIM_HORIZON will display all messages
             shard_iters.append(shard_iter_response['ShardIterator'])
 
         while len(shard_iters) > 0:
@@ -202,7 +205,9 @@ Once you have finished making changes, save the script by pressing `Ctrl+X`, the
                     print decrypt_decompress(payload_decoded, data_key_decrypt_result['Plaintext'])
                 if 'NextShardIterator' in response:
                     next_shard_iters.append(response['NextShardIterator'])
+                    time.sleep(0.1)
             shard_iters = next_shard_iters
+
 
     if __name__ == '__main__':
         main()

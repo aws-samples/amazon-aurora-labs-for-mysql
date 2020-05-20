@@ -7,7 +7,7 @@ To interact with the Aurora database cluster, you will use an <a href="https://a
 
 This lab contains the following tasks:
 
-1. Note the CloudFormation resource chart
+1. Get the parameters from the Team Dashboard
 2. Retrieve database credentials from AWS Secret Manager
 3. Connecting to the EC2 bastion instance with Systems Manager
 4. Connect to the DB cluster
@@ -17,17 +17,17 @@ This lab requires the following prerequisites:
 * [Get Started](/win/)
 
 
-## 1. Note the CloudFormation resource chart
+## 1. Get the parameters from the Team Dashboard
 
-At the end of the getting started step, you have retrieved the **Outputs** of your CloudFormation stack. For the following Aurora PostgreSQL labs, you will need the following values for lab resources:
+At the end of the getting started step, you have reviewed the parameters for your lab environment. For the following Aurora PostgreSQL labs, you will need the following values for lab resources:
 
 Resource name | Value
 --- | ---
-Cluster Parameter Group | Refer to: ==[postgresClusterParamGroup]== in the stack outputs
-Database Parameter Group | Refer to: ==[postgresNodeParamsGroup]== in the stack outputs
-Cluster Endpoint | Refer to: ==[postgresClusterEndpoint]== in the stack outputs
-Reader Endpoint	| Refer to: ==[postgresReaderEndpoint]== in the stack outputs
-Secret Name	| Refer to: ==[secretArn]== in the stack outputs
+Cluster Parameter Group | Refer to: ==[postgresClusterParamGroup]== on the Team Dashboard
+Database Parameter Group | Refer to: ==[postgresNodeParamsGroup]== on the Team Dashboard
+Cluster Endpoint | Refer to: ==[postgresClusterEndpoint]== on the Team Dashboard
+Reader Endpoint	| Refer to: ==[postgresReaderEndpoint]== on the Team Dashboard
+Secret Name	| Refer to: ==[secretArn]== on the Team Dashboard
 DB name	| `mylab`
 DB username	| `masteruser`
 DB password	| See below for steps how to retrieve
@@ -78,7 +78,7 @@ export PATH=/home/ec2-user/postgresql-10.7/src/bin/:/home/ec2-user/postgresql-10
 
 Connect to the Aurora database just like you would to any other PostgreSQL database, using a compatible client tool. In this lab you will be using the `psql` command line tool to connect.
 
-Run the command below, replacing the ==[postgresClusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. You will find the value for the cluster endpoint parameter in the CloudFormation stack outputs.
+Run the command below, replacing the ==[postgresClusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. You will find the value for the cluster endpoint parameter on the Team Dashboard web page.
 
 ```shell
 psql -h [postgresClusterEndpoint] -p 5432 -U masteruser -d mylab

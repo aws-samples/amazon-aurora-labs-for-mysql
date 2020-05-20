@@ -18,7 +18,7 @@ This lab requires the following prerequisites:
 
 ## 1. Create a clone DB cluster
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/ams-connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack:
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/win/ams-connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate parameters from the Team Dashboard web page:
 
 ```shell
 aws rds restore-db-cluster-to-point-in-time \
