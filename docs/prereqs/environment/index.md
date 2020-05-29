@@ -31,8 +31,8 @@ Please choose the most appropriate CloudFormation template based on the labs you
 
 Option | One-Click Launch
 --- | ---
-**I will create the DB cluster manually** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
-**Create an Aurora Provisioned DB cluster for me automatically** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=labstack&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=Yes" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
+**I will create the DB cluster manually** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=auroralab&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=No" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
+**Create an Aurora Provisioned DB cluster for me automatically** | <a href="https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?stackName=auroralab&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=Yes" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
 
 ??? tip "Can I see the CloudFormation template?"
     Yes, we encourage you to download the CloudFormation template, review the resources that are being created and how they are configured.
@@ -42,7 +42,7 @@ Option | One-Click Launch
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
 
-In the field named **Stack Name**, ensure the value `labstack` is preset. For the **Use AZs** parameter (Regional Settings section) select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
+In the field named **Stack Name**, ensure the value `auroralab` is preset. For the **Use AZs** parameter (Regional Settings section) select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
 
 If you are planning to run the Aurora Machine Learning integration labs, please also select **Yes** for the **Enable Aurora ML Labs?** parameter (Lab Features section).
 

@@ -35,7 +35,7 @@ Next, navigate to the **Sessions** tab, and click the **Start session** button.
 
 <span class="image">![Start Session](1-start-session.png?raw=true)</span>
 
-Please select an EC2 instance to establish a session with. The workstation is named `labstack-bastion-host`, select it and click **Start session**.
+Please select an EC2 instance to establish a session with. The workstation is named `auroralab-mysql-workstation`, select it and click **Start session**.
 
 <span class="image">![Conenct Instance](1-connect-session.png?raw=true)</span>
 

@@ -9,6 +9,7 @@
 ## 2020-04-10 - Lambda support function empties the bucket (eg ML lab data on delete)
 ## 2020-04-10 - Updated EC2 AMIs
 ## 2020-04-30 - Switched to hardcoded AZs to support EventEngine
+## 2020-05-29 - Conditional naming and other changes to support EventEngine
 ##
 ## Dependencies:
 ## none
