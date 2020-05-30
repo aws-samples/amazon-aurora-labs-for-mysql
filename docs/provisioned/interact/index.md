@@ -19,8 +19,14 @@ This lab requires the following prerequisites:
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect.
 
-If you are not already connected to the Session Manager workstation command line from previous labs, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster. If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the cluster endpoint on the DB cluster details page in the RDS console. If you have skipped that lab and provisioned the DB cluster using the CloudFormation template, you can find the value for the cluster endpoint parameter in the stack outputs.
+If you are not already connected to the Session Manager workstation command line from previous labs, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster.
 
+!!! tip "Where do I find the cluster endpoint (or any other placeholder parameters)?"
+    If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the value of the cluster endpoint on the DB cluster details page in the RDS console, as noted at Step 2. in that lab.
+
+    If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the value of the cluster endpoint may be found on the Team Dashboard in Event Engine.
+
+    Otherwise, you can retrieve the cluster endpoint from the CloudFormation stack **Outputs** as indicated in the [Deploy Environment](/prereqs/environment/) prerequisites module.
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
@@ -35,7 +41,7 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
 
-Once connected to the database, use the code below to create a stored procedure we'll use later in the labs, to generate load on the DB cluster. Run the following SQL queries:
+Once connected to the database, use the code below to create a stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
 
 ```sql
 DELIMITER $$

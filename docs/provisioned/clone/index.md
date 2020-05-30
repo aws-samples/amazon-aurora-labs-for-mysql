@@ -23,14 +23,14 @@ This lab requires the following prerequisites:
 !!! warning "Workload State Check"
     Before cloning the DB cluster ensure you have stopped any load generating tasks from the previous lab, and exited out of the MySQL client command line using `quit;`.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack:
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack, or Event Engine Team Dashboard if you are participating in a formal workshop:
 
 ```shell
 aws rds restore-db-cluster-to-point-in-time \
 --restore-type copy-on-write \
 --use-latest-restorable-time \
---source-db-cluster-identifier labstack-cluster \
---db-cluster-identifier labstack-cluster-clone \
+--source-db-cluster-identifier auroralab-mysql-cluster \
+--db-cluster-identifier auroralab-mysql-clone \
 --vpc-security-group-ids [dbSecurityGroup] \
 --db-subnet-group-name [dbSubnetGroup] \
 --backtrack-window 86400
@@ -40,7 +40,7 @@ Next, check the status of the creation of your clone, by using the following com
 
 ```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-cluster-clone \
+--db-cluster-identifier auroralab-mysql-clone \
 | jq -r '.DBClusters[0].Status, .DBClusters[0].Endpoint'
 ```
 
@@ -58,15 +58,15 @@ Add a DB instance to the cluster once the status of the cluster becomes **availa
 aws rds create-db-instance \
 --db-instance-class db.r5.large \
 --engine aurora-mysql \
---db-cluster-identifier labstack-cluster-clone \
---db-instance-identifier labstack-cluster-clone-instance
+--db-cluster-identifier auroralab-mysql-clone \
+--db-instance-identifier auroralab-mysql-clone-instance
 ```
 
 Check the creation of the DB instance within the cluster, by using the following command:
 
 ```shell
 aws rds describe-db-instances \
---db-instance-identifier labstack-cluster-clone-instance \
+--db-instance-identifier auroralab-mysql-clone-instance \
 | jq -r '.DBInstances[0].DBInstanceStatus'
 ```
 
@@ -167,7 +167,7 @@ quit;
 By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
 
 ```shell
-aws rds delete-db-instance --db-instance-identifier labstack-cluster-clone-instance
+aws rds delete-db-instance --db-instance-identifier auroralab-mysql-clone-instance
 
-aws rds delete-db-cluster --db-cluster-identifier labstack-cluster-clone --skip-final-snapshot
+aws rds delete-db-cluster --db-cluster-identifier auroralab-mysql-clone --skip-final-snapshot
 ```

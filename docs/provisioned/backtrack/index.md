@@ -90,7 +90,7 @@ Backtrack the database to a time slightly after the second time marker (right af
 
 ```shell
 aws rds backtrack-db-cluster \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 --backtrack-to "yyyy-mm-ddThh:mm:ssZ"
 ```
 
@@ -100,7 +100,7 @@ Run the below command to track the progress of the backtracking operation. Repea
 
 ```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 | jq -r '.DBClusters[0].Status'
 ```
 
@@ -122,7 +122,7 @@ Now backtrack again to a time slightly before the first time marker above (right
 
 ```shell
 aws rds backtrack-db-cluster \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 --backtrack-to "yyyy-mm-ddThh:mm:ssZ"
 ```
 
@@ -130,7 +130,7 @@ Track the progress of the backtracking operation, using the command below. The o
 
 ```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 | jq -r '.DBClusters[0].Status'
 ```
 

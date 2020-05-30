@@ -34,7 +34,7 @@ If you are not already connected to the Session Manager workstation command line
 
 ```shell
 aws sns create-topic \
---name labstack-aurora-failovers
+--name auroralab-cluster-failovers
 ```
 
 If successful, the command will respond back with a **TopicArn** identifier, you will need this value in the next command.
@@ -45,7 +45,7 @@ Next, subscribe your email address to the SNS topic using the command below, cha
 
 ```shell
 aws sns subscribe \
---topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`labstack-aurora-failovers`)].TopicArn' --output text) \
+--topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`auroralab-cluster-failovers`)].TopicArn' --output text) \
 --protocol email \
 --notification-endpoint '[YourEmail]'
 ```
@@ -58,15 +58,15 @@ Once confirmed, or while you are waiting for the verification email to arrive, c
 
 ```shell
 aws rds create-event-subscription \
---subscription-name labstack-rds-failovers \
---sns-topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`labstack-aurora-failovers`)].TopicArn' --output text) \
+--subscription-name auroralab-cluster-failovers \
+--sns-topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`auroralab-cluster-failovers`)].TopicArn' --output text) \
 --source-type db-cluster \
 --event-categories '["failover"]' \
 --enabled
 
 aws rds add-source-identifier-to-subscription \
---subscription-name labstack-rds-failovers \
---source-identifier labstack-cluster
+--subscription-name auroralab-cluster-failovers \
+--source-identifier auroralab-mysql-cluster
 ```
 
 <span class="image">![RDS Event Subscription](1-rds-event-source.png?raw=true)</span>
@@ -88,7 +88,7 @@ In this test you will use a [simple failover monitoring script](/scripts/simple_
     Variable | Expected Value | Description
     --- | --- | ---
     innodb_read_only | `0` for writers, `1` for readers | This global system variable indicates whether the storage engine was opened in read-only mode or not.
-    aurora_server_id | `labstack-[...]` | This is the value of the DB instance identifier configured for that particular cluster member at creation time
+    aurora_server_id | `auroralab-[...]` | This is the value of the DB instance identifier configured for that particular cluster member at creation time
     aurora_version | e.g. `1.19.5` | This is the version of the Amazon Aurora MySQL database engine running on your DB cluster. Note, these version numbers are different than the MySQL version.
 
     In the event of a fault, the script will report the number of seconds it takes to reconnect to the intended endpoint and the writer role.
@@ -114,7 +114,7 @@ Enter the following command in the command line session that does not run the mo
 
 ```shell
 aws rds failover-db-cluster \
---db-cluster-identifier labstack-cluster
+--db-cluster-identifier auroralab-mysql-cluster
 ```
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
@@ -122,13 +122,13 @@ Wait and observe the monitor script output. It can take some time for Amazon Aur
 <span class="image">![Trigger DNS Failover](2-dns-failover.png?raw=true)</span>
 
 ??? info "Observations"
-    Initially, the Cluster DNS endpoint resolves to the IP address of one of the cluster DB instances (`labstack-node-01` in the example above). The monitoring script connects to that particular DB instance and determines it is a writer.
+    Initially, the Cluster DNS endpoint resolves to the IP address of one of the cluster DB instances (`auroralab-mysql-node-01` in the example above). The monitoring script connects to that particular DB instance and determines it is a writer.
 
     When the actual failover is implemented by the AWS automation, the monitoring script stops being able to connect to the database engine, as both the writer and the reader DB engines are being rebooted and re-configured.
 
     After several seconds, the monitoring script is able to connect again to the DB engine, but DNS has not fully updated yet, so it still connects to the old writer DB instance, which is now a reader. This underscores the importance of verifying the role of the engine upon establishing connections or borrowing them from a connection pool. The monitoring script correctly detects the discrepancy, and continues attempting to re-connect to the correct endpoint.
 
-    After several additional seconds, the monitoring script is able to connect to the correct new writer DB instance (`labstack-node-02` in the example above), after the cluster endpoint has been re-configured automatically to point to the new writer, and DNS TTL has expired client-side. In the example above, the total client side observed failover disruption was ~15 seconds.
+    After several additional seconds, the monitoring script is able to connect to the correct new writer DB instance (`auroralab-mysql-node-02` in the example above), after the cluster endpoint has been re-configured automatically to point to the new writer, and DNS TTL has expired client-side. In the example above, the total client side observed failover disruption was ~15 seconds.
 
     In the event of a true hardware failure, you will likely not be able to connect to the old writer instance. But the client may attempt to connect until the attempt times out. A very long `connect_timeout` value in the client MySQL driver configuration may delay recovery for a longer period of time. However, there are other use cases where you would want to initiate a manual failover, such as scaling the compute of writer DB instances with minimal disruption.
 
@@ -177,7 +177,7 @@ Wait and observe the monitor script output. Once triggered, you should see monit
 
     After a few seconds the monitoring script is able to connect again to the DB engine.
 
-    The role of the DB instance has not changed, the writer is still the same DB instance (`labstack-node-01` in the example above).
+    The role of the DB instance has not changed, the writer is still the same DB instance (`auroralab-mysql-node-01` in the example above).
 
     No DNS changes are needed. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was ~3 seconds.
 
@@ -216,7 +216,7 @@ Enter the following command in the command line session that does not run any mo
 
 ```shell
 aws rds failover-db-cluster \
---db-cluster-identifier labstack-cluster
+--db-cluster-identifier auroralab-mysql-cluster
 ```
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
@@ -258,11 +258,11 @@ Navigate to **Proxies** in the left side navigation menu. Click **Create proxy**
 
 <span class="image">![Create Proxy](5-create-proxy.png?raw=true)</span>
 
-In the **Proxy configuration** section, set the Proxy identifier to `labstack-proxy`. In the **Target group configuration** section, choose `labstack-cluster` in the **Database** dropdown. Leave all other default values as they are.
+In the **Proxy configuration** section, set the Proxy identifier to `auroralab-mysql-proxy`. In the **Target group configuration** section, choose `auroralab-mysql-cluster` in the **Database** dropdown. Leave all other default values as they are.
 
 <span class="image">![Configure Proxy](5-config-proxy.png?raw=true)</span>
 
-In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretCusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `labstack-mysql-internal`.
+In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretCusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `auroralab-database-sg`.
 
 <span class="image">![Configure Proxy Connectivity](5-config-connectivity.png?raw=true)</span>
 
@@ -299,7 +299,7 @@ Enter the following command in the command line session that does not run the mo
 
 ```shell
 aws rds failover-db-cluster \
---db-cluster-identifier labstack-cluster
+--db-cluster-identifier auroralab-mysql-cluster
 ```
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
@@ -307,9 +307,9 @@ Wait and observe the monitor script output. It can take some time for Amazon Aur
 <span class="image">![Monitor Failover](5-monitor-failover.png?raw=true)</span>
 
 ??? info "Observations"
-    Initially, the proxy sends traffic to the current writer of the DB cluster (`labstack-node-01` in the example above). The proxy forwards the monitoring script queries to that particular DB instance.
+    Initially, the proxy sends traffic to the current writer of the DB cluster (`auroralab-mysql-node-01` in the example above). The proxy forwards the monitoring script queries to that particular DB instance.
 
-    When the actual failover is implemented by the AWS automation, the monitoring script experiences a disconnection with MySQL error 1105. One second later, it is able to reconnect again, only this time the proxy is forwarding the queries to the new writer  (`labstack-node-02` in the example above). The client experienced ~1 second of disruption.
+    When the actual failover is implemented by the AWS automation, the monitoring script experiences a disconnection with MySQL error 1105. One second later, it is able to reconnect again, only this time the proxy is forwarding the queries to the new writer  (`auroralab-mysql-node-02` in the example above). The client experienced ~1 second of disruption.
 
     The timing of requests issued by the client (our monitoring script in this example) matters. If the query is in-flight at the time the failover starts, or you are attempting to establish a new connection while the failover is ongoing, the proxy will return an error so you can retry. Existing client connections with no in-flight queries will be kept open, and any queries received after the failover starts will be queued up at the proxy until the failover completes. Such clients will simply experience increased response latency for the queries issued during the failover.
 
@@ -336,12 +336,12 @@ By running this lab, you have created additional AWS resources. We recommend you
 
 ```shell
 aws rds remove-source-identifier-from-subscription \
---subscription-name labstack-rds-failovers \
---source-identifier labstack-cluster
+--subscription-name auroralab-cluster-failovers \
+--source-identifier auroralab-mysql-cluster
 
 aws rds delete-event-subscription \
---subscription-name labstack-rds-failovers
+--subscription-name auroralab-cluster-failovers
 
 aws sns delete-topic \
---topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`labstack-aurora-failovers`)].TopicArn' --output text)
+--topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`auroralab-cluster-failovers`)].TopicArn' --output text)
 ```
