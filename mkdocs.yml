@@ -56,10 +56,9 @@ markdown_extensions:
 # Navigation
 nav:
   - Home: 'index.md'
-  - Getting Started: 'modules/index.md'
   - Prerequisites:
-    - Deploy Environment: 'prereqs/environment/index.md'
-    - Connect to the Session Manager Workstation: 'prereqs/connect/index.md'
+    - Get started: 'prereqs/environment/index.md'
+    - Connect to the Session Manager workstation: 'prereqs/connect/index.md'
   - Provisioned:
     - Create a New DB Cluster: 'provisioned/create/index.md'
     - Connect, Load Data and Auto Scale: 'provisioned/interact/index.md'
