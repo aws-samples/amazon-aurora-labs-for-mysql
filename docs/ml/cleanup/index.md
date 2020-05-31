@@ -11,13 +11,13 @@ aws sagemaker delete-endpoint-config --endpoint-config-name auroraml-churn-endpo
 
 aws sagemaker delete-model --model-name $(aws sagemaker list-models --output text --query 'Models[*].[ModelName]' | grep sagemaker-scikit-learn)
 
-aws rds remove-role-from-db-cluster --db-cluster-identifier labstack-cluster \
---role-arn $(aws iam list-roles --query 'Roles[?RoleName==`labstack-comprehend-access`].Arn' --output text)
+aws rds remove-role-from-db-cluster --db-cluster-identifier auroralab-mysql-cluster \
+--role-arn $(aws iam list-roles --query 'Roles[?RoleName==`auroralab-comprehend-access`].Arn' --output text)
 
 sleep 2m
 
-aws rds remove-role-from-db-cluster --db-cluster-identifier labstack-cluster \
---role-arn $(aws iam list-roles --query 'Roles[?RoleName==`labstack-sagemaker-access`].Arn' --output text)
+aws rds remove-role-from-db-cluster --db-cluster-identifier auroralab-mysql-cluster \
+--role-arn $(aws iam list-roles --query 'Roles[?RoleName==`auroralab-sagemaker-access`].Arn' --output text)
 
 sleep 2m
 
@@ -29,13 +29,13 @@ aws rds modify-db-cluster-parameter-group \
 --db-cluster-parameter-group-name $DBCLUSTERPG \
 --parameters "ParameterName=aws_default_sagemaker_role,ParameterValue='',ApplyMethod=pending-reboot"
 
-aws rds failover-db-cluster --db-cluster-identifier labstack-cluster
+aws rds failover-db-cluster --db-cluster-identifier auroralab-mysql-cluster
 
-aws iam delete-role-policy --role-name labstack-comprehend-access --policy-name inline-policy
+aws iam delete-role-policy --role-name auroralab-comprehend-access --policy-name inline-policy
 
-aws iam delete-role-policy --role-name labstack-sagemaker-access --policy-name inline-policy
+aws iam delete-role-policy --role-name auroralab-sagemaker-access --policy-name inline-policy
 
-aws iam delete-role --role-name labstack-comprehend-access
+aws iam delete-role --role-name auroralab-comprehend-access
 
-aws iam delete-role --role-name labstack-sagemaker-access
+aws iam delete-role --role-name auroralab-sagemaker-access
 ```

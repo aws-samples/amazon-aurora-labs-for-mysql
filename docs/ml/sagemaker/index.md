@@ -21,12 +21,12 @@ This lab requires the following prerequisites:
 If you are not already connected to the Session Manager workstation, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below which will create an IAM role, and access policy.
 
 ```shell
-aws iam create-role --role-name labstack-sagemaker-access \
+aws iam create-role --role-name auroralab-sagemaker-access \
 --assume-role-policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"rds.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
 
 sed -i "s%EndpointArn%$(aws sagemaker describe-endpoint --endpoint-name auroraml-churn-endpoint --query [EndpointArn] --output text)%" sagemaker_policy.json
 
-aws iam put-role-policy --role-name labstack-sagemaker-access --policy-name inline-policy \
+aws iam put-role-policy --role-name auroralab-sagemaker-access --policy-name inline-policy \
 --policy-document file://sagemaker_policy.json
 ```
 
@@ -35,14 +35,14 @@ aws iam put-role-policy --role-name labstack-sagemaker-access --policy-name inli
 Associate the role with the DB cluster by using following command:
 
 ```shell
-aws rds add-role-to-db-cluster --db-cluster-identifier labstack-cluster \
---role-arn $(aws iam list-roles --query 'Roles[?RoleName==`labstack-sagemaker-access`].Arn' --output text)
+aws rds add-role-to-db-cluster --db-cluster-identifier auroralab-mysql-cluster \
+--role-arn $(aws iam list-roles --query 'Roles[?RoleName==`auroralab-sagemaker-access`].Arn' --output text)
 ```		
 
 Run the following command and wait until the output shows as **available**, before moving on to the next step.
 
 ```shell
-aws rds describe-db-clusters --db-cluster-identifier labstack-cluster \
+aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
@@ -55,19 +55,19 @@ Set the ==aws_default_sagemaker_role== cluster-level parameter to the ARN of the
 ```shell
 aws rds modify-db-cluster-parameter-group \
 --db-cluster-parameter-group-name $DBCLUSTERPG \
---parameters "ParameterName=aws_default_sagemaker_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`labstack-sagemaker-access`].Arn' --output text),ApplyMethod=pending-reboot"
+--parameters "ParameterName=aws_default_sagemaker_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`auroralab-sagemaker-access`].Arn' --output text),ApplyMethod=pending-reboot"
 ```
 
 Reboot the DB cluster for the change to take effect. To minimize downtime use the manual failover process to trigger the reboot:
 
 ```shell
-aws rds failover-db-cluster --db-cluster-identifier labstack-cluster
+aws rds failover-db-cluster --db-cluster-identifier auroralab-mysql-cluster
 ```
 
 Run the following command and wait until the output shows as **available**, before moving on to the next step:
 
 ```shell
-aws rds describe-db-clusters --db-cluster-identifier labstack-cluster \
+aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
