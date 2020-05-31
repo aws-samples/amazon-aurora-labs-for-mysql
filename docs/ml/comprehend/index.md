@@ -11,7 +11,7 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Deploy Environment](/prereqs/environment/) - choose **Yes** for the **Enable Aurora ML Labs?** feature option
+* [Get Started](/prereqs/environment/) - choose **Yes** for the **Enable Aurora ML Labs?** feature option
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Overview and Prerequisites](/ml/overview/)
 

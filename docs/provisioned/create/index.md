@@ -3,7 +3,7 @@
 This lab will walk you through the steps of creating an Amazon Aurora database cluster manually, and configuring app the parameters required for the cluster components. At the end of this lab you will have a database cluster ready to be used in subsequent labs.
 
 !!! tip "Do you already know how to create a DB cluster?"
-    If you are familiar with the basic concepts of Amazon Aurora MySQL, and have created a cluster in the past, you may skip this module by provisioning the lab environment using the option to have the DB cluster deployed automatically. See the [Deploy Environment](prereqs/environment/) prerequisites module for details on provisioning the lab environment. Skip to [Connect, Load Data and Auto Scale](/provisioned/interact/).
+    If you are familiar with the basic concepts of Amazon Aurora MySQL, and have created a cluster in the past, you may skip this module by provisioning the lab environment using the option to have the DB cluster deployed automatically. See the [Get Started](prereqs/environment/) prerequisites module for details on provisioning the lab environment. Skip to [Connect, Load Data and Auto Scale](/provisioned/interact/).
 
     If you are running these labs in a formal, organized workshop event, please follow the recommendations of your instructors, and ask any lab assistant for help if you have questions about this lab.
 
@@ -19,7 +19,7 @@ This lab contains the following tasks:
 
 This lab requires the following lab modules to be completed first:
 
-* [Deploy Environment](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
+* [Get Started](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
 * [Connect to the Session Manager Workstation](/prereqs/connect/) (needed for task \#6)
 
 ## 1. Create the DB cluster
@@ -53,7 +53,7 @@ In the **DB instance size** section, select **Memory Optimized classes**, and ch
 <span class="image">![Database Settings](1-db-size.png?raw=true)</span>
 
 
-In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, [the CloudFormation stack you already deployed]((/prereqs/environment/)), has configured all the networking resources for you.
+In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, we have configured all the networking resources for you.
 
 Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should start either with `auroralab-dbsubnets-` or with `mod-` depending on the event you are participating in.
 

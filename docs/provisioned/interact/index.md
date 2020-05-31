@@ -10,7 +10,7 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Deploy Environment](/prereqs/environment/)
+* [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 
@@ -26,7 +26,7 @@ If you are not already connected to the Session Manager workstation command line
 
     If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the value of the cluster endpoint may be found on the Team Dashboard in Event Engine.
 
-    Otherwise, you can retrieve the cluster endpoint from the CloudFormation stack **Outputs** as indicated in the [Deploy Environment](/prereqs/environment/) prerequisites module.
+    Otherwise, you can retrieve the cluster endpoint from the CloudFormation stack **Outputs** as indicated in the [Get Started](/prereqs/environment/) prerequisites module.
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab

@@ -17,7 +17,7 @@ The following labs are currently available:
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
     1 | [**Get started using the lab environment**](/prereqs/environment/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources.
-    2 | [**Connect to the EC2 workstation**](/prereqs/connect/) | **Required** | Connect to the EC2 based workstation using Session Manager, so you can interact with the database.
+    2 | [**Connect to the Session Manager workstation**](/prereqs/connect/) | **Required** | Connect to the EC2 based workstation using Session Manager, so you can interact with the database.
 
 
 ??? abstract "Labs for Aurora Provisioned DB clusters"

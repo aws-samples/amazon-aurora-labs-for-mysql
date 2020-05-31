@@ -1,4 +1,4 @@
-# Get started using the lab environment
+# Get Started Using the Lab Environment
 
 Before you can use the resources in the lab environment, you need to complete a few steps.
 
@@ -90,4 +90,4 @@ Please select the option that matches your circumstances best, and expand that s
 
     * Do you see a value similar to `i-0123456789abcdef0` (the value may vary) for the **bastionInstance** CloudFormation stack output key?
 
-    If so, you may proceed to the next lab: [**Connect to the EC2 workstation**](/prereqs/connect/). Otherwise please revisit the instructions above, you might have missed a step.
+    If so, you may proceed to the next lab: [**Connect to the Session Manager workstation**](/prereqs/connect/). Otherwise please revisit the instructions above, you might have missed a step.

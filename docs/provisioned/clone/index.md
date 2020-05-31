@@ -12,7 +12,7 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Deploy Environment](/prereqs/environment/)
+* [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 * [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
