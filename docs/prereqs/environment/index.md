@@ -1,14 +1,5 @@
 # Get started using the lab environment
 
-The following steps should be completed before getting started with any of the labs in this repository. Not all steps may apply to all students or environments.
-
-This lab contains the following tasks:
-
-1. Prepare the lab environment
-
-
-## 1. Prepare the lab environment
-
 Before you can use the resources in the lab environment, you need to complete a few steps.
 
 If you are attending a formal event, such as a workshop or other training, your instructor will provide specific guidance on how to start. Typically you will be provided an AWS account through a platform called **Event Engine**, and the lab environment has already been deployed in that account for you. Click on option **1.)** below.
