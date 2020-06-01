@@ -14,37 +14,28 @@ This lab requires the following prerequisites:
 
 ## 1. Connect to your workstation instance
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager: Session Manager service console</a>. Click **Configure Preferences**.
+Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager: Session Manager service console</a>. Click the **Start session** button.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
-
-!!! warning "Console Differences"
-    The introduction screen with the **Configure Preferences** and **Start Session** buttons only appears when you start using Session Manager for the first time in a new account. Once you have started using this service the console will display the session listing view instead, and the preferences page is accessible by clicking on the **Preferences** tab. From there, click the **Edit** button if you wish to change settings.
-
-<span class="image">![Session Manager](1-session-manager.png?raw=true)</span>
-
-Check the box next to **Enable Run As support for Linux instances**, and enter `ubuntu` in the text field. This will instruct Session Manager to connect to the workstation using the `ubuntu` operating system user account. Click **Save**.
-
-!!! note
-    You will only need to set the preferences once for the purposes of the labs. However, if you use Session Manager for other use cases you may need to revert the changes back as needed.
-
-<span class="image">![Session Preferences](1-session-prefs.png?raw=true)</span>
-
-Next, navigate to the **Sessions** tab, and click the **Start session** button.
 
 <span class="image">![Start Session](1-start-session.png?raw=true)</span>
 
 Please select an EC2 instance to establish a session with. The workstation is named `auroralab-mysql-workstation`, select it and click **Start session**.
 
-<span class="image">![Conenct Instance](1-connect-session.png?raw=true)</span>
+<span class="image">![Connect Instance](1-connect-session.png?raw=true)</span>
 
 If you see a black command like terminal screen and a prompt, you are now connected to the workstation. Type the following commands to ensure a consistent experience, and that the connection is successful:
 
 ```shell
-bash
-cd ~
+sudo su -l ubuntu
 ```
+
+!!! warning "Linux User Account"
+    By default, Session Manager connects using the user account **ssm-user**. With the command above you are changing the user account to the **ubuntu** user account, which has the correct settings required for the labs. You can always check the current user account by typing ```whoami```, this will print the current user account.
+
+    If you encounter errors accessing lab commands in subsequent labs, it is likely because the user account was not changed using the command above.
+
 
 ## 2. Verify lab environment
 
