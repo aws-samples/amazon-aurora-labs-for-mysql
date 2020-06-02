@@ -1131,17 +1131,15 @@ Resources:
             print("[INFO]", "Invocation start")
 
             # init response
+            resource_props = event["ResourceProperties"]
             response_status = cfnresponse.FAILED
             response_data = {}
 
             # try/catch
             try:
-              # get cluster properties
-              aurora_cluster = event["ResourceProperties"]["Cluster"]
-
-              # if we got here, set response as success
-              response_data["DBClusterId"] = aurora_cluster.lower()
-              response_data["DBClusterScalableTarget"] = "cluster:%s" % aurora_cluster.lower()
+              # lowercase names, set response as success
+              response_data["DBClusterId"] = resource_props["Cluster"].lower()
+              response_data["DBClusterScalableTarget"] = "cluster:%s" % response_data["DBClusterId"]
               response_status = cfnresponse.SUCCESS
               print("[INFO]", "ScalableTarget computed:", response_data["DBClusterScalableTarget"])
 
@@ -1151,19 +1149,19 @@ Resources:
                 try:
                   # track analytics
                   payload = {
-                    'stack_uuid': event["ResourceProperties"]["StackUUID"] if ("StackUUID" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
-                    'stack_name': event["ResourceProperties"]["StackName"] if ("StackName" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
-                    'stack_region': event["ResourceProperties"]["StackRegion"] if ("StackRegion" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
-                    'deployed_cluster': event["ResourceProperties"]["DeployedCluster"] if ("DeployedCluster" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
-                    'deployed_ml': event["ResourceProperties"]["DeployedML"] if ("DeployedML" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'stack_uuid': resource_props["StackUUID"] if ("StackUUID" in resource_props and resource_props["StackUUID"]) else None,
+                    'stack_name': resource_props["StackName"] if ("StackName" in resource_props and resource_props["StackUUID"]) else None,
+                    'stack_region': resource_props["StackRegion"] if ("StackRegion" in resource_props and resource_props["StackUUID"]) else None,
+                    'deployed_cluster': resource_props["DeployedCluster"] if ("DeployedCluster" in resource_props and resource_props["StackUUID"]) else None,
+                    'deployed_ml': resource_props["DeployedML"] if ("DeployedML" in resource_props and resource_props["StackUUID"]) else None,
                     'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
                     'event_scope': 'Stack',
                     'event_action': event["RequestType"] if "RequestType" in event else None,
                     'event_message': "Stack-level operation",
-                    'ee_event_id': event["ResourceProperties"]["EEEventId"] if ("EEEventId" in event["ResourceProperties"] and event["ResourceProperties"]["EEEventId"]) else None,
-                    'ee_team_id': event["ResourceProperties"]["EETeamId"] if ("EETeamId" in event["ResourceProperties"] and event["ResourceProperties"]["EETeamId"]) else None,
-                    'ee_module_id': event["ResourceProperties"]["EEModuleId"] if ("EEModuleId" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleId"]) else None,
-                    'ee_module_version': event["ResourceProperties"]["EEModuleVersion"] if ("EEModuleVersion" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleVersion"]) else None
+                    'ee_event_id': resource_props["EEEventId"] if ("EEEventId" in resource_props and resource_props["EEEventId"]) else None,
+                    'ee_team_id': resource_props["EETeamId"] if ("EETeamId" in resource_props and resource_props["EETeamId"]) else None,
+                    'ee_module_id': resource_props["EEModuleId"] if ("EEModuleId" in resource_props and resource_props["EEModuleId"]) else None,
+                    'ee_module_version': resource_props["EEModuleVersion"] if ("EEModuleVersion" in resource_props and resource_props["EEModuleVersion"]) else None
                   }
                   r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
                   print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
@@ -1176,9 +1174,9 @@ Resources:
               # cleanup bucket
               if event["RequestType"] == 'Delete':
                 # delete all objects out of the bucket
-                bucket = s3.Bucket(event["ResourceProperties"]["DataBucket"])
+                bucket = s3.Bucket(resource_props["DataBucket"])
                 bucket.objects.delete()
-                print("[INFO]", "Bucket cleaned up for:", event["ResourceProperties"]["DataBucket"])
+                print("[INFO]", "Bucket cleaned up for:", resource_props["DataBucket"])
 
             except Exception as e:
               print("[ERROR]", e)
