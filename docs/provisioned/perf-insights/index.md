@@ -26,7 +26,7 @@ If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, a
 ```shell
 aws ssm send-command \
 --document-name [loadTestRunDoc] \
---instance-ids [bastionInstance] \
+--instance-ids [ec2Instance] \
 --parameters \
 clusterEndpoint=[clusterEndpoint],\
 dbUser=$DBUSER,\
@@ -38,7 +38,7 @@ If AWS CloudFormation has provisioned the DB cluster on your behalf, and you ski
 ```shell
 aws ssm send-command \
 --document-name [loadTestRunDoc] \
---instance-ids [bastionInstance]
+--instance-ids [ec2Instance]
 ```
 
 ??? tip "What do all these parameters mean?"

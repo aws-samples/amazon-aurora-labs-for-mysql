@@ -1219,11 +1219,11 @@ Outputs:
   vpcId:
     Description: Aurora Lab VPC
     Value: !Ref vpc
-  bastionInstance:
-    Description: Bastion Instance ID
+  ec2Instance:
+    Description: EC2 Workstation Instance ID
     Value: !Ref bastionHost
   clusterName:
-    Description: Cluster Name
+    Description: Aurora Cluster Name
     Value: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
   clusterEndpoint:
     Description: Aurora Cluster Endpoint
