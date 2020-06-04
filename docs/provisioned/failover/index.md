@@ -128,7 +128,7 @@ Wait and observe the monitor script output. It can take some time for Amazon Aur
 
     After several seconds, the monitoring script is able to connect again to the DB engine, but DNS has not fully updated yet, so it still connects to the old writer DB instance, which is now a reader. This underscores the importance of verifying the role of the engine upon establishing connections or borrowing them from a connection pool. The monitoring script correctly detects the discrepancy, and continues attempting to re-connect to the correct endpoint.
 
-    After several additional seconds, the monitoring script is able to connect to the correct new writer DB instance (`auroralab-mysql-node-02` in the example above), after the cluster endpoint has been re-configured automatically to point to the new writer, and DNS TTL has expired client-side. In the example above, the total client side observed failover disruption was ~15 seconds.
+    After several additional seconds, the monitoring script is able to connect to the correct new writer DB instance (`auroralab-mysql-node-02` in the example above), after the cluster endpoint has been re-configured automatically to point to the new writer, and DNS TTL has expired client-side. In the example above, the total client side observed failover disruption was ~12 seconds.
 
     In the event of a true hardware failure, you will likely not be able to connect to the old writer instance. But the client may attempt to connect until the attempt times out. A very long `connect_timeout` value in the client MySQL driver configuration may delay recovery for a longer period of time. However, there are other use cases where you would want to initiate a manual failover, such as scaling the compute of writer DB instances with minimal disruption.
 
@@ -177,9 +177,9 @@ Wait and observe the monitor script output. Once triggered, you should see monit
 
     After a few seconds the monitoring script is able to connect again to the DB engine.
 
-    The role of the DB instance has not changed, the writer is still the same DB instance (`auroralab-mysql-node-01` in the example above).
+    The role of the DB instance has not changed, the writer is still the same DB instance (`auroralab-mysql-node-02` in the example above).
 
-    No DNS changes are needed. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was ~3 seconds.
+    No DNS changes are needed. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was ~2 seconds.
 
 You may need to exit the mysql command console, even if it is disconnected using by typing:
 
@@ -230,7 +230,7 @@ Wait and observe the monitor script output. It can take some time for Amazon Aur
 
     It disconnects, and reconnects to the new DB writer directly using the DB instance endpoint.
 
-    In the example above, this process took 7 seconds to restore connectivity compared to 12 seconds when relying exclusively on the cluster DNS endpoint.
+    In the example above, this process took 4 seconds to restore connectivity compared to 9 seconds when relying exclusively on the cluster DNS endpoint.
 
     The initial cluster DNS endpoint is still authoritative and preferred, the cluster-aware monitoring script only uses the DB instance endpoint as long as it works, reverting back to the cluster endpoint when a failure is encountered. This ensures that connectivity is restored as quickly as possible even if there is a total compute failure of the writer DB instance.
 
@@ -260,7 +260,7 @@ Navigate to **Proxies** in the left side navigation menu. Click **Create proxy**
 
 In the **Proxy configuration** section, set the Proxy identifier to `auroralab-mysql-proxy`. In the **Target group configuration** section, choose `auroralab-mysql-cluster` in the **Database** dropdown. Leave all other default values as they are.
 
-<span class="image">![Configure Proxy](5-config-proxy.png?raw=true)</span>
+<span class="image">![Configure Proxy](5-config-proxy-target.png?raw=true)</span>
 
 In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretCusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `auroralab-database-sg`.
 
@@ -309,11 +309,9 @@ Wait and observe the monitor script output. It can take some time for Amazon Aur
 ??? info "Observations"
     Initially, the proxy sends traffic to the current writer of the DB cluster (`auroralab-mysql-node-01` in the example above). The proxy forwards the monitoring script queries to that particular DB instance.
 
-    When the actual failover is implemented by the AWS automation, the monitoring script experiences a disconnection with MySQL error 1105. One second later, it is able to reconnect again, only this time the proxy is forwarding the queries to the new writer  (`auroralab-mysql-node-02` in the example above). The client experienced ~1 second of disruption.
+    When the actual failover is implemented by the AWS automation, the monitoring script experiences a disconnection with MySQL error 1105. One second later, it is able to reconnect again, only this time the proxy is forwarding the queries to the new writer  (`auroralab-mysql-node-02` in the example above). The client experienced ~2 second of latency to the query response.
 
     The timing of requests issued by the client (our monitoring script in this example) matters. If the query is in-flight at the time the failover starts, or you are attempting to establish a new connection while the failover is ongoing, the proxy will return an error so you can retry. Existing client connections with no in-flight queries will be kept open, and any queries received after the failover starts will be queued up at the proxy until the failover completes. Such clients will simply experience increased response latency for the queries issued during the failover.
-
-    The failover recovery is also shorter than in the previous tests. In the example above, the client experienced a ~1 second disruption, compared to several seconds in the examples above.
 
 
 Feel free to repeat the failover procedure a few times to determine if there are any significant variances.
