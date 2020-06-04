@@ -36,6 +36,7 @@ sudo su -l ubuntu
 
     If you encounter errors accessing lab commands in subsequent labs, it is likely because the user account was not changed using the command above.
 
+<span class="image">![Terminal Connected](1-terminal-sudo.png?raw=true)</span>
 
 ## 2. Verify lab environment
 

@@ -112,14 +112,14 @@ Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=
 
 Take note that the reader node is currently receiving load. It may take a minute or more for the metrics to fully reflect the incoming load.
 
-<span class="image">![Reader Load](4-read-load.png?raw=true)</span>
+<span class="image">![Reader Load](3-read-load.png?raw=true)</span>
 
 After several minutes return to the list of instances and notice that a new reader is being provisioned to your cluster.
 
-<span class="image">![Application Auto Scaling Creating Reader](4-aas-create-reader.png?raw=true)</span>
+<span class="image">![Application Auto Scaling Creating Reader](3-aas-create-reader.png?raw=true)</span>
 
 Once the new replica becomes available, note that the load distributes and stabilizes (it may take a few minutes to stabilize).
 
-<span class="image">![Application Auto Scaling Creating Reader](4-read-load-balanced.png?raw=true)</span>
+<span class="image">![Application Auto Scaling Creating Reader](3-read-load-balanced.png?raw=true)</span>
 
 You can now toggle back to the Session Manager command line, and type `CTRL+C` to quit the load generator. After a while the additional reader will be removed automatically.
