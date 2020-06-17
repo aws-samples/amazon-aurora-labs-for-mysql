@@ -63,7 +63,7 @@ In the **Database authentication** section, choose **Password and IAM database a
 
 <span class="image">![Connectivity](1-connectivity.png?raw=true)</span>
 
-Next, expand the **Advanced configuration** section. Set the **Initial database name** to `mylab`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups with the stack name in their name (e.g. `auroralab-[...]`). Keep the `1 day` **Backup retention period**. Check the box to **Enable encryption** and select `[default] aws/rds` for the **Master key**.
+Next, expand the **Advanced configuration** section. Set the **Initial database name** to `mylab`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. Keep the `1 day` **Backup retention period**. Check the box to **Enable encryption** and select `[default] aws/rds` for the **Master key**.
 
 <span class="image">![Advanced configuration](1-advanced-1.png?raw=true)</span>
 
