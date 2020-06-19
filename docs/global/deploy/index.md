@@ -5,8 +5,7 @@ Amazon Aurora <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGu
 This lab contains the following tasks:
 
 1. Create a lab environment in a different region
-2. Generate load on your DB cluster
-3. Create an Aurora Global cluster
+2. Create an Aurora global cluster
 
 This lab requires the following prerequisites:
 
@@ -14,15 +13,15 @@ This lab requires the following prerequisites:
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 
+
+## 1. Create a lab environment in a different region
+
 !!! warning "Using Multiple Regions"
     Due to the **multi-region** nature of a Global Database, you will often be switching between two regions to accomplish the tasks in this lab. **Please be mindful** that you are performing the actions in the proper region, as some of the resources created are very similar between the two regions.
 
     We will refer to the region where your current DB cluster is deployed, and you have been working in so far, as your **primary region**. 
 
     We will refer to the region where you will deploy the secondary, read-only DB cluster as the **secondary region**.
-
-
-## 1. Create a lab environment in a different region
 
 To simplify the getting started experience with the labs, we have created foundational templates for <a href="https://aws.amazon.com/cloudformation/" target="_blank">AWS CloudFormation</a> that provision the resources needed for the lab environment. These templates are designed to deploy a consistent networking infrastructure, and client-side experience of software packages and components used in the lab.
 
@@ -45,31 +44,7 @@ Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab.
 <span class="image">![Stack Outputs](cfn-stack-outputs.png?raw=true)</span>
 
 
-## 2. Generate load on your DB cluster
-
-While the second region is being built up, you will use Percona's TPCC-like benchmark script based on sysbench to generate load on the DB cluster in the existing region. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test. The load generator will run for approximatively one hour.
-
-!!! note
-    You will need to run the command in the **primary region**, not the region used for step 1. Create a lab environment in a different region.
-
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, enter one of the following commands, replacing the placeholders appropriately.
-
-```shell
-aws ssm send-command \
---document-name [mysqlRunDoc] \
---instance-ids [bastionMySQL]
-```
-
-??? tip "What do all these parameters mean?"
-    Parameter | Description
-    --- | ---
-    --document-name | The name of the command document to run on your behalf.
-    --instance-ids | The EC2 instance to execute this command on.
-
-The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
-
-
-## 3. Create an Aurora Global cluster
+## 2. Create an Aurora global cluster
 
 The lab environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster, that you are running the load generator against. You will create a Global Database cluster using this existing DB cluster, as the **primary**.
 
@@ -80,11 +55,24 @@ The lab environment that was provisioned automatically for you, already has an A
 
 Once the lab environment created above at **Step 1. Create a lab environment in a different region** has finished deploying, you may proceed.
 
-::TODO:: Turn off Backtrack feature.
-
 Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
 
-From the **Actions** dropdown button, choose **Add region**.
+First, you need to **disable** the **Backtrack** feature. At present database backtrack is not compatible with Aurora Global Databases, and a cluster with that feature active cannot be converted into a global database. Select the `auroralab-mysql-cluster` and click the **Modify** button.
+
+!!! note
+    If you have not completed the [Backtrack a DB Cluster](/provisioned/backtrack/) lab already, and wish to do so, or have been instructed to do so part of the event, please complete that lab now before moving forward. Once disabled, you will not be able to re-enable the backtrack feature on an existing DB cluster.
+
+<span class="image">![RDS Cluster Modify](rds-cluster-action-modify.png?raw=true)</span>
+
+Scroll down to the **Backtrack** section and choose the **Disable Backtrack** option, then click **Continue** at the bottom of the page.
+
+<span class="image">![RDS Cluster Disable Backtrack](rds-cluster-disable-backtrack.png?raw=true)</span>
+
+In the **Scheduling of modifications** section, choose the **Apply immediately** option, then click **Modify cluster** to confirm the changes.
+
+<span class="image">![RDS Cluster Confirm Changes](rds-cluster-modify-confirm.png?raw=true)</span>
+
+Once the modification is complete, and the DB cluster is in an `available` state again, from the **Actions** dropdown button, choose **Add region**.
 
 <span class="image">![RDS Cluster Add Region](rds-cluster-action-add.png?raw=true)</span>
 
@@ -92,7 +80,7 @@ On the setup screen, under **Global database settings**, set the **Global databa
 
 In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration created above.
 
-Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. Similarly make sure the selected **Subnet Group** also matches the stack name (e.g. `auroralab-dbsubnets-[hash]`). Make sure the cluster **Publicly accessible** option is set to **No**. The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group named `auroralab-mysql-internal`. Please remove any other security groups, such as `default` from the selection.
+Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. Similarly make sure the selected **Subnet Group** also matches the stack name (e.g. `auroralab-dbsubnets-[hash]`). Make sure the cluster **Publicly accessible** option is set to **No**. The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group named `auroralab-database-sg`. Please remove any other security groups, such as `default` from the selection.
 
 Next, expand the **Advanced configuration** section. Set the **DB instance identifier** to `auroralab-mysql-node-3` and the **DB cluster identifier** to `auroralab-mysql-secondary`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups with the stack name in their name (e.g. `auroralab-[...]`).
 
