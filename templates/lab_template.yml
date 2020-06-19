@@ -37,6 +37,13 @@ Parameters:
       - "Yes"
       - "No"
     Description: If you plan to run the Aurora ML labs, choose 'Yes', to deploy the required resources.
+  deployGDB:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Aurora Global Database labs, choose 'Yes', to deploy the required resources.
   agreeTracking:
     Default: "Yes"
     Type: String
@@ -44,35 +51,45 @@ Parameters:
       - "Yes"
       - "No"
     Description: Help us improve our labs by agreeing to the collection of anonymous usage statistics for our labs.
+  isSecondary:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Please leave default value, reserved for internal use.
   EEEventId:
     Type: String
-    Description: Please leave blank, reserved for EventEngine use.
+    Description: Please leave blank, reserved for internal use.
   EETeamId:
     Type: String
-    Description: Please leave blank, reserved for EventEngine use.
+    Description: Please leave blank, reserved for internal use.
   EEModuleId:
     Type: String
-    Description: Please leave blank, reserved for EventEngine use.
+    Description: Please leave blank, reserved for internal use.
   EEModuleVersion:
     Type: String
-    Description: Please leave blank, reserved for EventEngine use.
+    Description: Please leave blank, reserved for internal use.
 
 
 ## Metadata
 Metadata:
-
-## Friendly UI grouping for parameters
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
           default: "Lab Features"
         Parameters:
           - deployCluster
+          - deployGDB
           - deployML
       - Label:
           default: "Help Us Improve Our Labs!"
         Parameters:
           - agreeTracking
+      - Label:
+          default: "Reserved for Internal Use (Do Not Change)"
+        Parameters:
+          - isSecondary
           - EEEventId
           - EETeamId
           - EEModuleId
@@ -80,10 +97,14 @@ Metadata:
     ParameterLabels:
       deployCluster:
         default: "Create DB Cluster Automatically?"
+      deployGDB:
+        default: "Enable Aurora Global Database Labs?"
       deployML:
         default: "Enable Aurora ML Labs?"
       agreeTracking:
         default: "Collect Usage Data?"
+      isSecondary:
+        default: "Secondary Region Only"
       EEEventId:
         default: "EventEngine Event"
       EETeamId:
@@ -103,110 +124,127 @@ Conditions:
   condDeployDBCluster: !And [ !Equals [ !Ref deployCluster, "Yes" ], !Not [ !Equals [ !Ref EEModuleId, "6ccc4506e8f04b81bc138bae806abe67" ] ] ]
   # the ML resources are only deployed if parameter is yes, or EE module matches the 'all-features' module id
   condDeployMLResources: !Or [ !Equals [ !Ref deployML, "Yes" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
+  # the GDB resources are only deployed if parameter is yes, or EE module matches the 'all-features' module id
+  condDeployGDBResources: !Or [ !Equals [ !Ref deployGDB, "Yes" ], !Equals [ !Ref EEModuleId, "...todo..." ] ]
+  # the bug fix for secondary region KMS is only deployed if parameter is yes
+  condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
 
 
 ## Mappings
 Mappings:
   RegionalSettings:
     us-east-1:
-      bastionAmi: ami-07ebfd5b3428b6f4d
-      bastionType: m5.large
+      clientAmi: ami-085925f297f89fce1
+      supersetAmi: ami-09d95fab7fff3776c
+      clientType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
       az1: us-east-1a
       az2: us-east-1c
       az3: us-east-1e
     us-east-2:
-      bastionAmi: ami-0fc20dd1da406780b
-      bastionType: m5.large
+      clientAmi: ami-07c1207a9d40bc3bd
+      supersetAmi: ami-026dea5602e368e96
+      clientType: m5.large
       nodeType: db.r5.large
       name: Ohio
       az1: us-east-2c
       az2: us-east-2a
       az3: us-east-2b
     us-west-2:
-      bastionAmi: ami-0d1cd67c26f5fca19
-      bastionType: m5.large
+      clientAmi: ami-003634241a8fcdec0
+      supersetAmi: ami-0e34e7b9ca0ace12d
+      clientType: m5.large
       nodeType: db.r5.large
       name: Oregon
       az1: us-west-2b
       az2: us-west-2c
       az3: us-west-2d
     ca-central-1:
-      bastionAmi: ami-0d0eaed20348a3389
-      bastionType: m5.large
+      clientAmi: ami-0edd51cc29813e254
+      supersetAmi: ami-0f75c2980c6a5851d
+      clientType: m5.large
       nodeType: db.r5.large
       name: Montreal
       az1: ca-central-1c
       az2: ca-central-1a
       az3: ca-central-1b
     eu-central-1:
-      bastionAmi: ami-0b418580298265d5c
-      bastionType: m5.large
+      clientAmi: ami-0e342d72b12109f91
+      supersetAmi: ami-0a02ee601d742e89f
+      clientType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
       az1: eu-central-1b
       az2: eu-central-1a
       az3: eu-central-1c
     eu-west-1:
-      bastionAmi: ami-035966e8adab4aaad
-      bastionType: m5.large
+      clientAmi: ami-0701e7be9b2a77600
+      supersetAmi: ami-0ea3405d2d2522162
+      clientType: m5.large
       nodeType: db.r5.large
       name: Ireland
       az1: eu-west-1a
       az2: eu-west-1b
       az3: eu-west-1c
     eu-west-2:
-      bastionAmi: ami-006a0174c6c25ac06
-      bastionType: m5.large
+      clientAmi: ami-0eb89db7593b5d434
+      supersetAmi: ami-032598fcc7e9d1c7a
+      clientType: m5.large
       nodeType: db.r5.large
       name: London
       az1: eu-west-2b
       az2: eu-west-2a
       az3: eu-west-2c
     eu-west-3:
-      bastionAmi: ami-096b8af6e7e8fb927
-      bastionType: m5.large
+      clientAmi: ami-08c757228751c5335
+      supersetAmi: ami-01c72e187b357583b
+      clientType: m5.large
       nodeType: db.r5.large
       name: Paris
       az1: eu-west-3c
       az2: eu-west-3b
       az3: eu-west-3a
     ap-southeast-1:
-      bastionAmi: ami-09a4a9ce71ff3f20b
-      bastionType: m5.large
+      clientAmi: ami-0f7719e8b7ba25c61
+      supersetAmi: ami-0615132a0f36d24f4
+      clientType: m5.large
       nodeType: db.r5.large
       name: Singapore
       az1: ap-southeast-1c
       az2: ap-southeast-1b
       az3: ap-southeast-1a
     ap-southeast-2:
-      bastionAmi: ami-02a599eb01e3b3c5b
-      bastionType: m5.large
+      clientAmi: ami-04fcc97b5f6edcd89
+      supersetAmi: ami-088ff0e3bde7b3fdf
+      clientType: m5.large
       nodeType: db.r5.large
       name: Sydney
       az1: ap-southeast-2a
       az2: ap-southeast-2b
       az3: ap-southeast-2c
     ap-south-1:
-      bastionAmi: ami-0620d12a9cf777c87
-      bastionType: m5.large
+      clientAmi: ami-0b44050b2d893d5f7
+      supersetAmi: ami-0447a12f28fddb066
+      clientType: m5.large
       nodeType: db.r5.large
       name: Mumbai
       az1: ap-south-1a
       az2: ap-south-1b
       az3: ap-south-1c
     ap-northeast-1:
-      bastionAmi: ami-07f4cb4629342979c
-      bastionType: m5.large
+      clientAmi: ami-0278fe6949f6b1a06
+      supersetAmi: ami-0a1c2ec61571737db
+      clientType: m5.large
       nodeType: db.r5.large
       name: Tokyo
       az1: ap-northeast-1d
       az2: ap-northeast-1a
       az3: ap-northeast-1c
     ap-northeast-2:
-      bastionAmi: ami-0cd7b0de75f5a35d1
-      bastionType: m5.large
+      clientAmi: ami-00edfb46b107f643c
+      supersetAmi: ami-01af223aa7f274198
+      clientType: m5.large
       nodeType: db.r5.large
       name: Seoul
       az1: ap-northeast-2a
@@ -226,7 +264,7 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.07.1
+      dbVersion: 5.7.mysql_aurora.2.08.0
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     scaling:
@@ -476,8 +514,8 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
 
-## Create bastion security group
-  bastionSecGroup:
+## Create client security group
+  clientSecGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       VpcId: !Ref vpc
@@ -487,8 +525,26 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-workstation-sg", !Sub "${AWS::StackName}-workstation-sg" ]
 
+## Create Apache Superset security group
+  supersetSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Condition: condDeployGDBResources
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: !If [ condEventEngine, "auroralab-superset-sg", !Sub "${AWS::StackName}-superset-sg" ]
+      GroupDescription: "Aurora Lab Apache Superset security group (firewall)"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-superset-sg", !Sub "${AWS::StackName}-superset-sg" ]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: Allows Default Webport (80) access      
+
 ## Create DB security group
-  dbSecGroupCluster:
+  dbClusterSecGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       VpcId: !Ref vpc
@@ -501,15 +557,86 @@ Resources:
         - IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
-          SourceSecurityGroupId: !Ref bastionSecGroup
+          SourceSecurityGroupId: !Ref clientSecGroup
           Description: "Allows MySQL access from the workstation security group"
-  ruleDbSecGroupClusterIngressSelf:
+  ruleDbClusterSecGroupIngressSelf:
     Type: "AWS::EC2::SecurityGroupIngress"
     Properties:
-      GroupId: !Ref dbSecGroupCluster
+      GroupId: !Ref dbClusterSecGroup
       IpProtocol: -1
       Description: "Allows all inbound access from sources with the same security group"
-      SourceSecurityGroupId: !Ref dbSecGroupCluster
+      SourceSecurityGroupId: !Ref dbClusterSecGroup
+  ruledbClusterSecGroupIngressSuperset:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Condition: condDeployGDBResources
+    Properties:
+      GroupId: !Ref dbClusterSecGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      Description: "Allows MySQL access from Superset Instance"
+      SourceSecurityGroupId: !Ref supersetSecGroup
+
+## Create NACL to simulate regional failure
+  naclDenyAllAccess:
+    Type: "AWS::EC2::NetworkAcl"
+    Condition: condDeployGDBResources
+    Properties: 
+      VpcId: !Ref vpc
+      Tags: 
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-denyall-nacl", !Sub "${AWS::StackName}-denyall-nacl" ]
+  naclEntryDenyAllEgress:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Condition: condDeployGDBResources
+    Properties: 
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      NetworkAclId: !Ref naclDenyAllAccess
+      Protocol: -1
+      RuleAction: deny
+      RuleNumber: 100
+  naclEntryDenyAllIngress:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Condition: condDeployGDBResources
+    Properties: 
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      NetworkAclId: !Ref naclDenyAllAccess
+      Protocol: -1
+      RuleAction: deny
+      RuleNumber: 100 
+
+## Create a random generated password and store it as a secret for the DB cluster
+  secretClusterMasterUser:
+    Type: "AWS::SecretsManager::Secret"
+    Condition: condDeployDBCluster
+    Properties:
+      Description: !If [ condEventEngine, "Master user credentials for DB cluster 'auroralab-mysql-cluster'", !Sub "Master user credentials for DB cluster '${AWS::StackName}-mysql-cluster'" ]
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "masteruser"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\$`&:'
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]
+
+## Create a random generated password and store it as a secret for Superset
+  secretSupersetAdminUser:
+    Type: "AWS::SecretsManager::Secret"
+    Condition: condDeployGDBResources
+    Properties:
+      Description: !If [ condEventEngine, "Master user credentials for Apache Superset", !Sub "Master user credentials for Apache Superset" ]
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\$`&:'
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-superset-secret", !Sub "${AWS::StackName}-superset-secret" ]
+
 
 ## Create enhanced monitoring role
   roleEnhancedMonitoring:
@@ -568,8 +695,8 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
 
-## Create role for bastion host
-  roleBastionHost:
+## Create role for client host
+  roleClientHost:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !If [ condEventEngine, !Sub "auroralab-wkstation-${AWS::Region}", !Sub "${AWS::StackName}-wkstation-${AWS::Region}" ]
@@ -618,20 +745,20 @@ Resources:
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, !Sub "auroralab-wkstation-${AWS::Region}", !Sub "${AWS::StackName}-wkstation-${AWS::Region}" ]
-  profileBastionHost:
+  profileClientHost:
     Type: "AWS::IAM::InstanceProfile"
     Properties:
       Path: /
       Roles:
-        - Ref: roleBastionHost
+        - Ref: roleClientHost
 
 ## Create the workstation host
-  bastionHost:
+  clientHost:
     Type: "AWS::EC2::Instance"
     Properties:
       SubnetId: !Ref sub1Public
-      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
-      SecurityGroupIds: [ !Ref bastionSecGroup ]
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]
+      SecurityGroupIds: [ !Ref clientSecGroup ]
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-mysql-workstation", !Sub "${AWS::StackName}-mysql-workstation" ]
@@ -642,8 +769,8 @@ Resources:
             Iops: 7500
             VolumeSize: 150
             VolumeType: io1
-      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionAmi ]
-      IamInstanceProfile: !Ref profileBastionHost
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientAmi ]
+      IamInstanceProfile: !Ref profileClientHost
       UserData:
         Fn::Base64:
           Fn::Join:
@@ -751,6 +878,74 @@ Resources:
                 echo "$(date "+%F %T") * bootstrap complete, rebooting" >> /debug.log
                 shutdown -r now
 
+## Create the Apache Superset host
+  supersetHost:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      SubnetId: !Ref sub2Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]
+      SecurityGroupIds: [ !Ref supersetSecGroup ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-superset-host", !Sub "${AWS::StackName}-superset-host" ]
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: 80
+            VolumeType: gp2
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetAmi ]
+      IamInstanceProfile: !Ref profileClientHost
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          cd /tmp
+
+          # start bootstrap
+          echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
+
+          # update SSM & upgrade packages
+          echo "$(date "+%F %T") * updating SSM agent and python packages" >> /debug.log           
+          sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          sudo systemctl start amazon-ssm-agent
+          source ~/.bashrc
+          sudo yum update -y >> /debug.log
+          echo "$(date "+%F %T") * updated SSM agent" >> /debug.log
+
+          # install dependencies for superset
+          sudo amazon-linux-extras install postgresql10 vim epel
+          sudo yum install gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq -y >> /debug.log
+          echo "$(date "+%F %T") * installed python and MySQL/pgSQL dependencies" >> /debug.log
+
+          # path management
+          export PATH=/usr/local/bin:$PATH
+          export PYTHONPATH=/usr/local/bin:$PYTHONPATH
+          alias python=python37
+          alias pip=pip3
+          echo "$(date "+%F %T") * updated paths" >> /debug.log
+
+          # downgrade/force installation packages to last good known versions for superset and dependencies
+          # desired path: wget https://[[website]]/support/superset-requirements.txt
+          wget https://[[website]]/support/superset-requirements.txt
+          sudo pip3 install -r superset-requirements.txt >> /debug.log
+          echo "$(date "+%F %T") * force installed superset to frozen application packages list" >> /debug.log
+
+          # create an admin user using the AWS secret
+          export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretSupersetAdminUser}" --region ${AWS::Region} | jq -r '.SecretString'`
+          export ADMINPASS=`echo $SECRETSTRING | jq -r '.password'`
+          export ADMINUSER=`echo $SECRETSTRING | jq -r '.username'`
+          superset fab create-admin --username "$ADMINUSER" --password "$ADMINPASS" --firstname "Superset" --lastname "Administrator" --email "admin@example.com"
+          echo "$(date "+%F %T") * created a Superset admin user (from secret)" >> /debug.log
+
+          # initialize the superset database
+          superset db upgrade
+          superset load_examples
+          superset init
+          echo "$(date "+%F %T") * Superset initialization completed" >> /debug.log
+
+          # start web server with gunicorn; forcing on port 80 (default 8088)
+          echo "$(date "+%F %T") * serving web traffic with gunicorn" >> /debug.log
+          nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
 
 ## Create parameter groups for cluster nodes
   pgNodeParams:
@@ -779,21 +974,6 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
 
-## Create a random generated password and store it as a secret
-  secretClusterMasterUser:
-    Type: "AWS::SecretsManager::Secret"
-    Condition: condDeployDBCluster
-    Properties:
-      Description: !If [ condEventEngine, "Master user credentials for DB cluster 'auroralab-mysql-cluster'", !Sub "Master user credentials for DB cluster '${AWS::StackName}-mysql-cluster'" ]
-      GenerateSecretString:
-        SecretStringTemplate: '{"username": "masteruser"}'
-        GenerateStringKey: 'password'
-        PasswordLength: 10
-        ExcludeCharacters: '"@/\$`&'
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]
-
 ## Create Aurora cluster
   dbCluster:
     Type: "AWS::RDS::DBCluster"
@@ -809,7 +989,7 @@ Resources:
       MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}" ]]
       DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
       StorageEncrypted: true
-      VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
+      VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
       BacktrackWindow: 86400
       EnableIAMDatabaseAuthentication: true
@@ -825,7 +1005,7 @@ Resources:
     Condition: condDeployDBCluster
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-01", !Sub "${AWS::StackName}-mysql-node-01" ]
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
@@ -837,7 +1017,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-node-01", !Sub "${AWS::StackName}-mysql-node-01" ]
+          Value: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
 
 ## Deploy cluster node #2 (may or may not be writer depending which one initializes first)
   dbNode2:
@@ -845,7 +1025,7 @@ Resources:
     Condition: condDeployDBCluster
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-02", !Sub "${AWS::StackName}-mysql-node-02" ]
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       DBParameterGroupName: !Ref pgNodeParams
@@ -857,7 +1037,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-node-02", !Sub "${AWS::StackName}-mysql-node-02" ]
+          Value: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
 
 ## Role to overcome current limitations in CFN ScalableTarget implemetation
 ## This role is *NOT* actively used by any resource and service, but must be present
@@ -1150,10 +1330,12 @@ Resources:
                   # track analytics
                   payload = {
                     'stack_uuid': resource_props["StackUUID"] if ("StackUUID" in resource_props and resource_props["StackUUID"]) else None,
-                    'stack_name': resource_props["StackName"] if ("StackName" in resource_props and resource_props["StackUUID"]) else None,
-                    'stack_region': resource_props["StackRegion"] if ("StackRegion" in resource_props and resource_props["StackUUID"]) else None,
-                    'deployed_cluster': resource_props["DeployedCluster"] if ("DeployedCluster" in resource_props and resource_props["StackUUID"]) else None,
-                    'deployed_ml': resource_props["DeployedML"] if ("DeployedML" in resource_props and resource_props["StackUUID"]) else None,
+                    'stack_name': resource_props["StackName"] if ("StackName" in resource_props and resource_props["StackName"]) else None,
+                    'stack_region': resource_props["StackRegion"] if ("StackRegion" in resource_props and resource_props["StackRegion"]) else None,
+                    'deployed_cluster': resource_props["DeployedCluster"] if ("DeployedCluster" in resource_props and resource_props["DeployedCluster"]) else None,
+                    'deployed_ml': resource_props["DeployedML"] if ("DeployedML" in resource_props and resource_props["DeployedML"]) else None,
+                    'deployed_gdb': resource_props["DeployedGDB"] if ("DeployedGDB" in resource_props and resource_props["DeployedGDB"]) else None,
+                    'is_secondary': resource_props["IsSecondary"] if ("IsSecondary" in resource_props and resource_props["IsSecondary"]) else None,
                     'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
                     'event_scope': 'Stack',
                     'event_action': event["RequestType"] if "RequestType" in event else None,
@@ -1207,41 +1389,68 @@ Resources:
       AgreeTracking: !Ref agreeTracking
       DeployedCluster: !If [ condDeployDBCluster, "Yes", "No" ]
       DeployedML: !If [ condDeployMLResources, "Yes", "No" ]
+      DeployedGDB: !If [ condDeployGDBResources, "Yes", "No" ]
+      IsSecondary: !Ref isSecondary
       Cluster: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
       EEEventId: !Ref EEEventId
       EETeamId: !Ref EETeamId
       EEModuleId: !Ref EEModuleId
       EEModuleVersion: !Ref EEModuleVersion
 
+## Bug mitigation, RDS default KMS key in secondary region doesn't get created
+## until the first DB instance gets created. GDB Add region fails if it doesn't
+## exist
+  dbIgnoreBugFix:
+    Type: "AWS::RDS::DBInstance"
+    Condition: condIsSecondary
+    Properties:
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-ignore-me", !Sub "${AWS::StackName}-ignore-me" ]
+      CopyTagsToSnapshot: true
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      EngineVersion: '5.7.28'
+      PubliclyAccessible: false
+      MasterUsername: ignoreme
+      MasterUserPassword: qqn6e3wQ8I9qGN5aBN9R
+      DBSubnetGroupName: !Ref dbSubnets
+      BackupRetentionPeriod: 0
+      StorageEncrypted: true
+      VPCSecurityGroups: [ !Ref dbClusterSecGroup ]
+      AllocatedStorage: 20
+      StorageType: gp2
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-ignore-me", !Sub "${AWS::StackName}-ignore-me" ]
+
 
 ## Outputs
 Outputs:
   vpcId:
-    Description: Aurora Lab VPC
+    Description: "Aurora Lab VPC"
     Value: !Ref vpc
   ec2Instance:
-    Description: EC2 Workstation Instance ID
-    Value: !Ref bastionHost
+    Description: "EC2 Workstation Instance ID"
+    Value: !Ref clientHost
   clusterName:
-    Description: Aurora Cluster Name
+    Description: "Aurora Cluster Name"
     Value: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
   clusterEndpoint:
-    Description: Aurora Cluster Endpoint
+    Description: "Aurora Cluster Endpoint"
     Value: !If [ condDeployDBCluster, !GetAtt dbCluster.Endpoint.Address, "" ]
   readerEndpoint:
-    Description: Aurora Reader Endpoint
+    Description: "Aurora Reader Endpoint"
     Value: !If [ condDeployDBCluster, !GetAtt dbCluster.ReadEndpoint.Address, "" ]
   loadTestRunDoc:
-    Description: Load Test Execution Command Document
+    Description: "Load Test Execution Command Document"
     Value: !Ref ssmDocSysbenchTest
   dbSubnetGroup:
-    Description: Database Subnet Group
+    Description: "Database Subnet Group"
     Value: !Ref dbSubnets
   dbSecurityGroup:
-    Description: Database Security Group
-    Value: !Ref dbSecGroupCluster
+    Description: "Database Security Group"
+    Value: !Ref dbClusterSecGroup
   secretArn:
-    Description: Database Credentials Secret ARN
+    Description: "Database Credentials Secret ARN"
     Value: !If [ condDeployDBCluster, !Ref secretClusterMasterUser, "" ]
   s3BucketName:
     Description: "S3 Bucket Name for SageMaker training data"
@@ -1249,3 +1458,9 @@ Outputs:
   notebookName:
     Description: "Jupytr Notebook Name"
     Value: !If [ condDeployMLResources, !Ref smMLNotebook, "" ]
+  supersetURL:
+    Description: "Apache Superset URL"
+    Value: !If [ condDeployGDBResources, !Sub "http://${supersetHost.PublicDnsName}/", "" ]
+  supersetSecret:
+    Description: "Secret storing Apache Superset credentials"
+    Value: !If [ condDeployGDBResources, !Ref secretSupersetAdminUser, "" ]
