@@ -1,6 +1,4 @@
-# Fail Over an Aurora Global Database
-
-::TODO:: adjust from here on down
+# Failover to the secondary region / simulate a regional failure and DR scenario
 
 When used in combination with in-region replicas, an Aurora cluster gives you automatic failover capabilities within the region. With Aurora Global Database, you can perform a manual failover to the cluster in your secondary region, such that your database can survive in the unlikely scenario of an entire region's infrastructure or service becoming unavailable.
 
@@ -159,3 +157,4 @@ You have just performed a failover operation of your application from its primar
     * AWS This is my Architecture series - Multi-Region High-Availability Architecture: https://www.youtube.com/watch?v=vGywoYc_sA8
 
 If you are up for another challenge, go to the optional step of [Failback](../failback/index.md).
+

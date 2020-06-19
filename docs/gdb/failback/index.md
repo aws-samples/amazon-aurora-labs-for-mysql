@@ -1,6 +1,4 @@
-# Fail Back a Global Database
-
-::TODO:: adjust from here on down
+# Failback to Original Primary Region (Optional)
 
 As we have just done in the previous module, we can see that **Failover** is the process of shifting application and database resources from its original primary region to a secondary disaster recovery region during a large scale infrastructure or service level interruption. 
 

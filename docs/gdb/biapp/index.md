@@ -1,25 +1,13 @@
-# Connect an Application to Aurora Global Database
+# Connect BI Applications; Aurora Global Database in action
 
-Amazon Aurora provides both MySQL and PostgreSQL compatible database engines. This means any existing applications that work with MySQL and PostgreSQL will have drop-in compatibility with Amazon Aurora. You will be deploying a business intelligence (BI) application that is running on an Amazon EC2 instance in each of the two regions, and connect it to the respective local DB Cluster reader endpoint of the Aurora Global Database, in order to achieve lower query latency.
+Amazon Aurora provides both MySQL and PostgreSQL compatible database engines. This means any existing applications that work with MySQL and PostgreSQL will have drop-in compatibility with Amazon Aurora. For this workshop, we will be deploying a business intelligence (BI) application that is running on Amazon EC2 instance in each of the two regions, and connect them to the respective local DB Cluster endpoint of the Aurora Global Database, in order to achieve lower query latency.
 
 For the purpose of this workshop, we will be using <a href="https://superset.incubator.apache.org/" target="_blank">Apache Superset (incubating)</a> as the BI web application. Superset is an open source, business intelligence and data exploration platform designed to be visual, intuitive and interactive.
 
-This lab contains the following tasks:
+??? tip "Connecting to EC2 Instances"
+    These labs have been updated such that it is no longer necessary to connect into the application EC2 host to configure Apache Superset. However, you may still do so via AWS Systems Manager Session Manager. Those who have been familiar with AWS for a while may remember that connecting to a remote Amazon EC2 instance requires opening inbound SSH or Powershell ports, provisioning SSH keys and management of certificates. With AWS Systems Manager Session Manager, you can connect to an EC2 instance with just few clicks and experience a secure browser-based CLI, without having to provision or manage SSH keys.
 
-1. Gather the needed information
-2. Configure application in primary region
-3. Configure application in secondary region
-4. Access data using the application
-
-This lab requires the following prerequisites:
-
-* [Get Started](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
-* [Deploy an Aurora Global Database](/global/deploy/)
-
-::TODO:: adjust from here on down
-
-## 1. Gather the needed information
+## Gathering Aurora Global Database Endpoint Details
 
 >  **`Region 1 (Primary)`**
 
@@ -51,8 +39,7 @@ Before we begin, we will return to our RDS console (the Aurora Global Database w
 
    Note: As Secondary cluster's current role is a read-only DB cluster, you will notice that the writer Endpoint status will remain on *Creating* - this is expected behavior and will remain until this cluster is promoted to primary, as this DB cluster is not on a writeable mode and the writer endpoint will remain unuseable until later in the workshop.
 
-
-## 2. Configure application in primary region
+## Primary Region - Application Configuration
 
 We will work on configuring our BI Application instance on the primary region.
 
@@ -99,8 +86,7 @@ We will work on configuring our BI Application instance on the primary region.
 
       <span class="image">![Superset GDB1 Write Settings](superset-gdb1w.png)</span>
 
-
-## 3. Configure application in secondary region
+## Secondary Region - Application Instance Setup
 
 The secondary region setup will be very similar.
 
@@ -153,7 +139,7 @@ The secondary region setup will be very similar.
 
       ![Superset GDB2 Read Settings](superset-gdb2r.png)
 
-### Checkpoint 1
+## Checkpoint 1
 
 At this point, you should have the 2 BI application instances, launched in 2 distinct regions, connected to their respective endpoints of the Global Database cluster reader and writer endpoints. Let's recap and ensure we have gathered the follow data (use a notepad application of your choice) and copy down the following before we proceed.
 
@@ -168,8 +154,7 @@ At this point, you should have the 2 BI application instances, launched in 2 dis
 * **Aurora Cluster Secondary Reader Endpoint**: ```gdb2-cluster.cluster-ro-abcdefghijk.xx-region-X.rds.amazonaws.com```
 * **Aurora Cluster Secondary Writer Endpoint (for failover)**: ```gdb2-cluster.cluster-abcdefghijk.xx-region-X.rds.amazonaws.com```
 
-
-## 4. Access data using the application
+## Aurora Global Database in Action
 
 >  **`Region 1 (Primary)`**
 
@@ -232,6 +217,8 @@ SELECT count(pk), sum(gen_number), md5(avg(gen_number)) FROM gdbtest1;
 * Note the results, the fields should match exactly the same as the previous results in the primary instance. This includes the count of records, sum of randomly generated values, and the md5 hash of the average of the generated values.
    
 
-### Checkpoint 2
+## Checkpoint 2
 
 At this point, you now see the power and reach of Aurora Global Database. Your data is replicated within less than a second over to the secondary region, while allowing the secondary region to serve read queries to remote BI application users with low latency.
+
+![Global Database Creation Architecture Diagram](biapp-arch.png)

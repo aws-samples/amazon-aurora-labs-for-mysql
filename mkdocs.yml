@@ -66,16 +66,24 @@ nav:
     - Backtrack a DB Cluster: 'provisioned/backtrack/index.md'
     - Use Performance Insights: 'provisioned/perf-insights/index.md'
     - Test Fault Tolerance: 'provisioned/failover/index.md'
+  - Global Database:
+    - Deploy a Global Database: 'global/deploy/index.md'
+    - Connect an Application: 'global/biapp/index.md'
+    - Monitor a Global Database: 'global/monitor/index.md'
+    - Deploy a Global eCommerce Application: 'global/ecomm/index.md'
+    - Ingest Data from Multiple Regions: 'global/ingest/index.md'
+    - Fail Over a Global Database: 'global/failover/index.md'
+    - Fail Back a Global Database: 'global/failback/index.md'
   - Serverless:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
-  - Global Database:
-    - Create Infrastructure: 'global/create/index.md'
-    - Create Global Database: 'global/gdb/index.md'
-    - Connect Application: 'global/biapp/index.md'
-    - Monitor Latency: 'global/cw/index.md'
-    - Failover: 'global/failover/index.md'
-    - Failback: 'global/failback/index.md'
+  - GDB Workshop:
+    - Create Infrastructure: 'gdb/create/index.md'
+    - Create Global Database: 'gdb/gdb/index.md'
+    - Connect Application: 'gdb/biapp/index.md'
+    - Monitor Latency: 'gdb/cw/index.md'
+    - Failover: 'gdb/failover/index.md'
+    - Failback: 'gdb/failback/index.md'
   - Machine Learning:
     - Overview and Prerequisites: 'ml/overview/index.md'
     - Use Comprehend with Aurora: 'ml/comprehend/index.md'
