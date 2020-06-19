@@ -364,7 +364,7 @@ Resources:
       DatabaseName: !Ref glueDatabase
       TableInput:
         Description: !Sub 'Clickstream event data for lab activity on stack ${AWS::StackName}'
-        Name: !Sub 'v1events'
+        Name: !Sub 'v2events'
         Retention: 0
         StorageDescriptor:
           Columns:
@@ -377,6 +377,10 @@ Resources:
           - Name: deployed_cluster
             Type: string
           - Name: deployed_ml
+            Type: string
+          - Name: deployed_gdb
+            Type: string
+          - Name: is_secondary
             Type: string
           - Name: event_timestamp
             Type: timestamp
@@ -395,7 +399,7 @@ Resources:
           - Name: ee_module_version
             Type: string
           InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
-          Location: !Sub 's3://${s3Analytics}/v1events/data/'
+          Location: !Sub 's3://${s3Analytics}/v2events/data/'
           OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
           Compressed: false
           NumberOfBuckets: -1
