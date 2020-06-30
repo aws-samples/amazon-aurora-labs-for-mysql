@@ -111,7 +111,7 @@ Mappings:
     mysql:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.07.1
+      dbVersion: 5.7.mysql_aurora.2.08.1
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     postgresql:

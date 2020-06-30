@@ -264,7 +264,7 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.08.0
+      dbVersion: 5.7.mysql_aurora.2.08.1
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     scaling:
@@ -280,6 +280,10 @@ Mappings:
   MLSettings:
     global:
       notebookType: ml.m4.xlarge
+  GDBSettings:
+    superset:
+      username: "admin"
+      password: "AuroraTest123!"
 
 
 ## Resources
@@ -622,22 +626,6 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]
 
-## Create a random generated password and store it as a secret for Superset
-  secretSupersetAdminUser:
-    Type: "AWS::SecretsManager::Secret"
-    Condition: condDeployGDBResources
-    Properties:
-      Description: !If [ condEventEngine, "Master user credentials for Apache Superset", !Sub "Master user credentials for Apache Superset" ]
-      GenerateSecretString:
-        SecretStringTemplate: '{"username": "admin"}'
-        GenerateStringKey: 'password'
-        PasswordLength: 10
-        ExcludeCharacters: '"@/\$`&:'
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, "auroralab-superset-secret", !Sub "${AWS::StackName}-superset-secret" ]
-
-
 ## Create enhanced monitoring role
   roleEnhancedMonitoring:
     Type: "AWS::IAM::Role"
@@ -897,55 +885,66 @@ Resources:
       ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetAmi ]
       IamInstanceProfile: !Ref profileClientHost
       UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          cd /tmp
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - !Sub |
+                #!/bin/bash
+                cd /tmp
 
-          # start bootstrap
-          echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
+                # start bootstrap
+                echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
 
-          # update SSM & upgrade packages
-          echo "$(date "+%F %T") * updating SSM agent and python packages" >> /debug.log           
-          sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-          sudo systemctl start amazon-ssm-agent
-          source ~/.bashrc
-          sudo yum update -y >> /debug.log
-          echo "$(date "+%F %T") * updated SSM agent" >> /debug.log
+                # update SSM & upgrade packages
+                echo "$(date "+%F %T") * updating SSM agent and python packages" >> /debug.log           
+                sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+                sudo systemctl start amazon-ssm-agent
+                source ~/.bashrc
+                sudo yum update -y >> /debug.log
+                echo "$(date "+%F %T") * updated SSM agent" >> /debug.log
 
-          # install dependencies for superset
-          sudo amazon-linux-extras install postgresql10 vim epel
-          sudo yum install gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq -y >> /debug.log
-          echo "$(date "+%F %T") * installed python and MySQL/pgSQL dependencies" >> /debug.log
+                # install dependencies for superset
+                sudo amazon-linux-extras install postgresql10 vim epel
+                sudo yum install gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq -y >> /debug.log
+                echo "$(date "+%F %T") * installed python and MySQL/pgSQL dependencies" >> /debug.log
 
-          # path management
-          export PATH=/usr/local/bin:$PATH
-          export PYTHONPATH=/usr/local/bin:$PYTHONPATH
-          alias python=python37
-          alias pip=pip3
-          echo "$(date "+%F %T") * updated paths" >> /debug.log
+                # path management
+                export PATH=/usr/local/bin:$PATH
+                export PYTHONPATH=/usr/local/bin:$PYTHONPATH
+                alias python=python37
+                alias pip=pip3
+                echo "$(date "+%F %T") * updated paths" >> /debug.log
 
-          # downgrade/force installation packages to last good known versions for superset and dependencies
-          # desired path: wget https://[[website]]/support/superset-requirements.txt
-          wget https://[[website]]/support/superset-requirements.txt
-          sudo pip3 install -r superset-requirements.txt >> /debug.log
-          echo "$(date "+%F %T") * force installed superset to frozen application packages list" >> /debug.log
+                # downgrade/force installation packages to last good known versions for superset and dependencies
+                # desired path: wget https://[[website]]/support/superset-requirements.txt
+                wget https://[[website]]/support/superset-requirements.txt
+                sudo pip3 install -r superset-requirements.txt >> /debug.log
+                echo "$(date "+%F %T") * force installed superset to frozen application packages list" >> /debug.log
 
-          # create an admin user using the AWS secret
-          export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretSupersetAdminUser}" --region ${AWS::Region} | jq -r '.SecretString'`
-          export ADMINPASS=`echo $SECRETSTRING | jq -r '.password'`
-          export ADMINUSER=`echo $SECRETSTRING | jq -r '.username'`
-          superset fab create-admin --username "$ADMINUSER" --password "$ADMINPASS" --firstname "Superset" --lastname "Administrator" --email "admin@example.com"
-          echo "$(date "+%F %T") * created a Superset admin user (from secret)" >> /debug.log
+                # create an admin user
+              - Fn::Join:
+                  - ""
+                  - - 'export ADMINUSER="'
+                    - !FindInMap [ GDBSettings, superset, username ]
+                    - '"'
+              - Fn::Join:
+                  - ""
+                  - - 'export ADMINPASS="'
+                    - !FindInMap [ GDBSettings, superset, password ]
+                    - '"'
+              - !Sub |
+                superset fab create-admin --username "$ADMINUSER" --password "$ADMINPASS" --firstname "Superset" --lastname "Administrator" --email "admin@example.com"
+                echo "$(date "+%F %T") * created a Superset admin user (from secret)" >> /debug.log
 
-          # initialize the superset database
-          superset db upgrade
-          superset load_examples
-          superset init
-          echo "$(date "+%F %T") * Superset initialization completed" >> /debug.log
+                # initialize the superset database
+                superset db upgrade
+                superset load_examples
+                superset init
+                echo "$(date "+%F %T") * Superset initialization completed" >> /debug.log
 
-          # start web server with gunicorn; forcing on port 80 (default 8088)
-          echo "$(date "+%F %T") * serving web traffic with gunicorn" >> /debug.log
-          nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
+                # start web server with gunicorn; forcing on port 80 (default 8088)
+                echo "$(date "+%F %T") * serving web traffic with gunicorn" >> /debug.log
+                nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
 
 ## Create parameter groups for cluster nodes
   pgNodeParams:
@@ -1461,6 +1460,9 @@ Outputs:
   supersetURL:
     Description: "Apache Superset URL"
     Value: !If [ condDeployGDBResources, !Sub "http://${supersetHost.PublicDnsName}/", "" ]
-  supersetSecret:
-    Description: "Secret storing Apache Superset credentials"
-    Value: !If [ condDeployGDBResources, !Ref secretSupersetAdminUser, "" ]
+  supersetUsername:
+    Description: "Apache Superset Username"
+    Value: !If [ condDeployGDBResources, !FindInMap [ GDBSettings, superset, username ], "" ]
+  supersetPassword:
+    Description: "Apache Superset Password"
+    Value: !If [ condDeployGDBResources, !FindInMap [ GDBSettings, superset, password ], "" ]
