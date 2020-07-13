@@ -24,7 +24,7 @@ This lab requires the following lab modules to be completed first:
 
 ## 1. Create the DB cluster
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
+Open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazon RDS service console</a>.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -63,7 +63,7 @@ In the **Database authentication** section, choose **Password and IAM database a
 
 <span class="image">![Connectivity](1-connectivity.png?raw=true)</span>
 
-Next, expand the **Advanced configuration** section. Set the **Initial database name** to `mylab`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. Keep the `1 day` **Backup retention period**. Check the box to **Enable encryption** and select `[default] aws/rds` for the **Master key**.
+Next, expand the **Additional configuration** section. Set the **Initial database name** to `mylab`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. Keep the `1 day` **Backup retention period**. Check the box to **Enable encryption** and select `[default] aws/rds` for the **Master key**.
 
 <span class="image">![Advanced configuration](1-advanced-1.png?raw=true)</span>
 
@@ -71,7 +71,7 @@ Enable the backtrack capability by checking the **Enable Backtrack** box and set
 
 <span class="image">![Advanced configuration](1-advanced-2.png?raw=true)</span>
 
-Also in the **Advanced configuration** section, for **Log exports** check the **Error log** and **Slow query log** boxes. De-select the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
+Also in the **Additional configuration** section, for **Log exports** check the **Error log** and **Slow query log** boxes. De-select the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
 
 ??? tip "What do these selections mean?"
     You will create a database cluster with the following characteristics:
@@ -127,7 +127,7 @@ In the **Cluster capacity details** section, set the **Minimum capacity** to `1`
 
 ## 5. Create an AWS Secrets Manager secret
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2" target="_blank">AWS Secrets Manager service console</a>.
+Open the <a href="https://console.aws.amazon.com/secretsmanager/home" target="_blank">AWS Secrets Manager service console</a>.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -183,7 +183,7 @@ Let's make sure your DB cluster has been created properly. First let's ensure th
 echo $DBUSER
 ```
 
-You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpont]== placeholder with the value of the cluster endpoint created in the preceding steps:
+You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpoint]== placeholder with the value of the cluster endpoint created in the preceding steps:
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
