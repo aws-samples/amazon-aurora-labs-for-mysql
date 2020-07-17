@@ -55,7 +55,10 @@ The lab environment that was provisioned automatically for you, already has an A
 
 Once the lab environment created above at **Step 1. Create a lab environment in a different region** has finished deploying, you may proceed.
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
+Open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
+
+!!! warning "Region Check"
+    Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
 
 First, you need to **disable** the **Backtrack** feature. At present database backtrack is not compatible with Aurora Global Databases, and a cluster with that feature active cannot be converted into a global database. Select the `auroralab-mysql-cluster` and click the **Modify** button.
 
@@ -76,15 +79,32 @@ Once the modification is complete, and the DB cluster is in an `available` state
 
 <span class="image">![RDS Cluster Add Region](rds-cluster-action-add.png?raw=true)</span>
 
-On the setup screen, under **Global database settings**, set the **Global database identifier** to `auroralab-mysql-global`. Under **Region**, choose the **Secondary region** of `US East (N. Virginia)`.
+Set the following options on the configuration screen for the secondary DB cluster:
 
-In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration created above.
+1. In the **Global database settings** section:
+    * [ ] Set **Global database identifier** to `auroralab-mysql-global`
 
-Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. Similarly make sure the selected **Subnet Group** also matches the stack name (e.g. `auroralab-dbsubnets-[hash]`). Make sure the cluster **Publicly accessible** option is set to **No**. The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group named `auroralab-database-sg`. Please remove any other security groups, such as `default` from the selection.
+2. In the **AWS Region** section:
+    * [ ] Choose the **Secondary region** of `Us East (N. Virginia)`
 
-Next, expand the **Advanced configuration** section. Set the **DB instance identifier** to `auroralab-mysql-node-3` and the **DB cluster identifier** to `auroralab-mysql-secondary`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups with the stack name in their name (e.g. `auroralab-[...]`).
+3. In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration created above:
+    * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`
+    * [ ] Ensure the selected **Subnet Group** matches the stack name (e.g. `auroralab-dbsubnets-[hash]`)
+    * [ ] Make sure the **Publicly accessible** option is set to `No`
+    * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection
 
-Keep the `1 day` **Backup retention period**. Check the box to **Enable Performance Insights** with a **Retention period** of `Default (7 days)` and use the `[default] aws/rds` **Master key** for monitoring data encryption. Next, check the **Enable Enhanced Monitoring** box, select a **Granularity** of `1 second` and select the **Monitoring Role** value `auroralab-monitor-us-east-1`.
+4. Expand the **Advanced configuration** section, and configure the following options:
+    * [ ] Set **DB instance identifier** to `auroralab-mysql-node-3`
+    * [ ] Set **DB cluster identifier** to `auroralab-mysql-secondary`
+    * [ ] For **DB cluster parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)
+    * [ ] For **DB parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)
+    * [ ] Set **Backup retention period** to `1 day`
+    * [ ] **Check** the box for **Enable Performance Insights**
+    * [ ] Set **Retention period** to `Default (7 days)`
+    * [ ] Set **Master key** to `[default] aws/rds`
+    * [ ] **Check** the box for **Enable Enhanced Monitoring**
+    * [ ] Set **Granularity** to `1 second`
+    * [ ] Set **Monitoring Role** to `auroralab-monitor-us-east-1`
 
 !!! note
     Please note there are **two** monitoring roles in the list, one for the primary region (the one in the top right corner of your web page), the other for the secondary region (typically `us-east-1`). At this step, you need the **secondary** region one.
