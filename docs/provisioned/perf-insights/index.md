@@ -21,6 +21,9 @@ You will use Percona's TPCC-like benchmark script based on sysbench to generate 
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, enter one of the following commands, replacing the placeholders appropriately.
 
+!!! warning "Region Check"
+    Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
+
 If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute this command:
 
 ```shell

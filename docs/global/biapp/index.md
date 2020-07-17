@@ -13,8 +13,7 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Get Started](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Get Started](/prereqs/environment/) (choose the **Deploy Global DB** option)
 * [Deploy an Aurora Global Database](/global/deploy/)
 
 
