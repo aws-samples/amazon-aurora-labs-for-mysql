@@ -32,7 +32,10 @@ Aurora **cluster** endpoint | CloudFormation stack outputs or Event Engine Team 
 Aurora **reader** endpoint | CloudFormation stack outputs or Event Engine Team Dashboard | RDS service console
 Aurora DB credentials | AWS Secrets Manager secret | *same as in primary region*
 
-In the **primary region**, open the <a href="https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks" target="_blank">Amazon CloudFormation service console</a>. Click on the stack named either `auroralab` or starting with `mod-`. 
+In the **primary region**, open the <a href="https://console.aws.amazon.com/cloudformation/home#/stacks" target="_blank">Amazon CloudFormation service console</a>. Click on the stack named either `auroralab` or starting with `mod-`. 
+
+!!! warning "Region Check"
+    Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
 
 <span class="image">![CFN List of Stacks](cfn-stacks-list.png?raw=true)</span>
 
@@ -49,7 +52,10 @@ Change to the **Outputs** tab, and find the values for the parameters, and make 
 !!! note
     If these values are not present, you may not have selected the correct region, or the lab environment was not initialized with the Global Database feature enabled. If you are participating in an organized event (e.g. workshop), please reach out to a lab assistant for help.
 
-Next, also in the **primary region**, open the <a href="https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2#/listSecrets" target="_blank">AWS Secrets Manager service console</a>. Click on the secret named starting with `secretClusterMasterUser-`.
+Next, also in the **primary region**, open the <a href="https://console.aws.amazon.com/secretsmanager/home#/listSecrets" target="_blank">AWS Secrets Manager service console</a>. Click on the secret named starting with `secretClusterMasterUser-`.
+
+!!! warning "Region Check"
+    Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
 
 <span class="image">![Secrets Manager List of Secrets](sm-secrets-list.png?raw=true)</span>
 
@@ -60,6 +66,9 @@ Scroll down to the **Secret value** section, and click **Retrieve secret value**
 You have now collected all the needed parameters for the primary region. Next you will be collecting the needed parameters for the **secondary region**.
 
 In the **secondary region**, open the <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks" target="_blank">Amazon CloudFormation service console</a>. Click on the stack named either `auroralab` or starting with `mod-`. 
+
+!!! warning "Region Check"
+    Ensure you are still working in the **secondary region**, especially if you are following the links above to open the service console at the right screen.
 
 <span class="image">![CFN List of Stacks](cfn-stacks-list.png?raw=true)</span>
 
@@ -76,14 +85,17 @@ Change to the **Outputs** tab, and find the values for the parameters, and make 
 
 In the **secondary region**, open the <a href="https://console.aws.amazon.com/rds/home?region=us-east-1#database:id=auroralab-mysql-secondary;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page of the **secondary DB cluster**. 
 
+!!! warning "Region Check"
+    Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
+
 If not already selected, click on the **Connectivity and security** tab, and note down the value of the **Reader Endpoint**. Verify that it is in an `Available` status.
 
 <span class="image">![RDS Secondary Endpoints](rds-secondary-endpoints.png?raw=true)</span>
 
 !!! note
-    The **Writer** (cluster) endpoint is also displayed, but is marked in `Creating` state. This is normal, the cluster endpoint will only be activated when a secondary region is promoted to a stand-alone DB cluster.
+    The **Writer** (cluster) endpoint is also displayed, but is marked in `Creating` or `Inactive` state. This is normal, the cluster endpoint will only be activated when a secondary region is promoted to a stand-alone DB cluster.
 
-At this point you have collected all the information eeded for both the **primary** and **secondary regions**, and you can continue configuring the application.
+At this point you have collected all the information needed for both the **primary** and **secondary regions**, and you can continue configuring the application.
 
 
 ## 2. Configure application in primary region
@@ -110,104 +122,60 @@ Provide the following values in the relevant form fields to add the data source,
 
 Field | Value | Description
 ----- | ----- | -----
-Database | `aurora-mysql-writer` | This will be the friendly name of our Aurora Database in Superset
+Database | `aurora-mysql-writer` | This will be the friendly name of our Aurora Database in Superset.
+SQLAlchemy URI | `mysql://[username]:[password]@[cluster_endpoint]/mysql` | Replace ==[username]== and ==[password]== with the Aurora DB credentials retrieved before from the secet. Replace ==[cluster_endpoint]== with the Aurora DB **cluster endpoint**  retrieved previously (in the primary region). Click on **Test Connection** to confirm the settings are correct.
+Expose in SQL Lab | &#9745; | Make sure this option is **checked**.
+Allow CREATE TABLE AS | &#9745; | Make sure this option is **checked**.
+Allow DML | &#9745; | Make sure this option is **checked**.
+
+<span class="image">![Superset Writer DB Connection Settings](superset-dbconn-writer.png)</span>
 
 
+## 2. Configure application in secondary region
 
+The secondary region setup will be very similar. Open a new browser tab or window. Apache Superset is a web-based application that is also running on an EC2 instance in the **secondary region**, simply paste the ==[supersetURL]== value from the **secondary region** into your address bar. The URL will have the following format:
 
+```text
+http://ec2-XXX-XXX-XXX-XXX.<xx-region-x>.compute.amazonaws.com/
+```
 
-SQLAlchemy URI | <pre>mysql://masteruser:<b>auroragdb321</b>@<b><i>[Replace with Master Writer Endpoint]</i></b>/mysql</pre> <br> Replace the endpoint with the Primary Writer Endpoint we have gathered previously. The password to connect to the database should remain as ```auroragdb321``` unless you have changed this value during CloudFormation deployment. Click on **Test Connection** to confirm.<br>&nbsp;
-Expose in SQL Lab | &#9745; (Checked)
-Allow CREATE TABLE AS | &#9745; (Checked)
-Allow DML | &#9745; (Checked)
+You should see the login page for Apache Superset. Type in the values of ==[supersetUsername]==  and ==[supersetPassword]== in the **Username** and **Password** fields respectively. These credentails are the same as in the primary region.
 
-<span class="image">![Superset GDB1 Write Settings](superset-gdb1w.png)</span>
+<span class="image">![Superset Login](superset-login.png?raw=true)</span>
 
+Next, you will create a new datasource for Apache Superset in order to connect to the Aurora Global Database cluster. In the Apache Superset navigation menu (top bar), mouse over **Sources**, then click on **Databases**.
 
-## 3. Configure application in secondary region
+<span class="image">![Superset Source Databases](superset-source-db.png)</span>
 
-The secondary region setup will be very similar.
+Near the top right, click on the green **+** icon to add a new database source.
 
->  **`Region 2 (Secondary)`**
+<span class="image">![Superset Source Databases](superset-list-sources.png)</span>
 
-* Open <a href="https://console.aws.amazon.com/rds" target="_blank">RDS</a> in the AWS Management Console. Ensure you are in your assigned region. Verify that the secondary region Aurora DB cluster and DB instance -- which we named ``gdb2-cluster`` and ``gdb2-node1`` -- have been created successfully and their status shows available to connect. If either still shows as *Creating*, refresh this page and proceed to the next step when both show *Available*.
+Provide the following values in the relevant form fields to add the data source, then click **Save**:
 
-  <span class="image">![Auurora GDB Status](gdb-status.png)</span>
+Field | Value | Description
+----- | ----- | -----
+Database | `aurora-mysql-secondary` | This will be the friendly name of our Aurora Database in Superset.
+SQLAlchemy URI | `mysql://[username]:[password]@[reader_endpoint]/mysql` | Replace ==[username]== and ==[password]== with the Aurora DB credentials retrieved before from the secet. Replace ==[reader_endpoint]== with the Aurora DB **reader endpoint**  retrieved previously foir the **secondary region**. Click on **Test Connection** to confirm the settings are correct.
+Expose in SQL Lab | &#9745; | Make sure this option is **checked**.
+Allow CREATE TABLE AS | &#9744; | Make sure this option is **not checked**.
+Allow DML | &#9744; | Make sure this option is **not checked**.
 
-* Open <a href="https://console.aws.amazon.com/cloudformation" target="_blank">CloudFormation</a> in the AWS Management Console. Ensure you are in your assigned region.
-
-* Click on **Stacks**, and select the workshop stack that was originally deployed for this particular region. Click on the **Outputs** tab.
-
-* Locate the value for the output key ``=[supersetPublicDNSName]=``, and copy the value, this value should be similar to
-
-    ```
-    ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com
-    ```
-    
-  ![Sample CloudFormation Output](cfn-output-ec2dns.png) (Your outputs will be different in value)
-
-* Open a new browser tab or window. Since Apache Superset is being served by the EC2 instance via a HTTP server application on port 80, simply paste the DNS name value into your address bar, Your browser address bar should resemble the following URL format:
-
-    ```
-    http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com
-    ```
-
-* You should see the login page for Superset. Type in ```admin``` for **Username** and the default password ```auroragdb321``` as the application **Password** (unless you have changed this value during CloudFormation deployment).
-
-    <span class="image">![Superset Login](./superset-login.png)</span>
-
-* If login is successful, you will then be taken to the Superset main dashboard.
-
-* Apache Superset has a number of local sample data installed on the EC2 instance. However we will not be using them for the workshop. Let's create a new datasource for Apache Superset, our Aurora Global Database. Note that we will not be allowing DML queries because the secondary region is serving read-only traffic.
-
-   1. In the Apache Superset navigation menu, mouse over **Sources**, then click on **Databases**.
-      <span class="image">![Superset Source Databases](superset-source-db.png)</span>
-
-   1. Near the top right, click on the green **+** icon to add a new database source.
-
-   1. Change the below values and press **Save** when done:
-
-      Field | Value and Description
-      ----- | -----
-      Database | <pre>aurora-gdb2-read</pre> <br> This will be the friendly name of our Aurora Database in Superset<br>&nbsp;
-      SQLAlchemy URI | <pre>mysql://masteruser:<b>auroragdb321</b>@<b><i>[Replace with Secondary Reader Endpoint]</i></b>/mysql</pre> <br> Replace the endpoint with the Secondary Reader Endpoint we have gathered previously. The endpoint should have the text <b>cluster-ro</b> within it in order to differentiate from the writer endpoint. The password to connect to the database should remain as ```auroragdb321``` unless you have changed this value during CloudFormation deployment. Click on **Test Connection** to confirm.<br>&nbsp;
-      Expose in SQL Lab | &#9745; (Checked)
-      Allow CREATE TABLE AS | &#9744; (Unchecked)
-      Allow DML | &#9744; (Unchecked)
-
-      ![Superset GDB2 Read Settings](superset-gdb2r.png)
-
-### Checkpoint 1
-
-At this point, you should have the 2 BI application instances, launched in 2 distinct regions, connected to their respective endpoints of the Global Database cluster reader and writer endpoints. Let's recap and ensure we have gathered the follow data (use a notepad application of your choice) and copy down the following before we proceed.
-
-> **`Region 1 (Primary)`**
-
-* **Apache Superset Primary URL**: ```http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com```
-* **Aurora Cluster Primary Writer Endpoint**: ```gdb1-cluster.cluster-abcdefghijk.xx-region-X.rds.amazonaws.com```
-
-> **`Region 2 (Secondary)`**
-
-* **Apache Superset Secondary URL**: ```http://ec2-12-34-56-78.<xx-region-x>.compute.amazonaws.com```
-* **Aurora Cluster Secondary Reader Endpoint**: ```gdb2-cluster.cluster-ro-abcdefghijk.xx-region-X.rds.amazonaws.com```
-* **Aurora Cluster Secondary Writer Endpoint (for failover)**: ```gdb2-cluster.cluster-abcdefghijk.xx-region-X.rds.amazonaws.com```
-
+<span class="image">![Superset Secondary DB Connection Settings](superset-dbconn-secondary.png)</span>
 
 ## 4. Access data using the application
 
->  **`Region 1 (Primary)`**
+If you no longer have a browser window or tab open for Apache Superset in the **primary region**, go ahead and log back in again, using the same steps as described above at **2. Configure application in primary region**.
 
-* Log in to the Primary Region instance of Apache Superset. Use the **Apache Superset Primary URL** from Checkpoint 1 above.
+In the Apache Superset navigation menu, mouse over **SQL Lab**, then click on **SQL Editor**.
 
-* In the Apache Superset navigation menu, mouse over **SQL Lab**, then click on **SQL Editor**.
-    <span class="image">![Superset SQL Editor](superset-sqledit1.png)</span>
+<span class="image">![Superset SQL Lab](superset-sql-lab.png)</span>
 
-* This opens up a web-based IDE within Superset. On the left menu, select ``mysql aurora-gdb1-write``, for **Database** and then select ``mylab`` for **Schema**.
-    <span class="image">![Superset SQL Editor DB Source Select](superset-sqledit2.png?raw=true)</span>
+In the web-based IDE within Superset that displays, on the left menu, select `mysql aurora-mysql-writer`, for **Database** and then select `mylab` for **Schema**.
 
-* Copy and paste in the following SQL query and then click on **Run Query**.
+Copy and paste the following SQL query in the editor and then click on **Run Query**.
 
-```
+```sql
 DROP TABLE IF EXISTS gdbtest1;
 DROP PROCEDURE IF EXISTS InsertRand;
 
@@ -234,28 +202,24 @@ CALL InsertRand(1000000, 1357, 9753);
 SELECT count(pk), sum(gen_number), md5(avg(gen_number)) FROM gdbtest1;
 ```
 
-* This may take about 30 seconds to complete. It is okay if you see the Offline indicator before receiving the query results.
+<span class="image">![Superset SQL Editor On Writer](superset-sqledit-writer.png?raw=true)</span>
 
-* This SQL creates a new table and randomly inserts 1 million records into the Global Database. Note the results in a notepad or leave the browser window open.
+This may take about 30 seconds to complete. It is okay if you see the `Offline` indicator before receiving the query results. This SQL creates a new table and randomly inserts 1 million records into the Global Database. Note the results down in a notepad or leave the browser window open.
 
->  **`Region 2 (Secondary)`**
+Next, if you no longer have a browser window or tab open for Apache Superset in the **secondary region**, go ahead and log back in again, using the same steps as described above at **3. Configure application in secondary region**
 
-*  Log in to the Secondary Region instance of Apache Superset. Use the **Apache Superset Secondary URL** from Checkpoint 1 above.
+Similarly, in the Apache Superset navigation menu, mouse over **SQL Lab**, then click on **SQL Editor**.
 
-* In the Apache Superset navigation menu, mouse over **SQL Lab**, then click on **SQL Editor**.
+In the web-based IDE within Superset, on the left menu, select `aurora-mysql-secondary`, for **Database** and then select `mylab` for **Schema**.
 
-* This opens up a web-based IDE within Superset. On the left menu, select ``mysql aurora-gdb2-read``, for **Database** and then select ``mylab`` for **Schema**.
-    <span class="image">![Superset SQL Editor DB Source Select](superset-sqledit3.png?raw=true)</span>
+Copy and paste in the following SQL query and then click on **Run Query**.
 
-* Copy and paste in the following SQL query and then click on **Run Query**.
-
-```
+```sql
 SELECT count(pk), sum(gen_number), md5(avg(gen_number)) FROM gdbtest1;
-```
+```  
+    
+<span class="image">![Superset SQL Editor On Writer](superset-sqledit-secondary.png?raw=true)</span>
 
-* Note the results, the fields should match exactly the same as the previous results in the primary instance. This includes the count of records, sum of randomly generated values, and the md5 hash of the average of the generated values.
-   
+Note the results, the fields should match exactly the same as the previous results in the primary instance. This includes the count of records, sum of randomly generated values, and the md5 hash of the average of the generated values.
 
-### Checkpoint 2
-
-At this point, you now see the power and reach of Aurora Global Database. Your data is replicated within less than a second over to the secondary region, while allowing the secondary region to serve read queries to remote BI application users with low latency.
+This illustrates the way you can interact with the various regional components of an Aurora Global Database and how data is replicated from the primary DB cluster to secondary DB clusters.
