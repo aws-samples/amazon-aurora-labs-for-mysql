@@ -52,6 +52,8 @@ markdown_extensions:
       permalink: true
   - pymdownx.details
   - pymdownx.mark
+  - pymdownx.tasklist:
+      custom_checkbox: false
 
 # Navigation
 nav:
