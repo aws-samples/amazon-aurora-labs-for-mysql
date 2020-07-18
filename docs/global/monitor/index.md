@@ -118,29 +118,12 @@ In the textbox that appears on the screen, paste the following JSON code. Be sur
         {
             "type": "metric",
             "x": 0,
-            "y": 0,
-            "width": 6,
+            "y": 3,
+            "width": 24,
             "height": 6,
             "properties": {
                 "metrics": [
-                    [ "AWS/RDS", "AuroraGlobalDBReplicationLag", "SourceRegion", "eu-west-1" ]
-                ],
-                "view": "singleValue",
-                "region": "us-east-1",
-                "stat": "Average",
-                "period": 60,
-                "title": "Global DB Replication Lag (avg, 1min)"
-            }
-        },
-        {
-            "type": "metric",
-            "x": 6,
-            "y": 0,
-            "width": 18,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    [ "AWS/RDS", "AuroraGlobalDBReplicationLag", "SourceRegion", "eu-west-1" ],
+                    [ "AWS/RDS", "AuroraGlobalDBReplicationLag", "DBClusterIdentifier", "auroralab-mysql-secondary" ],
                     [ "...", { "stat": "Maximum" } ]
                 ],
                 "view": "timeSeries",
@@ -149,6 +132,41 @@ In the textbox that appears on the screen, paste the following JSON code. Be sur
                 "title": "Global DB Replication Lag (max vs. avg, 1min)",
                 "stat": "Average",
                 "period": 60
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 0,
+            "width": 9,
+            "height": 3,
+            "properties": {
+                "metrics": [
+                    [ "AWS/RDS", "AuroraGlobalDBReplicationLag", "DBClusterIdentifier", "auroralab-mysql-secondary" ]
+                ],
+                "view": "singleValue",
+                "region": "us-east-1",
+                "title": "Global DB Replication Lag (avg, 1min)",
+                "stat": "Average",
+                "period": 60
+            }
+        },
+        {
+            "type": "metric",
+            "x": 9,
+            "y": 0,
+            "width": 15,
+            "height": 3,
+            "properties": {
+                "metrics": [
+                    [ "AWS/RDS", "AuroraGlobalDBReplicatedWriteIO", "DBClusterIdentifier", "auroralab-mysql-secondary", { "label": "Global DB Replicated Write IOs" } ],
+                    [ ".", "AuroraGlobalDBDataTransferBytes", ".", ".", { "label": "Global DB DataTransfer Bytes" } ]
+                ],
+                "view": "singleValue",
+                "region": "us-east-1",
+                "stat": "Sum",
+                "period": 86400,
+                "title": "Billable Replication Metrics (aggregate, last 24 hr)"
             }
         }
     ]

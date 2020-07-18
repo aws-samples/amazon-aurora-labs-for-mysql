@@ -1,96 +1,72 @@
 # Fail Back a Global Database
 
-::TODO:: adjust from here on down
+This is an optional lab. You will attempt to orchestrate the required operation to restore writable database access back in the primary region, after promoting the secondary DB cluster in the secondary region. You will only see high level instructions. Please take your time in first planning out the reverse/restore actions, and feel free to raise your hand (if you are at an AWS event) to share with us your questions, thoughts and ideas!
 
-As we have just done in the previous module, we can see that **Failover** is the process of shifting application and database resources from its original primary region to a secondary disaster recovery region during a large scale infrastructure or service level interruption. 
+This lab contains the following tasks:
 
-You may be able to design an application that is completely stateless and could be launched in any region, however the relational database tier, with Aurora Global Database, remains having one single Writer, and we have seen that it required promotion of the secondary DB cluster in order for it to begin serving write requests. Changes are now only tracked on the DB cluster in the secondary Region. Note that this also required breaking the Aurora Global Database.
+1. Overview of fail over and fail back in Amazon Aurora
+2. End the simulated failure in the primary region
+3. Build a new Global Database
+4. Break the Global Database one more time
+5. Rebuild the final Global Database
+6. Delete the old secondary DB cluster
+7. Summary
 
-When the large scale interruption is restored, we usually want to restore the environment to its original setting, and synchronizing the original Primary Region to become the master node to serve write traffic. This process is called **Failback**, an operation that would see us returning production to its original location after the disaster event and all normal operations restored, while keeping track and capturing all the changed data that has been written to the recently-promoted Secondary Region. As the original primary region's DB cluster is now restored, we also want to avoid what we consider a *split-brain* syndrome. 
+This lab requires the following prerequisites:
 
-* To reiterate, for normal single-region scenarios, failover is automatic, and failback is usually unnecessary if the failover nodes are of the same instance family, type, and size. Remember that Amazon Aurora regional DB Clusters are available in AWS regions are in and of itself resilient with *over 3 Availability Zones*. This type of planning is only needed in the extremely unlikely scenario of failing over / failing back to a different region.
+* [Get Started](/prereqs/environment/) (choose the **Deploy Global DB** option)
+* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Deploy an Aurora Global Database](/global/deploy/)
+* [Fail Over an Aurora Global Database](/global/failover/)
 
-This is an *EXTRA CHALLENGE* module. You will only see high level instructions. Please take your time in first planning out the reverse/restore actions, and feel free to raise your hand (if you are at an AWS event) to share with us your thoughts and ideas!
 
-## Restore Network Connections and End the Simulated Failure
+## 1. Overview of fail over and fail back in Amazon Aurora
 
->  **`Region 1 (Primary)`**
+As illustrated in the previous lab, **Global Database failover** is the process of shifting application and database resources from the original primary region to a secondary disaster recovery region during a large scale infrastructure or service level interruption. 
 
-* We were previously simulating a large scale regional/service level interruption by associating a **Network ACL (NACL)** rule that denies all network traffic. Let's revert this to end the traffic block. Go to your **VPC** Console and assign the private subnets to associate the original default NACLs.
+You may be able to design an application that is completely stateless and could be launched in any region, however the relational database tier, with Aurora Global Database, has one single writer DB instance, and it requires promotion of the secondary DB cluster in order for it to begin serving write requests. Changes are now only tracked on the DB cluster in the secondary region. This also required taking the secondary DB cluster out of the Aurora Global Database. The original Aurora Global Database remains, and replication continues with other secondary DB clusters in other regions if you have additional such extensions.
 
-* Due to the data being stale and being outdated compared to the Secondary Region Aurora DB Cluster, the previous Aurora DB Cluster and DB Instance in the Primary Region are no longer needed. Using the RDS console, let's delete them (both DB Cluster and DB Instance in primary region **gdb1-cluster** and **gdb1-node1**) and take a final snapshot of the database before it is terminated. If it still remains, we will delete the empty Global DB identifier, named as **auroralabs-gdb**
+When the large scale interruption is restored, you usually want to restore the environment to its original setting, and synchronizing the original primary region to become the master node to serve write traffic, back again. This process is called **failback**, an operation that would see us returning production to its original location after the disaster event and all normal operations restored, while keeping track and capturing all the changed data that has been written to the recently-promoted secondary region. As the original primary region's DB cluster is now restored, you also want to avoid a *split-brain* scenario. 
 
-| Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
-| ------- | ------ | ------ | ------ | ----- |
-| Region 1 | gdb1-cluster | Regional | Deleted | Deleted |
-| Region 2 | gdb2-cluster | Regional | Available | Writer |
+To reiterate, for normal single-region scenarios, failover is automatic, and failback is usually unnecessary if the failover nodes are of the same instance family, type, and size. This also applies when the writer DB instance in the primary DB cluster of a Global Database fails. Failovers to other regions are typically not necessary in that case, as service is resotred automatically in the same region. Amazon Aurora DB clusters are available in AWS regions are resilient across multiple *Availability Zones*. This type of planning is only needed in the extremely unlikely scenario of failing over / failing back to a different region, because of a complete and likely longer time workload disruption in the primary region.
 
-## Rebuild a new Global Database - Restore Data to Primary Region
 
->  **`Region 2 (Secondary)`**
+## 2. End the simulated failure in the primary region
 
-* We will now Add Region for the DB Cluster in the previously secondary region **gdb2-cluster**. We will add the original primary region into this new Global Database, utilizing the existing VPC, Security Group, Parameter Groups (instance and cluster), and Role settings. We will name the DB Instance **gdb1-node2-restored** and name the DB Cluster **gdb1-cluster-restored**. We will name the Global Database identifier as **auroralabs-gdb-restoring**
+You were previously simulating a large scale regional/service level interruption by associating a **Network ACL (NACL)** rule that denies all network traffic with the subnets where the Aurora Global Database primary DB cluster was deployed. Let's revert this to end the traffic block.
 
-* Allow 10-15 minutes for the new region replica in the previously primary region to be restored.
+Go to your <a href="https://console.aws.amazon.com/vpc/home#acls:sort=networkAclId" target="_blank">VPC service console</a> in the **primary region** and remove the subnet associations from the NACL named **auroralab-denyall-nacl**. This will reconfigure the subnets to use the default NACL.
 
-* Once that process is complete, you will have a Global Database again, with **Master** node in Secondary Region and the **Reader** in Primary Region. You should wait until all nodes in your Global Database are indicated with a status of **Available** before proceeding
+Since the data is now stale, and out of date compared to the secondary region Aurora DB cluster that was promoted, the Aurora DB cluster and DB instances in the primary region are no longer needed, for the purposes of the Global Database labs. Normally you would want to delete them, **but don't**. There may be other labs in your curriculum that depend on this DB cluster. 
 
-| Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
-| ------- | ------ | ------ | ------ | ----- |
-| Region 1 | gdb1-cluster-restored | Global | Available | Reader |
-| Region 2 | gdb2-cluster          | Global | Available | Writer |
+You can however delete the global cluster, by removing that original DB clsuter in the primary region, from the global cluster, and then deleting the global cluster.
 
-## Breaking Global Database one more time
 
->  **`Region 1 (Primary)`**
+## 3. Build a new Global Database
 
-* Remember that we are looking to *failback*, which would see us restore the original environment configuration. We will be doing another promotion of the Original Primary Region DB Cluster. (which is currently under *Reader* mode). Using the RDS Console, we will issue a command to Remove From Global for **gdb1-cluster-restored**. This will promote it with the data intact and it will now become a regional *Writer*. 
+In the **secondary region**, add a region (**Actions** --> **Add Region**) for the DB cluster you have promoted named `auroralab-mysql-secondary`. Select the original primary region to add to this new Global Database, utilizing the existing VPC, security group, parameter groups (instance and cluster), and role settings. Name the DB cluster `auroralab-mysql-restored` and name the DB instance `auroralab-mysql-node4`. Name the Global Database identifier as `auroralabs-mysql-temporary`
 
-| Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
-| ------- | ------ | ------ | ------ | ----- |
-| Region 1 | gdb1-cluster-restored | Regional | Available | Writer |
-| Region 2 | gdb2-cluster          | Regional | Available | Writer |
+Allow 10-15 minutes for the new region replica in the previously primary region to be restored.
 
-## Delete Secondary Region DB Cluster
+Once that process is complete, you will have a Global Database again, with a *primary DB cluster* in the **secondary region** and a *secondary cluster* in the **primary region**. You should wait until all nodes in your Global Database are indicated with a status of **Available** before proceeding.
 
->  **`Region 2 (Secondary)`**
 
-* As both **gdb1-cluster-restored** and **gdb2-cluster** are now their own regional DB Clusters in their own respective regions, and we want to utilize the Primary Region as the master *Writer* in order to restore the original configuration.  Using the RDS console, let's delete them (both DB Cluster and DB Instance in Secondary Region  **gdb2-cluster** and **gdb2-node1**) and take a final snapshot of the database before it is terminated. If it still remains, we will delete the empty Global DB identifier, named as **auroralabs-gdb-restoring**
+## 4. Break the Global Database one more time
 
-| Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
-| ------- | ------ | ------ | ------ | ----- |
-| Region 1 | gdb1-cluster-restored | Regional | Available | Writer |
-| Region 2 | gdb2-cluster          | Regional | Deleted | Deleted |
+The objective is to *fail back*, which means restoring an equivalent to the original environment configuration. You need to promote the new secondary DB cluster in the **primary region**, named `auroralab-mysql-restored`, to be an independent DB cluster. Using the RDS Console in the **primary region**, select the cluster and choose **Actions** --> **Remove From Global**. This will promote it with the data intact and it will now become an independent DB cluster. 
 
-## Rebuild the final Global Database - Restore Data to Secondary Region
+## 5. Rebuild the final Global Database
 
->  **`Region 1 (Primary)`**
+In the **primary region**, add a region (**Actions** --> **Add Region**) for the DB cluster you have just promoted named `auroralab-mysql-restored`. Select the secondary region to add to this new Global Database, utilizing the existing VPC, security group, parameter groups (instance and cluster), and role settings. Name the DB cluster `auroralab-mysql-new-secondary` and name the DB instance `auroralab-mysql-node5`. Name the Global Database identifier as `auroralabs-mysql-global` (assuming you have deleted the old global cluster construct adter detaching the original primary cluster, if not name it something else).
 
-* We will now Add Region for the DB Cluster in the primary region **gdb1-cluster-restored**. We will add the secondary region back into the Global Database, utilizing the existing VPC, Security Group, Parameter Groups (instance and cluster), and Role settings. We will name the DB Instance **gdb2-node2-restored** and name the DB Cluster **gdb2-cluster-restored**. We will name the Global Database identifier as **auroralabs-gdb-restored**.
 
-| Region | DB Cluster Name | Global/Regional | DB Cluster Status | Node Status |
-| ------- | ------ | ------ | ------ | ----- |
-| Region 1 | gdb1-cluster-restored | Global | Available | Writer |
-| Region 2 | gdb2-cluster-restored | Global | Available | Reader |
+## 7. Delete the old secondary DB cluster
 
-## Gather New Aurora Reader and Writer Endpoints
+In the secondary region, you can now delete the old secondary DB cluster, named `auroralab-mysql-secondary`. Now you should have an Aurora Global Database with one *primary DB cluster* in your **primary region** and a *secondary DB cluster* in the **secondary region**.
 
->  **`Region 1 (Primary)`** and >  **`Region 2 (Secondary)`**
 
-* Now that we have the Global Database restored completely to its original regional configuration, we will grab the new endpoints for both the Primary Region writer and Secondary Region reader. The endpoint addresses have all been changed because we have deleted the previous DB Cluster pair for a new pair in our process to failback.
+## 7. Summary
 
-* Return to each instance of Apache Superset using both the **Apache Superset Primary URL** and **Apache Superset Secondary URL**. Perform the following:
-  * In Primary Superset instance, edit your ``mysql aurora-gdb1-write`` data source, and update the endpoint to reflect the new Primary Region DB Cluster Writer Endpoint.
-  * In Secondary Superset instance, edit your ``mysql aurora-gdb2-read`` data source, and update the endpoint to reflect the new Secondary Region DB Cluster Reader Endpoint.
-  * If you recall, we added ``mysql aurora-gdb2-write`` data source, you can remove this one as the Secondary Region DB Cluster Writer Endpoint is not activated.
-    * Or, you can opt to modify this to connect cross-region back to the master Primary Region Writer Endpoint, simply edit this data source name to ``mysql aurora-gdb1-write``, and update the endpoint to reflect the new Primary Region DB Cluster Writer Endpoint.
- 
-* In a real world scenario, you can combine this with Route53 friendly DNS names (CNAME records) to point to the different and changing Aurora reader and writer endpoints, to minimize the amount of manual work you have to undertake to re-link your applications due to failover and reconfiguration. You can read more about this in our <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-rds-db.html" target="_blank"> documentation</a>.
+Now that you have the Global Database restored completely to its original regional configuration. Typically as you are promoting and extending the global database through the failback cycle, you will have to update the database endpoints your application is using to reflect all the intermediary steps, in order to avoid significant application downtime. As you have seen the endpoints may change several times, and the fail-back should be orchestrated gradually to ensure you have full DR capability at any given point in time.
 
-## Summary
-
-![Failback Architecture (Midway)](failback-arch1.png)
-
-The architecture diagram above shows the *midpoint* of your failback operation, as you have restored your Aurora Global Database, with the secondary region acting as the *Writer*.
-
-* **Congratulations!** You have now completed the extra Failback challenge. You have a better understanding that failover and failback cross-region, can be a potentially intrusive operation that is best handled with proper planning in order to minimize split-brain scenario. Test your disaster recovery plans often and update your runbooks accordingly - include failover and failback in these tests.
+In a real world scenario, you can combine this with Route53 friendly DNS names (CNAME records) to point to the different and changing Aurora reader and writer endpoints, to minimize the amount of manual work you have to undertake to re-link your applications due to failover and reconfiguration. You can read more about this in our <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-rds-db.html" target="_blank"> Route53 documentation</a>.
