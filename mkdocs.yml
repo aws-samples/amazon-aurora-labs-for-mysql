@@ -26,9 +26,12 @@ theme:
   name: 'material'
   logo: 'assets/images/aws_smile_logo.png'
   favicon: 'assets/images/aws-favicon.ico'
-  feature:
-    tabs: true
-  custom_dir: 'docs/theme'
+  features:
+    - tabs
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    accent-fg: '#ff0000'
 
 # Customization
 extra_css:
@@ -37,11 +40,11 @@ extra_css:
 #  - 'assets/js/custom.js'
 extra:
   social:
-    - type: 'home'
+    - icon: 'fontawesome/solid/home'
       link: 'https://awsauroralabsmy.com'
-    - type: 'amazon'
+    - icon: 'fontawesome/brands/amazon'
       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
-    - type: 'github'
+    - icon: 'fontawesome/brands/github'
       link: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Extensions
@@ -53,6 +56,7 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.mark
   - pymdownx.smartsymbols
+  - pymdownx.tabbed
   - pymdownx.tasklist:
       custom_checkbox: false
 

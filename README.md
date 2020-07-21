@@ -22,6 +22,9 @@ brew install python3
 brew install mkdocs
 brew install node
 brew install jq
+pip3 install virtualenv
+virtualenv venv
+source venv/bin/activate
 pip3 install -r requirements.txt
 
 npm install -g npm

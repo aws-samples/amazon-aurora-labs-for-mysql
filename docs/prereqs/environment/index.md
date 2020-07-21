@@ -2,13 +2,13 @@
 
 Before you can use the resources in the lab environment, you need to complete a few steps.
 
-If you are attending a formal event, such as a workshop or other training, your instructor will provide specific guidance on how to start. Typically you will be provided an AWS account through a platform called **Event Engine**, and the lab environment has already been deployed in that account for you. Click on option **1.)** below.
+If you are attending a formal event, such as a workshop or other training, your instructor will provide specific guidance on how to start. Typically you will be provided an AWS account through a platform called **Event Engine**, and the lab environment has already been deployed in that account for you. Choose the **I'm in a workshop using Event Engine** tab below (already preselected below).
 
-If you are trying these labs out yourself, in your own account, or you are attending a formal event and your instructor has specifically instructed you to deploy the lab environment manually, click on option **2.)** below.
+If you are trying these labs out yourself, in your own account, or you are attending a formal event and your instructor has specifically instructed you to deploy the lab environment manually, choose the  **I need to deploy lab environment manually** tab below.
 
-Please select the option that matches your circumstances best, and expand that section by clicking it:
+Please select the option that matches your circumstances best:
 
-??? abstract "1.) I am part of a formal event (workshop or training), and was instructed to use Event Engine"
+=== "I'm in a workshop using Event Engine"
     <h4>Sign into Event Engine</h4>
 
     At the beginning of the workshop you have been provided with a **12-character access code**. This access code grants you permission to use a dedicated AWS account for the purposes of this workshop.
@@ -36,7 +36,7 @@ Please select the option that matches your circumstances best, and expand that s
     Once you have completed these steps, you can continue with the next lab: [**Connect to the Session Manager workstation**](/prereqs/connect/)
 
 
-??? abstract "2.) I need to deploy the lab environment myself"
+=== "I need to deploy lab environment manually"
     <h4>Access the AWS Management Console</h4>
 
     If you are running these labs in a formal, instructional setting, please use the Console URL, and credentials provided to you to access and log into the AWS Management Console. Otherwise, please use your own credentials. You can access the console at: <a href="https://console.aws.amazon.com/" target="_blank">https://console.aws.amazon.com/</a> or through the Single Sign-On (SSO) mechanism provided by your organization.
