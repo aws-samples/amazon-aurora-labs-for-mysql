@@ -13,6 +13,7 @@ from aws_encryption_sdk.identifiers import WrappingAlgorithm, EncryptionKeyType
 from os import environ
 import urllib3
 import argparse
+import datetime
 
 
 
@@ -52,9 +53,25 @@ def track_analytics():
                 # try/catch
         try:
                   # track analytics
-            payload = "Test"
+            payload = {
+                    'stack_uuid': None, #environ["STACKUUID"]#
+                    'stack_name': environ["STACKNAME"],
+                    'stack_region': environ["STACKREGION"],
+                    'deployed_cluster': None,
+                    'deployed_ml':  None,
+                    'deployed_gdb': None,
+                    'is_secondary': None,
+                    'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                    'event_scope': 'Script',
+                    'event_action': 'Database Activity Script',
+                    'event_message': 'Ran Database Activity Reader script',
+                    'ee_event_id': None,
+                    'ee_team_id': None,
+                    'ee_module_id': None,
+                    'ee_module_version': None
+                  }
 
-            r = http.request('POST', environ["ANALYTICSURI"], body=payload, headers={'Content-Type': 'text/plain'})
+            r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
                   #print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
         except Exception as e:
                   # errors in tracker interaction should not prevent operation of the function in critical path
@@ -107,4 +124,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+   main()
