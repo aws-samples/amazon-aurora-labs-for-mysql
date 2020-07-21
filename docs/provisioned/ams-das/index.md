@@ -191,7 +191,7 @@ Click on the **Actions** dropdown, and select **Stop activity stream**.
 
 <span class="image">![RDS Cluster Stop](rds-cluster-detail-stop.png?raw=true)</span>
 
-On the setup screen choose **Apply immediately** and click **Continue**.
+On the setup screen choose **Apply immediately** and click **Continue**. 
 
 <span class="image">![RDS DAS Stop](rds-das-stop.png?raw=true)</span>
 
