@@ -33,47 +33,95 @@ Click **Create database** to start the configuration process
 
 <span class="image">![Create Database](1-create-database.png?raw=true)</span>
 
-In the **Choose a database creation method** section, ensure the **Standard Create** option is selected.
+Set the following options on the configuration screen for the new DB cluster:
 
-Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility** edition, the **Aurora (MySQL 5.7) 2.07.2** version and the **Regional** database location.
+In the **Choose a database creation method** section:
+
+* [ ] Ensure the **Standard Create** option is selected.
+
+In the **Engine options** section:
+
+* [ ] Choose the `Amazon Aurora` engine type.
+* [ ] Choose the `Amazon Aurora with MySQL compatibility` edition.
+* [ ] Select the `Aurora (MySQL 5.7) 2.08.1` version.
+* [ ] Select the `Regional` database option.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
-In the **Database features** section, select **One writer and multiple readers**, and in the **Templates** section, select **Production**.
+In the **Database features** section:
 
-??? tip "What do these selections mean?"
+* [ ] Select the `One writer and multiple readers` option.
+
+In the **Templates** section:
+
+* [ ] Select the `Production` option.
+
+In the **Settings** section:
+
+* [ ] Set the **DB cluster identifier** to `auroralab-mysql-cluster`. Use this specific name so you don't have to edit commands in subsequent labs.
+* [ ] Set the **Master username** to `masteruser`. This is the user account with the most elevated permissions in the database, you can use a different name but may need to edit commands in subsequent labs.
+* [ ] Set the **Master password** to a desired and memorable value, confirm the password.
+* [ ] Ensure the check box **Auto generate a password** is **not checked**.
+
+??? info "What do these selections mean?"
     The selections so far will instruct AWS to create an Aurora MySQL database cluster with the specified version of the MySQL 5.7 compatible engine in a highly available configuration with one writer and one reader database instance in the cluster. This is called an **Aurora provisioned DB cluster**, because you indicate the specific type of compute capacity that powers your cluster. If you wish to create an Aurora Serverless DB cluster, and test the Aurora Serverless functionality, we have [a different lab for you](/serverless/create/).
-
-In the **Settings** section, set the **DB cluster identifier** to `auroralab-mysql-cluster`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `masteruser` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
 
 <span class="image">![Database Settings](1-db-settings.png?raw=true)</span>
 
-In the **DB instance size** section, select **Memory Optimized classes**, and choose `r5.large` in the size drop-down. In the **Availability & durability** section, choose **Create an Aurora Replica/Reader node in a different AZ**.
+In the **DB instance size** section:
+
+* [ ] Select **Memory Optimized classes**, and choose `r5.large` in the size drop-down.
+
+In the **Availability & durability** section:
+
+* [ ] Choose `Create an Aurora Replica/Reader node in a different AZ`.
 
 <span class="image">![Database Settings](1-db-size.png?raw=true)</span>
 
+In the **Connectivity** section:
 
-In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, we have configured all the networking resources for you.
+* [ ] Expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, we have configured all the networking resources for you.
+* [ ] Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`.
+* [ ] The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should start either with `auroralab-dbsubnets-` or with `mod-` depending on the event you are participating in.
+* [ ] Make sure the cluster **Publicly accessible** option is set to `No`.
+* [ ] At **VPC security group**, make sure the **Choose existing** security group option is selected. The lab environment already provides a security group that allows your lab workspace EC2 instance to connect to the database.
+* [ ] Select the security group named `auroralab-database-sg`.
+* [ ] Please remove any other security groups, such as `default` from the selection.
 
-Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should start either with `auroralab-dbsubnets-` or with `mod-` depending on the event you are participating in.
+In the **Database authentication** section:
 
-Make sure the cluster **Publicly accessible** option is set to **No**. The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group named `auroralab-database-sg`. Please remove any other security groups, such as `default` from the selection.
-
-In the **Database authentication** section, choose **Password and IAM database authentication** (IAM authentication may be used in some of the subsequent labs).
+* [ ] Choose `Password and IAM database authentication`. IAM authentication may be used in some of the subsequent labs.
 
 <span class="image">![Connectivity](1-connectivity.png?raw=true)</span>
 
-Next, expand the **Additional configuration** section. Set the **Initial database name** to `mylab`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. Keep the `1 day` **Backup retention period**. Check the box to **Enable encryption** and select `[default] aws/rds` for the **Master key**.
+Expand the **Additional configuration** section, and configure options as follows:
+
+* [ ] Set the **Initial database name** to `mylab`. You can use a custom name here, too, but you will need to edit commands and scripts in subsequent labs.
+* [ ] For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. 
+* [ ] Set **Backup retention period** to `1 day`.
+* [ ] Check the box to **Enable encryption**.
+* [ ] Set the **Master key** to `[default] aws/rds`.
 
 <span class="image">![Advanced configuration](1-advanced-1.png?raw=true)</span>
 
-Enable the backtrack capability by checking the **Enable Backtrack** box and set a **Target backtrack window** of `24` hours. Check the box to **Enable Performance Insights** with a **Retention period of `Default (7 days)` and use the `[default] aws/rds` **Master key** for monitoring data encryption. Next, check the **Enable Enhanced Monitoring** box, and select a **Granularity** of `1 second`.
+Continue in the **Additional configuration** section:
+
+* [ ] Check the box to **Enable Backtrack**.
+* [ ] Set a **Target backtrack window** of `24` hours.
+* [ ] Check the box to **Enable Performance Insights**.
+* [ ] Set a **Retention period** of `Default (7 days)`.
+* [ ] Set the **Master key** to `[default] aws/rds`.
+* [ ] Check the **Enable Enhanced Monitoring** box.
+* [ ] Select a **Granularity** of `1 second`.
 
 <span class="image">![Advanced configuration](1-advanced-2.png?raw=true)</span>
 
-Also in the **Additional configuration** section, for **Log exports** check the **Error log** and **Slow query log** boxes. De-select the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
+Also in the **Additional configuration** section:
 
-??? tip "What do these selections mean?"
+* [ ] For **Log exports** check the `Error log` and `Slow query log` boxes.
+* [ ] De-select/turn off the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
+
+??? info "What do these selections mean?"
     You will create a database cluster with the following characteristics:
 
     * Aurora MySQL 5.7 compatible
@@ -84,6 +132,8 @@ Also in the **Additional configuration** section, for **Log exports** check the 
     * Using data at rest encryption
     * Retaining 24 hours worth of change data for backtrack purposes
     * With Enhanced Monitoring and Performance Insights enabled
+
+<a href="#" onclick="VerifyAllCheckboxes(); return false;">Verify</a> that all checkboxes are checked.
 
 Click **Create database** to provision the DB cluster.
 

@@ -1,3 +1,4 @@
 mkdocs-material
 pymdown-extensions
+awscli
 taskcat

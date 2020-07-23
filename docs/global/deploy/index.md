@@ -84,7 +84,7 @@ Set the following options on the configuration screen for the secondary DB clust
     * [ ] Set **Global database identifier** to `auroralab-mysql-global`
 
 2. In the **AWS Region** section:
-    * [ ] Choose the **Secondary region** of `Us East (N. Virginia)`
+    * [ ] Choose the **Secondary region** of `US East (N. Virginia)`
 
 3. In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration created above:
     * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`

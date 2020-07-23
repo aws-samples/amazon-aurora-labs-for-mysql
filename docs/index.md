@@ -9,56 +9,54 @@ The resources on this site include a collection of easy to follow instructions w
 
 ## Overview of labs
 
-The following labs are currently available:
+The following labs are currently available, click on the relevant tab to see the labs for that topic:
 
-???+ abstract "Prerequisites"
+=== "Prerequisites"
     You will need to complete the following prerequisites before running any other labs. **Do this first!**
 
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    1 | [**Get started using the lab environment**](/prereqs/environment/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources.
-    2 | [**Connect to the Session Manager workstation**](/prereqs/connect/) | **Required** | Connect to the EC2 based workstation using Session Manager, so you can interact with the database.
+    P1 | [**Get started using the lab environment**](/prereqs/environment/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources.
+    P2 | [**Connect to the Session Manager workstation**](/prereqs/connect/) | **Required** | Connect to the EC2 based workstation using Session Manager, so you can interact with the database.
 
 
-??? abstract "Labs for Aurora Provisioned DB clusters"
+=== "Provisioned"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    1 | [**Create a New DB Cluster**](/provisioned/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually. This is optional, as you can also deploy the environment with a cluster provisioned automatically for you.
-    2 | [**Connect, Load Data and Auto Scale**](/provisioned/interact/) | Recommended | Connect to the DB cluster, load an initial data set from S3 and test read replica auto scaling. The initial data set may be used in subsequent labs.
-    3 | [**Clone a DB Cluster**](/provisioned/clone/) | Recommended | Clone an Aurora DB cluster and observing the divergence of the data set.
-    4 | [**Backtrack a DB Cluster**](/provisioned/backtrack/) | Recommended | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
-    5 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
-    6 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
+    R1 | [**Create a New DB Cluster**](/provisioned/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually. This is optional, as you can also deploy the environment with a cluster provisioned automatically for you.
+    R2 | [**Connect, Load Data and Auto Scale**](/provisioned/interact/) | Recommended | Connect to the DB cluster, load an initial data set from S3 and test read replica auto scaling. The initial data set may be used in subsequent labs.
+    R3 | [**Clone a DB Cluster**](/provisioned/clone/) | Recommended | Clone an Aurora DB cluster and observing the divergence of the data set.
+    R4 | [**Backtrack a DB Cluster**](/provisioned/backtrack/) | Recommended | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
+    R5 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
+    R6 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
 
 
-??? abstract "Labs for Aurora Serverless DB clusters"
+=== "Serverless"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    1 | [**Create an Aurora Serverless DB cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
-    2 | [**Use Aurora Serverless with AWS Lambda functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
+    S1 | [**Create an Aurora Serverless DB cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
+    S2 | [**Use Aurora Serverless with AWS Lambda functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
 
 
-??? abstract "Aurora Global Database Workshop"
+=== "Global Database"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    1 | [**Create Infrastructure**](/global/create/) | Required | Create a multi-region environment to use with Aurora Global Database.
-    2 | [**Create Global Database**](/global/gdb/) | Recommended | Create a Global Database which will span across multiple regions.
-    3 | [**Connect Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the global database.
-    4 | [**Monitor Latency**](/global/cw/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated IO and the cross region replication data transfer of the global database.
-    5 | [**Failover**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario.
-    6 | [**Failback**](/global/failback/) | Optional | Fail back to the original primary region.
+    G1 | [**Deploy a Global Database**](/global/deploy/) | Required | Create a Global Database which will span across multiple regions.
+    G3 | [**Connect an Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the Global Database.
+    G4 | [**Monitor a Global Database**](/global/monitor/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated I/O, and the cross region replication data transfer of the Global Database.
+    G5 | [**Fail Over a Global Database**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario, and promote the secondary region in a Global Database.
+    G6 | [**Fail Back a Global Database**](/global/failback/) | Optional | Restore full operations in the original primary region for the Global Database after a failover.
 
 
-??? abstract "Machine Learning with Amazon Aurora"
+=== "Machine Learning"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    1 | [**Overview and Prerequisites**](/ml/overview/) | Required | Setup a sample schema and data for machine learning integration.
-    2 | [**Use Comprehend with Aurora**](/ml/comprehend/) | Recommended | Integrate Aurora with the Comprehend Sentiment Analysis API and make sentiment analysis inferences via SQL commands.
-    3 | [**Use SageMaker with Aurora**](/ml/sagemaker/) | Recommended | Integrate Aurora with SageMaker Endpoints to infer customer churn in a data set using SQL commands.
-    4 | [**Cleanup Lab Resources**](/ml/cleanup/) | Recommended | Clean up after the labs and remove unneeded AWS resources.       
+    M1 | [**Overview and Prerequisites**](/ml/overview/) | Required | Setup a sample schema and data for machine learning integration.
+    M2 | [**Use Comprehend with Aurora**](/ml/comprehend/) | Recommended | Integrate Aurora with the Comprehend Sentiment Analysis API and make sentiment analysis inferences via SQL commands.
+    M3 | [**Use SageMaker with Aurora**](/ml/sagemaker/) | Recommended | Integrate Aurora with SageMaker Endpoints to infer customer churn in a data set using SQL commands.
+    M4 | [**Cleanup Lab Resources**](/ml/cleanup/) | Recommended | Clean up after the labs and remove unneeded AWS resources.       
 
-
-You can also discover exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
+You can also discover other exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
 
 
 ## Lab environment at a glance

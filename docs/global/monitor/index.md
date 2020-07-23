@@ -1,7 +1,5 @@
 # Monitor a Global Database
 
-::TODO:: adjust from here on down
-
 Amazon Aurora exposes a variety of <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Monitoring.html" target="_blank">Amazon CloudWatch metrics</a>, that you can use to monitor and determine the health and performance of your Aurora Global Database. In this lab you will create a Amazon CloudWatch Dashboard to monitor for the latency, replicated IO and the cross region replication data transfer for our Aurora Global Database.
 
 This lab contains the following tasks:
