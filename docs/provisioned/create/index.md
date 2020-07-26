@@ -82,7 +82,7 @@ In the **Connectivity** section:
 
 * [ ] Expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, we have configured all the networking resources for you.
 * [ ] Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`.
-* [ ] The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should start either with `auroralab-dbsubnets-` or with `mod-` depending on the event you are participating in.
+* [ ] The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should be `auroralab-db-subnet-group`.
 * [ ] Make sure the cluster **Publicly accessible** option is set to `No`.
 * [ ] At **VPC security group**, make sure the **Choose existing** security group option is selected. The lab environment already provides a security group that allows your lab workspace EC2 instance to connect to the database.
 * [ ] Select the security group named `auroralab-database-sg`.

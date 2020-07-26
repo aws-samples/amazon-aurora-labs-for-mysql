@@ -512,7 +512,8 @@ Resources:
   dbSubnets:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties:
-      DBSubnetGroupDescription: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
+      DBSubnetGroupName: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
+      DBSubnetGroupDescription: "Aurora Lab subnets allowed for deploying DB instances"
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
       Tags:
         - Key: Name
@@ -869,6 +870,7 @@ Resources:
 ## Create the Apache Superset host
   supersetHost:
     Type: "AWS::EC2::Instance"
+    Condition: condDeployGDBResources
     Properties:
       SubnetId: !Ref sub2Public
       InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]

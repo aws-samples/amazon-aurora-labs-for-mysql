@@ -88,7 +88,7 @@ Set the following options on the configuration screen for the secondary DB clust
 
 3. In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration created above:
     * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`
-    * [ ] Ensure the selected **Subnet Group** matches the stack name (e.g. `auroralab-dbsubnets-[hash]`)
+    * [ ] Ensure the correct **Subnet Group** was selected automatically, it should be named `auroralab-db-subnet-group`.
     * [ ] Make sure the **Publicly accessible** option is set to `No`
     * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection
 
