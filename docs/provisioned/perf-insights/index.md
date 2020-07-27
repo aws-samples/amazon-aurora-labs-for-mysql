@@ -57,7 +57,7 @@ The command will be sent to the workstation EC2 instance which will prepare the 
 
 ## 2. Understand the Performance Insights interface
 
-While the command is running, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a> in a new tab, if not already open.
+While the command is running, open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazon RDS service console</a> in a new tab, if not already open.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.

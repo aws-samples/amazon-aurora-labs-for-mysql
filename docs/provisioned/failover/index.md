@@ -249,7 +249,7 @@ In this test you will create an <a href="https://docs.aws.amazon.com/AmazonRDS/l
 ??? tip "Learn more about Amazon RDS Proxy"
     Amazon RDS Proxy is a fully managed, highly available database proxy for Amazon Relational Database Service (RDS) that makes applications more scalable, more resilient to database failures, and more secure. RDS Proxy minimizes application disruption from outages affecting the availability of your database, by automatically connecting to a new database instance while preserving application connections. When failovers occur, rather than rely on DNS changes to reroute requests, RDS Proxy routes requests directly to the new database instance.
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
+Open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazon RDS service console</a>.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.

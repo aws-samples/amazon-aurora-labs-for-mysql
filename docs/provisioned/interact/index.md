@@ -105,7 +105,7 @@ Run the load generation script from the Session Manager workstation command line
 python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 
-Now, open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.
+Now, open the <a href="https://console.aws.amazon.com/rds/home#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
