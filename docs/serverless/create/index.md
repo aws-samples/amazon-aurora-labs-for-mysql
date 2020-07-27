@@ -14,7 +14,7 @@ This lab requires the following lab modules to be completed first:
 
 ## 1. Create a serverless DB cluster
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>, if you don't already have it open.
+Open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazon RDS service console</a>, if you don't already have it open.
 
 Click **Create database** to start the configuration process
 
@@ -22,7 +22,7 @@ Click **Create database** to start the configuration process
 
 In the first configuration section of the **Create database** page, ensure the **Standard Create** database creation method is selected.
 
-Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility edition, the **Aurora (MySQL)-5.6.10a** version and the **Regional** database location.
+Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility edition**, the **Aurora (MySQL)-5.6.10a** version and the **Regional** database location.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
@@ -69,7 +69,7 @@ In the details view of the cluster, click on the **Configuration** tab. Note the
 
 ## 2. Create a secret to store the credentials
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2" target="_blank">AWS Secrets Manager service console</a>.
+Open the <a href="https://console.aws.amazon.com/secretsmanager/home" target="_blank">AWS Secrets Manager service console</a>.
 
 Click **Store a new secret** to start the configuration process.
 

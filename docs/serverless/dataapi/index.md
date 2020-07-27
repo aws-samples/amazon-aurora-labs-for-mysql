@@ -16,7 +16,7 @@ This lab requires the following lab modules to be completed first:
 
 ## 1. Create a Lambda execution role
 
-Before you create an AWS Lambda function, you need to configure an IAM execution role. This will contain the permissions you are granting the function to interact with AWS resources via the APIs. Open the <a href="https://console.aws.amazon.com/iam/home?region=us-west-2#/roles" target="_blank">Identity and Access Management (IAM) service console</a>. Choose **Roles** from the left hand side menu, if it isn't already selected, and click **Create role**.
+Before you create an AWS Lambda function, you need to configure an IAM execution role. This will contain the permissions you are granting the function to interact with AWS resources via the APIs. Open the <a href="https://console.aws.amazon.com/iam/home#/roles" target="_blank">Identity and Access Management (IAM) service console</a>. Choose **Roles** from the left hand side menu, if it isn't already selected, and click **Create role**.
 
 <span class="image">![IAM Roles](1-iam-dash.png?raw=true)</span>
 
@@ -88,7 +88,7 @@ Skip the **Add tags** section, and click **Next: Review**. Then assign the role 
 
 ## 2. Create a Lambda function
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/lambda/home?region=us-west-2#/functions" target="_blank">AWS Lambda service console</a>.
+Open the <a href="https://console.aws.amazon.com/lambda/home#/functions" target="_blank">AWS Lambda service console</a>.
 
 Choose **Functions** from the left hand side menu, if it isn't already selected, and click **Create function**.
 
