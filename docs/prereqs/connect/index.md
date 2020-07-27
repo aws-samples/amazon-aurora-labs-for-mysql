@@ -14,7 +14,7 @@ This lab requires the following prerequisites:
 
 ## 1. Connect to your workstation instance
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/systems-manager/session-manager?region=us-west-2" target="_blank">Systems Manager: Session Manager service console</a>. Click the **Start session** button.
+Open the <a href="https://console.aws.amazon.com/systems-manager/session-manager" target="_blank">Systems Manager: Session Manager service console</a>. Click the **Start session** button.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
