@@ -43,12 +43,15 @@ Amazon Aurora lab, CMK for Aurora MySQL Database Activity Streaming (DAS)
 Then, click **Next**.
 
 <span class="image">![KMS Labels](kms-labels.png?raw=true)</span>
+If you are attending an AWS-hosted event (using AWS-provided hashes)
 
 In the **Key administrators** section, select `TeamRole` and `OpsRole` as an administrator (you can search for the names to find them quicker). Check the box next to `TeamRole` and `OpsRole` click **Next**.
 
 <span class="image">![KMS Administrators](kms-admins.png?raw=true)</span>
 
 Similarly to above, in the section named **This account** select the `[stackname-wkstation-[region]`, `TeamRole` and `OpsRole` IAM roles, check the box next to them, and click **Next**.
+
+If you are running the workshop on your own (in your own account), you do not need to choose `TeamRole` and `OpsRole` as Administrators.
 
 Review the policy for accuracy and click **Finish**.
 

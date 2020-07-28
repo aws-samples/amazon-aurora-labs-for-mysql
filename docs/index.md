@@ -29,6 +29,8 @@ The following labs are currently available:
     4 | [**Backtrack a DB Cluster**](/provisioned/backtrack/) | Recommended | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
     5 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
     6 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
+    7 | [**Set up Database Activity Streams**](/provisioned/ams-das/) |
+Recommended | Monitor your database events by using Database Activity Streams.
 
 
 ??? abstract "Labs for Aurora Serverless DB clusters"
