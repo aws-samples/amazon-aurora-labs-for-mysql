@@ -17,8 +17,8 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Get Started](/win/)
-* [Connect to your Aurora MySQL DB cluster](/win/ams-connect/)
+* [Create your Aurora MySQL DB cluster](/provisioned/create/)
+* [Connect to your Aurora MySQL DB cluster](/provisioned/interact/)
 
 
 
@@ -97,6 +97,19 @@ You will use Percona's TPCC-like benchmark script based on sysbench to generate 
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, enter one of the following commands, replacing the placeholders appropriately.
 
+By default the system manager connects as ssmuser . All the lab work has been performed as ec2-user . We need to switch to the ec2-user
+
+```shell
+sh-4.2$ whoami
+ssm-user
+sh-4.2$ sudo su -
+Last login: Thu Feb 27 02:28:24 UTC 2020 on pts/1
+[root@ip-x.x.x.x ~]# su - ec2-user
+Last login: Wed Feb 26 18:04:46 UTC 2020 on pts/0
+[ec2-user@x.x.x.x ~]$ whoami
+ec2-user
+```
+
 If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute this command:
 
 ```shell
@@ -135,7 +148,7 @@ A python script with sample code to read the activity stream has already been sa
 
 
 ```shell
-python3 das-script.py -rn [REGION_NAME] -ri [RESOURCE_ID] -s [STREAM_NAME]
+python3 das_reader.py -r [REGION_NAME] -i [RESOURCE_ID] -s [STREAM_NAME]
 ```
 
 The script will read records from the stream, and print it out on the command line, you can use a tool, such as <a href="https://jsonformatter.org/" target=_blank">jsonformatter.org</a>, to format the JSON structure to be more readable.
