@@ -714,6 +714,7 @@ Resources:
                   - "rds:*"
                   - "s3:*"
                   - "ssm:*"
+                  - "kinesis:*"
                   - "kms:*"
                   - "sns:*"
                   - "secretsmanager:*"
@@ -817,10 +818,12 @@ Resources:
                 apt-get -y install python3-pip
                 pip3 install pymysql
                 pip3 install awscli
+                pip3 install aws_encryption_sdk
                 cd /home/ubuntu
                 curl -O https://[[website]]/scripts/reader_loadtest.py
                 curl -O https://[[website]]/scripts/simple_failover.py
                 curl -O https://[[website]]/scripts/aware_failover.py
+                curl -O https://[[website]]/scripts/das_reader.py
                 curl -O https://[[website]]/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
                 echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log
