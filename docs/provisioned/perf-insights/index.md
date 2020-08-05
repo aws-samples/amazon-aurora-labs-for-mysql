@@ -19,30 +19,26 @@ This lab requires the following prerequisites:
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, enter one of the following commands, replacing the placeholders appropriately.
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, choose the tab below that best matches your circumstances, and run the indicated commands:
 
-!!! warning "Region Check"
-    Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
+=== "The DB cluster has been pre-created for me"
+    If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run the simplified command below, replacing the ==[ec2Instance]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
 
-If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute this command:
+        aws ssm send-command \
+        --document-name auroralab-sysbench-test \
+        --instance-ids [ec2Instance]
 
-```shell
-aws ssm send-command \
---document-name [loadTestRunDoc] \
---instance-ids [ec2Instance] \
---parameters \
-clusterEndpoint=[clusterEndpoint],\
-dbUser=$DBUSER,\
-dbPassword="$DBPASS"
-```
 
-If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run this simplified command:
+=== "I have created the DB cluster myself"
+    If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute the command below, replacing the ==[ec2Instance]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop. Also replace the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
-```shell
-aws ssm send-command \
---document-name [loadTestRunDoc] \
---instance-ids [ec2Instance]
-```
+        aws ssm send-command \
+        --document-name auroralab-sysbench-test \
+        --instance-ids [ec2Instance] \
+        --parameters \
+        clusterEndpoint=[clusterEndpoint],\
+        dbUser=$DBUSER,\
+        dbPassword="$DBPASS"
 
 ??? tip "What do all these parameters mean?"
     Parameter | Description
@@ -53,7 +49,7 @@ aws ssm send-command \
 
 The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
-<span class="image">![SSM Command](1-ssm-command.png?raw=true)</span>
+<span class="image">![SSM Command](ssm-command-sysbench.png?raw=true)</span>
 
 ## 2. Understand the Performance Insights interface
 
