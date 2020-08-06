@@ -176,7 +176,13 @@ Your output should look similar to the following example:
 
 ## 5. Disable Database Activity Streams the activity stream
 
-Open the <a href="https://console.aws.amazon.com/rds/home?#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console at the cluster details page</a>, if not already open. If the cluster is not already selected, choose **Databases** and click on the DB identifier with the cluster named `auroralab-mysql-cluster`.
+Before you disable the activity stream, stop the load generator script from running. On the command line, stop the DAS event reader script by typing `Ctrl+C`, then issue the following command, replacing the ==[processId]== placeholder with the **process ID/number** you noted down when you started the load generator script (if you no longer have that value you can try using `%1` instead):
+
+```shell
+kill [processId]
+```
+
+Next, open the <a href="https://console.aws.amazon.com/rds/home?#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console at the cluster details page</a>, if not already open. If the cluster is not already selected, choose **Databases** and click on the DB identifier with the cluster named `auroralab-mysql-cluster`.
 
 Click on the **Actions** dropdown, and select **Stop activity stream**.
 
