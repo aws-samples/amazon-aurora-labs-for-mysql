@@ -87,3 +87,4 @@ You do not need any special software on the computer you are using for these lab
 * [sysbench](https://github.com/akopytov/sysbench) available using the GPL License.
 * [test_db](https://github.com/datacharmer/test_db) available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
 * [Percona's sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Apache Superset](https://superset.apache.org/index.html) available using the Apache License 2.0.

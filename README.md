@@ -88,4 +88,5 @@ Additionally, this project installs the following software for the purposes of d
 * [mysql-client](https://dev.mysql.com/doc/refman/5.6/en/programs-client.html) package. MySQL open source software is provided under the GPL License.
 * [sysbench](https://github.com/akopytov/sysbench) available using the GPL License.
 * [test_db](https://github.com/datacharmer/test_db) available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
-* [percona sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Percona's sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Apache Superset](https://superset.apache.org/index.html) available using the Apache License 2.0.
