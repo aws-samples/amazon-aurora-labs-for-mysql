@@ -60,7 +60,7 @@ The objective is to *fail back*, which means restoring an equivalent to the orig
 In the **primary region**, add a region (**Actions** --> **Add Region**) for the DB cluster you have just promoted named `auroralab-mysql-restored`. Select the secondary region to add to this new Global Database, utilizing the existing VPC, security group, parameter groups (instance and cluster), and role settings. Name the DB cluster `auroralab-mysql-new-secondary` and name the DB instance `auroralab-mysql-node5`. Name the Global Database identifier as `auroralabs-mysql-global` (assuming you have deleted the old global cluster construct adter detaching the original primary cluster, if not name it something else).
 
 
-## 7. Delete the old secondary DB cluster
+## 6. Delete the old secondary DB cluster
 
 In the secondary region, you can now delete the old secondary DB cluster, named `auroralab-mysql-secondary`. Now you should have an Aurora Global Database with one *primary DB cluster* in your **primary region** and a *secondary DB cluster* in the **secondary region**.
 

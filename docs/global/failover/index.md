@@ -16,7 +16,7 @@ This lab requires the following prerequisites:
 * [Deploy an Aurora Global Database](/global/deploy/)
 
 
-1. Inject a failure in the primary region
+## 1. Inject a failure in the primary region
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/) in the **primary region**. Once connected, run the command below, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster.
 
@@ -68,7 +68,7 @@ Select all subnets that begin with this name prefix. You can also simply use the
 
 Once associated, the NACL rules take effect immediately and will render the resources within the private subnets unreachable. Your connection to the database in the Session Manager command line should eventually break with an error message indicating that the client lost connection to the server.
 
-## Promote Secondary DB Cluster
+## 2. Promote the secondary DB cluster
 
 You are simulating a prolonged regional infrastructure or service level failure, at which point, you would typically opt to perform a regional failover to your DR site for your application and database stacks. Next, you will promote the **secondary DB cluster**, in the **secondary region** to an independent regional DB cluster.
 

@@ -125,7 +125,7 @@ Conditions:
   # the ML resources are only deployed if parameter is yes, or EE module matches the 'all-features' module id
   condDeployMLResources: !Or [ !Equals [ !Ref deployML, "Yes" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
   # the GDB resources are only deployed if parameter is yes, or EE module matches the 'all-features' module id
-  condDeployGDBResources: !Or [ !Equals [ !Ref deployGDB, "Yes" ], !Equals [ !Ref EEModuleId, "...todo..." ] ]
+  condDeployGDBResources: !Or [ !Equals [ !Ref deployGDB, "Yes" ], !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ] ]
   # the bug fix for secondary region KMS is only deployed if parameter is yes
   condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
 
