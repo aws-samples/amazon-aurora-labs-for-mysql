@@ -45,6 +45,9 @@ Please select the option that matches your circumstances best:
 
     If you are running these labs in a formal, instructional setting, **please use the AWS region provided**. Ensure the correct AWS region is selected in the top right corner, if not use that dropdown to choose the correct region. The labs are designed to work in any of the regions where Amazon Aurora MySQL compatible is available. However, not all features and capabilities of Amazon Aurora may be available in all supported regions at this time.
 
+    !!! warning "Region for Global Database Labs"
+        If you plan to run the **Aurora Global Database** labs, please select a region that is **different from US East (N. Virginia) / us-east-1**. You will use this region for the secondary region for those labs, and the primary and secondary regions for Global Database need to be different.
+
     <span class="image">![AWS Management Console Region Selection](2-region-select.png?raw=true)</span>
 
     <h4>Deploy the lab environment using AWS CloudFormation</h4>
@@ -64,7 +67,7 @@ Please select the option that matches your circumstances best:
         [Download the CloudFormation template](https://[[website]]/templates/lab_template.yml)
 
     !!! warning "Region Check"
-        Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+        Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen. Also note, the region should not be US East (N. Virginia) / us-east-1, if you are planning to run the Aurora Global Databsase labs.
 
     In the field named **Stack Name**, ensure the value `auroralab` is preset. For the **Use AZs** parameter (Regional Settings section) select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
 

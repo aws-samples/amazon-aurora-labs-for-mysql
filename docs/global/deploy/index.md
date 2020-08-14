@@ -76,6 +76,9 @@ In the **Scheduling of modifications** section, choose the **Apply immediately**
 
 Once the modification is complete, and the DB cluster is in an `available` state again, from the **Actions** dropdown button, choose **Add region**.
 
+!!! note
+    You may need to refresh the web browser page after disabling Backtrack, before you can add a region. If **Add region** appears greyed out, please refresh the web browser page, or verify Backtrack was disabled correctly. 
+
 <span class="image">![RDS Cluster Add Region](rds-cluster-action-add.png?raw=true)</span>
 
 Set the following options on the configuration screen for the secondary DB cluster:
@@ -103,7 +106,7 @@ Set the following options on the configuration screen for the secondary DB clust
     * [ ] Set **Master key** to `[default] aws/rds`
     * [ ] **Check** the box for **Enable Enhanced Monitoring**
     * [ ] Set **Granularity** to `1 second`
-    * [ ] Set **Monitoring Role** to `auroralab-monitor-us-east-1`
+    * [ ] Set **Monitoring Role** to `auroralab-monitor-[secondary-region]`
 
 !!! note
     Please note there are **two** monitoring roles in the list, one for the primary region (the one in the top right corner of your web page), the other for the secondary region (typically `us-east-1`). At this step, you need the **secondary** region one.
