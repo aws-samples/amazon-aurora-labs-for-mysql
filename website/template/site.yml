@@ -480,6 +480,126 @@ Resources:
         Environment: !Ref tagEnvironment
         Workload: !Ref 'AWS::StackName'
 
+  ## Create a table schema for the events (old schema for retention purposes)
+  glueTableEventsV1:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref glueDatabase
+      TableInput:
+        Description: !Sub 'Clickstream event data for lab activity on stack ${AWS::StackName}'
+        Name: !Sub 'v1events'
+        Retention: 0
+        StorageDescriptor:
+          Columns:
+          - Name: stack_uuid
+            Type: string
+          - Name: stack_name
+            Type: string
+          - Name: stack_region
+            Type: string
+          - Name: deployed_cluster
+            Type: string
+          - Name: deployed_ml
+            Type: string
+          - Name: event_timestamp
+            Type: timestamp
+          - Name: event_scope
+            Type: string
+          - Name: event_action
+            Type: string
+          - Name: event_message
+            Type: string
+          - Name: ee_event_id
+            Type: string
+          - Name: ee_team_id
+            Type: string
+          - Name: ee_module_id
+            Type: string
+          - Name: ee_module_version
+            Type: string
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          Location: !Sub 's3://${s3Analytics}/v1events/data/'
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+            Parameters:
+              serialization.format: '1'
+          BucketColumns: []
+          SortColumns: []
+          StoredAsSubDirectories: false
+        PartitionKeys:
+        - Name: year
+          Type: string
+        - Name: month
+          Type: string
+        - Name: day
+          Type: string
+        - Name: hour
+          Type: string
+        TableType: EXTERNAL_TABLE
+
+  ## Role for Firehose to write to S3 (old schema for retention purposes)
+  roleCrawlerEventsV1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-${glueTableEventsV1}-${AWS::Region}'
+      Description: Role to permit the Glue crawler to scan S3 and manipulate the table.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'glue.amazonaws.com'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${s3Analytics}/${glueTableEventsV1}/data/*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-${glueTableEventsV1}-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  # Create a Glue crawler to keep table schema up to date (partition discovery) (old schema for retention purposes)
+  glueCrawlerEventsV1:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: !Sub '${AWS::StackName}-${glueTableEventsV1}'
+      Configuration: '{"Version":1.0,"CrawlerOutput":{"Partitions":{"AddOrUpdateBehavior":"InheritFromTable"}},"Grouping":{"TableGroupingPolicy":"CombineCompatibleSchemas"}}'
+      DatabaseName: !Ref glueDatabase
+      Description: !Sub 'Clickstream event data crawler for lab activity on stack ${AWS::StackName}'
+      Role: !GetAtt roleCrawlerEventsV1.Arn
+      Schedule:
+         ScheduleExpression: 'cron(15 1 * * ? *)'
+      SchemaChangePolicy:
+        DeleteBehavior: LOG
+        UpdateBehavior: UPDATE_IN_DATABASE
+      Targets:
+        CatalogTargets:
+          - DatabaseName: !Ref glueDatabase
+            Tables: [ !Ref glueTableEventsV1 ]
+      Tags:
+        Name: !Sub '${AWS::StackName}-${glueTableEventsV1}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
   ## Firehose access log destination
   streamLogs:
     Type: 'AWS::Logs::LogGroup'
