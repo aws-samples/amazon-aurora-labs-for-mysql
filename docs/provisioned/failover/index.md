@@ -241,9 +241,6 @@ As before, you will also receive two event notification emails for each failover
 
 ## 5. Using RDS Proxy to minimize failover disruptions
 
-!!! warning "Feature in Preview"
-    Amazon RDS Proxy is currently available in a limited number of regions, in preview. It is not recommended for use in production workloads.
-
 In this test you will create an <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy.html" target="_blank">Amazon RDS Proxy</a> for your DB cluster, use the [simple monitoring script](/scripts/simple_failover.py) to connect to it, invoke a manual failover and compare the results with the previous tests that connect directly to the database.
 
 ??? tip "Learn more about Amazon RDS Proxy"
@@ -266,7 +263,7 @@ In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, c
 
 <span class="image">![Configure Proxy Connectivity](5-config-connectivity.png?raw=true)</span>
 
-Check the box next to **I acknowledge this limited service agreement for the RDS Proxy.** due to the preview nature of this feature and click **Create proxy**.
+Click **Create proxy**.
 
 <span class="image">![Agree Create](5-config-proxy-agree.png?raw=true)</span>
 
