@@ -19,7 +19,7 @@ repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
 repo_url: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Copyright
-copyright: '&copy; 2019, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
+copyright: '&copy; 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
 
 # Theme
 theme:
