@@ -4,6 +4,7 @@ This scripts will process the database activity stream events and printing them 
 
 Changelog:
 2020-07-31 - Initial release
+2020-11-08 - Added CommitmentPolicy from upgraded aws_encryption_sdk
 
 Dependencies:
 none
@@ -21,6 +22,7 @@ import time
 import sys
 import aws_encryption_sdk
 from Crypto.Cipher import AES
+from aws_encryption_sdk import CommitmentPolicy
 from aws_encryption_sdk import DefaultCryptoMaterialsManager
 from aws_encryption_sdk.internal.crypto import WrappingKey
 from aws_encryption_sdk.key_providers.raw import RawMasterKeyProvider
@@ -42,6 +44,9 @@ args = parser.parse_args()
 print("Press Ctrl+C to quit this test...")
 if args.filter_service:
     print("Filtering is enabled, only user events are displayed, service events are skipped. Disable with parameter '-f0'.")
+
+# Init encryption client with correct committment policy
+enc_client = aws_encryption_sdk.EncryptionSDKClient(commitment_policy=CommitmentPolicy.REQUIRE_ENCRYPT_ALLOW_DECRYPT)
 
 # MasterPeyProvider class
 class MyRawMasterKeyProvider(RawMasterKeyProvider):
@@ -94,7 +99,7 @@ def track_analytics():
 def decrypt_payload(payload, data_key):
     my_key_provider = MyRawMasterKeyProvider(data_key)
     my_key_provider.add_master_key("DataKey")
-    decrypted_plaintext, header = aws_encryption_sdk.decrypt(
+    decrypted_plaintext, header = enc_client.decrypt(
         source=payload,
         materials_manager=aws_encryption_sdk.DefaultCryptoMaterialsManager(master_key_provider=my_key_provider))
     return decrypted_plaintext
