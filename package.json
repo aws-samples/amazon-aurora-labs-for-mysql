@@ -1,11 +1,19 @@
 {
   "name": "amazon-aurora-labs-for-mysql",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Build pipeline for the Amazon Aurora Labs for MySQL project.",
+  "homepage": "https://awsauroralabsmy.com/",
+  "license": "MIT-0",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/aws-samples/amazon-aurora-labs-for-mysql.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-samples/amazon-aurora-labs-for-mysql/issues"
+  },
   "devDependencies": {
-    "grunt": "latest",
+    "grunt": "^1.3.0",
     "grunt-exec": "latest",
     "standard": "^13.1.0"
-  },
-  "license": "MIT-0"
+  }
 }
