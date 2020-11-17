@@ -8,7 +8,7 @@ This lab contains the following tasks:
 2. Create a database schema
 3. Insert data from a secondary cluster
 4. Test consistency modes with a simple application
-5. Choosing the right read consistency mode
+5. Choose the right read consistency mode
 
 This lab requires the following prerequisites:
 
@@ -251,7 +251,7 @@ Try refreshing the account summary a few times by pressing `r` then `Enter` at t
 Press `q` then `Enter` to exit the application.
 
 
-## 5. Choosing the right read consistency mode
+## 5. Choose the right read consistency mode
 
 Above, you were able to experience what the impact of the consistency modes might look like to an end user interacting with applications leveraging Global Database Write Forwarding. Which one is the right one for your workload, may depend on a number of factors. Below are a few example use cases:
 
@@ -260,7 +260,7 @@ Above, you were able to experience what the impact of the consistency modes migh
 
     One example is a order processing workflow. Given an eCommerce use case, when a customer submits an order, the application responds with an *Order Confirmation* screen. It is typically sufficient that the application receives confirmation that the writes were successful to the database without needing a strongly consistent subsequent read of the data set.
 
-    Another example is a user profile update workflow. Given a use profile service, when a customer updates their profile, confirmation that the changes were saved is also typically sufficient. Lets say the end user updates their password, the password is not displayed back. Additionally, it will take the user a few seconds to navigate the interface to use the newly set password, this allows the database time to reach consistency of that change.
+    Another example is a user profile update workflow. Given a user profile service, when a customer updates their profile, confirmation that the changes were saved is also typically sufficient. Lets say the end user updates their password, the password is not displayed back. Additionally, it will take the user a few seconds to navigate the interface to use the newly set password, this allows the database time to reach consistency of that change.
 
 === "Session Consistency"
     Use `SESSION` read consistency mode when immediate subsequent read accuracy is needed, and cannot be achieved by other means, such as caching the changed data application side.
