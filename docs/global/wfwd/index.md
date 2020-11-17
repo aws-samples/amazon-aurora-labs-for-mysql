@@ -1,4 +1,4 @@
-# Work with Write Forwarding Consistency
+# Use Write Forwarding
 
 You can enable read/write capability for one or more of the secondary clusters in an Aurora global database. In this configuration, Aurora forwards SQL statements that perform write operations to the primary cluster. This feature, called <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding.html" target="_blank">write forwarding</a>, helps you to avoid implementing your own mechanism to send write operations from a secondary AWS Region to the primary AWS Region. In this lab, you will exercise this feature and explore the different data consistency modes associated with this feature.
 

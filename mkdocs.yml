@@ -78,7 +78,7 @@ nav:
     - Deploy a Global Database: 'global/deploy/index.md'
     - Connect an Application: 'global/biapp/index.md'
     - Monitor a Global Database: 'global/monitor/index.md'
-    - Work with Write Forwarding Consistency: 'global/wfwd/index.md'
+    - Use Write Forwarding: 'global/wfwd/index.md'
     - Fail Over a Global Database: 'global/failover/index.md'
     - Fail Back a Global Database: 'global/failback/index.md'
   - Serverless:

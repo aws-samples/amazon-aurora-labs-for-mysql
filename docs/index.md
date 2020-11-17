@@ -45,7 +45,7 @@ The following labs are currently available, click on the relevant tab to see the
     G1 | [**Deploy a Global Database**](/global/deploy/) | Required | Create a Global Database which will span across multiple regions.
     G3 | [**Connect an Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the Global Database.
     G4 | [**Monitor a Global Database**](/global/monitor/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated I/O, and the cross region replication data transfer of the Global Database.
-    G4 | [**Work with Write Forwarding Consistency**](/global/wfwd/) | Recommended | Use a simple application to understand and experience the different consistency modes available with the Global Database Write Forwarding feature.
+    G4 | [**Use Write Forwarding**](/global/wfwd/) | Recommended | Use a simple application to understand and experience the different consistency modes available with the Global Database Write Forwarding feature.
     G5 | [**Fail Over a Global Database**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario, and promote the secondary region in a Global Database.
     G6 | [**Fail Back a Global Database**](/global/failback/) | Optional | Restore full operations in the original primary region for the Global Database after a failover.
 
