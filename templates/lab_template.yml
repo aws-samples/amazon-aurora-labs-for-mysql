@@ -134,8 +134,8 @@ Conditions:
 Mappings:
   RegionalSettings:
     us-east-1:
-      clientAmi: ami-085925f297f89fce1
-      supersetAmi: ami-09d95fab7fff3776c
+      clientAmi: ami-0885b1f6bd170450c
+      supersetAmi: ami-0947d2ba12ee1ff75
       clientType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
@@ -143,8 +143,8 @@ Mappings:
       az2: us-east-1c
       az3: us-east-1e
     us-east-2:
-      clientAmi: ami-07c1207a9d40bc3bd
-      supersetAmi: ami-026dea5602e368e96
+      clientAmi: ami-0a91cd140a1fc148a
+      supersetAmi: ami-03657b56516ab7912
       clientType: m5.large
       nodeType: db.r5.large
       name: Ohio
@@ -152,8 +152,8 @@ Mappings:
       az2: us-east-2a
       az3: us-east-2b
     us-west-2:
-      clientAmi: ami-003634241a8fcdec0
-      supersetAmi: ami-0e34e7b9ca0ace12d
+      clientAmi: ami-07dd19a7900a1f049
+      supersetAmi: ami-0528a5175983e7f28
       clientType: m5.large
       nodeType: db.r5.large
       name: Oregon
@@ -161,8 +161,8 @@ Mappings:
       az2: us-west-2c
       az3: us-west-2d
     ca-central-1:
-      clientAmi: ami-0edd51cc29813e254
-      supersetAmi: ami-0f75c2980c6a5851d
+      clientAmi: ami-02e44367276fe7adc
+      supersetAmi: ami-0c2f25c1f66a1ff4d
       clientType: m5.large
       nodeType: db.r5.large
       name: Montreal
@@ -170,8 +170,8 @@ Mappings:
       az2: ca-central-1a
       az3: ca-central-1b
     eu-central-1:
-      clientAmi: ami-0e342d72b12109f91
-      supersetAmi: ami-0a02ee601d742e89f
+      clientAmi: ami-0502e817a62226e03
+      supersetAmi: ami-00a205cb8e06c3c4e
       clientType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
@@ -179,8 +179,8 @@ Mappings:
       az2: eu-central-1a
       az3: eu-central-1c
     eu-west-1:
-      clientAmi: ami-0701e7be9b2a77600
-      supersetAmi: ami-0ea3405d2d2522162
+      clientAmi: ami-0aef57767f5404a3c
+      supersetAmi: ami-0bb3fad3c0286ebd5
       clientType: m5.large
       nodeType: db.r5.large
       name: Ireland
@@ -188,8 +188,8 @@ Mappings:
       az2: eu-west-1b
       az3: eu-west-1c
     eu-west-2:
-      clientAmi: ami-0eb89db7593b5d434
-      supersetAmi: ami-032598fcc7e9d1c7a
+      clientAmi: ami-0ff4c8fb495a5a50d
+      supersetAmi: ami-0a669382ea0feb73a
       clientType: m5.large
       nodeType: db.r5.large
       name: London
@@ -197,8 +197,8 @@ Mappings:
       az2: eu-west-2a
       az3: eu-west-2c
     eu-west-3:
-      clientAmi: ami-08c757228751c5335
-      supersetAmi: ami-01c72e187b357583b
+      clientAmi: ami-0d3f551818b21ed81
+      supersetAmi: ami-0de12f76efe134f2f
       clientType: m5.large
       nodeType: db.r5.large
       name: Paris
@@ -206,8 +206,8 @@ Mappings:
       az2: eu-west-3b
       az3: eu-west-3a
     ap-southeast-1:
-      clientAmi: ami-0f7719e8b7ba25c61
-      supersetAmi: ami-0615132a0f36d24f4
+      clientAmi: ami-0c20b8b385217763f
+      supersetAmi: ami-015a6758451df3cb9
       clientType: m5.large
       nodeType: db.r5.large
       name: Singapore
@@ -215,8 +215,8 @@ Mappings:
       az2: ap-southeast-1b
       az3: ap-southeast-1a
     ap-southeast-2:
-      clientAmi: ami-04fcc97b5f6edcd89
-      supersetAmi: ami-088ff0e3bde7b3fdf
+      clientAmi: ami-07fbdcfe29326c4fb
+      supersetAmi: ami-0f96495a064477ffb
       clientType: m5.large
       nodeType: db.r5.large
       name: Sydney
@@ -224,8 +224,8 @@ Mappings:
       az2: ap-southeast-2b
       az3: ap-southeast-2c
     ap-south-1:
-      clientAmi: ami-0b44050b2d893d5f7
-      supersetAmi: ami-0447a12f28fddb066
+      clientAmi: ami-0a4a70bd98c6d6441
+      supersetAmi: ami-0e306788ff2473ccb
       clientType: m5.large
       nodeType: db.r5.large
       name: Mumbai
@@ -233,8 +233,8 @@ Mappings:
       az2: ap-south-1b
       az3: ap-south-1c
     ap-northeast-1:
-      clientAmi: ami-0278fe6949f6b1a06
-      supersetAmi: ami-0a1c2ec61571737db
+      clientAmi: ami-0f2dd5fc989207c82
+      supersetAmi: ami-0ce107ae7af2e92b5
       clientType: m5.large
       nodeType: db.r5.large
       name: Tokyo
@@ -242,8 +242,8 @@ Mappings:
       az2: ap-northeast-1a
       az3: ap-northeast-1c
     ap-northeast-2:
-      clientAmi: ami-00edfb46b107f643c
-      supersetAmi: ami-01af223aa7f274198
+      clientAmi: ami-007b7745d0725de95
+      supersetAmi: ami-03b42693dc6a7dc35
       clientType: m5.large
       nodeType: db.r5.large
       name: Seoul
@@ -264,7 +264,7 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.08.1
+      dbVersion: 5.7.mysql_aurora.2.08.2
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     scaling:
@@ -816,14 +816,14 @@ Resources:
 
                 # install python pip and aws cli
                 apt-get -y install python3-pip
-                pip3 install pymysql
-                pip3 install awscli
-                pip3 install aws_encryption_sdk
+                wget https://[[website]]/support/client-requirements.txt
+                pip3 install -r client-requirements.txt
                 cd /home/ubuntu
                 curl -O https://[[website]]/scripts/reader_loadtest.py
                 curl -O https://[[website]]/scripts/simple_failover.py
                 curl -O https://[[website]]/scripts/aware_failover.py
                 curl -O https://[[website]]/scripts/das_reader.py
+                curl -O https://[[website]]/scripts/bank_deposit.py
                 curl -O https://[[website]]/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
                 echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log

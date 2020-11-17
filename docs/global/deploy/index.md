@@ -95,7 +95,10 @@ Set the following options on the configuration screen for the secondary DB clust
     * [ ] Make sure the **Publicly accessible** option is set to `No`
     * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection
 
-4. Expand the **Advanced configuration** section, and configure the following options:
+4. In the **Read replica write forwarding** section:
+    * [ ] **Check** the box for **Enable read replica write forwarding**
+
+5. Expand the **Advanced configuration** section, and configure the following options:
     * [ ] Set **DB instance identifier** to `auroralab-mysql-node-3`
     * [ ] Set **DB cluster identifier** to `auroralab-mysql-secondary`
     * [ ] For **DB cluster parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)

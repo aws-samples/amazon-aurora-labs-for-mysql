@@ -1,0 +1,4 @@
+pymysql
+awscli
+aws_encryption_sdk
+prettytable
