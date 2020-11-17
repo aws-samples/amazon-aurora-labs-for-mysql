@@ -23,13 +23,17 @@ import _thread
 import socket
 import random
 import pymysql
+import datetime
+import json
+import urllib3
+from os import environ
 
 # Define parser
 parser = argparse.ArgumentParser()
-parser.add_argument('-e', '--endpoint', help="The database endpoint")
-parser.add_argument('-p', '--password', help="The database user password")
-parser.add_argument('-u', '--username', help="The database user name")
-parser.add_argument('-d', '--database', help="The schema (database) to use")
+parser.add_argument('-e', '--endpoint', help="The database endpoint", required=True)
+parser.add_argument('-p', '--password', help="The database user password", required=True)
+parser.add_argument('-u', '--username', help="The database user name", required=True)
+parser.add_argument('-d', '--database', help="The schema (database) to use", required=True)
 parser.add_argument('-t', '--threads', help="The number of threads to use", type=int, default=64)
 args = parser.parse_args()
 
@@ -38,6 +42,37 @@ query_count = 0
 max_id = 2500000
 query_iterations = 100
 lock = threading.Lock()
+
+# Track this lab for usage analytics, if user has explicitly or implicitly agreed
+def track_analytics():
+    http = urllib3.PoolManager()
+    if environ["AGREETRACKING"] == 'Yes':
+        # try/catch
+        try:
+            # build tracker payload
+            payload = {
+                'stack_uuid': environ["STACKUUID"],
+                'stack_name': environ["STACKNAME"],
+                'stack_region': environ["STACKREGION"],
+                'deployed_cluster': None,
+                'deployed_ml':  None,
+                'deployed_gdb': None,
+                'is_secondary': None,
+                'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                'event_scope': 'Script',
+                'event_action': 'Execute',
+                'event_message': 'reader_loadtest.py',
+                'ee_event_id': None,
+                'ee_team_id': None,
+                'ee_module_id': None,
+                'ee_module_version': None
+            }
+
+            # Send the tracking data
+            r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+        except Exception as e:
+            # Errors in tracker interaction should not prevent operation of the function in critical path
+            print("[ERROR]", e)
 
 # Query thread
 def thread_func(endpoint, username, password, schema, max_id, iterations):
@@ -127,6 +162,10 @@ def progress_func():
 
         # No longer initial pass
         initial = False
+
+
+# Invoke tracking function
+track_analytics()
 
 # Start progress thread
 _thread.start_new_thread(progress_func, ())
