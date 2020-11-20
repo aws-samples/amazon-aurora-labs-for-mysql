@@ -228,7 +228,7 @@ Press `q` then `Enter` to exit the application.
 
 When read consistency is set to `GLOBAL`, a session in a secondary region sees changes made by that session. It also sees all committed changes from both the primary region and other secondary regions. Each query might wait for a period that varies depending on the amount of session lag. The query proceeds when the secondary cluster is up-to-date with all committed data from the primary cluster, as of the time that the query began.
 
-As before, start the banking application, this time using session consistency and using the correct database credentials. Replace the ==[readerEndpoint]== placeholder with the reader endpoint of your **secondary region** DB cluster.
+As before, start the banking application, this time using global consistency and using the correct database credentials. Replace the ==[readerEndpoint]== placeholder with the reader endpoint of your **secondary region** DB cluster.
 
 ```shell
 python3 bank_deposit.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -c GLOBAL
