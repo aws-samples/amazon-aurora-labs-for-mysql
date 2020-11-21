@@ -622,7 +622,7 @@ Resources:
         SecretStringTemplate: '{"username": "masteruser"}'
         GenerateStringKey: 'password'
         PasswordLength: 10
-        ExcludeCharacters: '"@/\$`&:'
+        ExcludeCharacters: '"@/\$`&:{}()[]'
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]

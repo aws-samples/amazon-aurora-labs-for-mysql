@@ -141,7 +141,7 @@ In order to demonstrate a more realistic load scenario, you will now start a bac
         clusterEndpoint="[clusterEndpoint]",\
         dbUser=$DBUSER,\
         dbPassword="$DBPASS",\
-        numThreads=2,
+        numThreads=2,\
         runTime=900
 
 <span class="image">![SSM Send Command](ssm-send-command.png?raw=true)</span>
