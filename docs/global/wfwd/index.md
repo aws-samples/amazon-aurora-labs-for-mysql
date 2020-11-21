@@ -28,6 +28,7 @@ Parameter | Parameter Key | Location in Primary Region | Location in Secondary R
 Aurora **cluster** endpoint | `clusterEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | *not available in secondary region*
 Aurora **reader** endpoint | `readerEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | RDS service console
 Secrets Manager Secret ARN | `secretArn` | Event Engine Team Dashboard or CloudFormation stack outputs | *used from the primary region*
+EC2 Workstation Identifier | `ec2Instance` | Event Engine Team Dashboard or CloudFormation stack outputs | *not needed in the secondary region*
 
 If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the parameter values for the **primary region** may be found on the Team Dashboard in Event Engine.
 
@@ -111,6 +112,40 @@ CREATE TABLE `transactions` (
 
 You have now created the schema of a very simple banking applications. You can now track customer accounts and the transactions they make.
 
+Disconnect from the database using the following command:
+
+```sql
+quit;
+```
+
+In order to demonstrate a more realistic load scenario, you will now start a background workload, so the Global Database is actively performing work, not idle. You will use Percona's TPCC-like benchmark script based on sysbench to generate load. Start the load generator, choose the tab below that best matches your circumstances, and run the indicated commands:
+
+=== "The primary DB cluster has been pre-created for me"
+    If AWS CloudFormation has provisioned the **primary** DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run the simplified command below, replacing the ==[ec2Instance]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
+
+        aws ssm send-command \
+        --document-name auroralab-sysbench-test \
+        --instance-ids [ec2Instance] \
+        --parameters \
+        numThreads=2,\
+        runTime=900
+
+
+=== "I have created the primary DB cluster myself"
+    If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the **primary** Aurora DB cluster manually execute the command below, replacing the ==[ec2Instance]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop. Also replace the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+
+        aws ssm send-command \
+        --document-name auroralab-sysbench-test \
+        --instance-ids [ec2Instance] \
+        --parameters \
+        clusterEndpoint="[clusterEndpoint]",\
+        dbUser=$DBUSER,\
+        dbPassword="$DBPASS",\
+        numThreads=2,
+        runTime=900
+
+<span class="image">![SSM Send Command](ssm-send-command.png?raw=true)</span>
+
 
 ## 3. Insert data from a secondary cluster
 
@@ -166,6 +201,12 @@ INSERT INTO `transactions` (`account_number`, `trx_medium`, `trx_type`, `trx_amo
 Note that the operation latencies are higher because these statements are being forwarded to the primary region, thus incurring a cross region network round-trip.
 
 <span class="image">![Insert Data via Forwarding](ssm-wfwd-insert-data.png?raw=true)</span>
+
+Disconnect from the database using the following command:
+
+```sql
+quit;
+```
 
 
 ## 4. Test consistency modes with a simple application
