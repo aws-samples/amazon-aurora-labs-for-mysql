@@ -21,11 +21,11 @@ This lab requires the following prerequisites:
 
 In this lab, you will interact with the global database created in the previous labs from two distinct regions. Thus, you need to retrieve a few connection related parameters for both the primary and secondary regions, to be able to connect to the database.
 
-This table provides an overview of thep arameters needed, and where you can find them:
+This table provides an overview of the parameters needed, and where you can find them:
 
 Parameter | Parameter Key | Location in Primary Region | Location in Secondary Region
 ----- | ----- | ----- | -----
-Aurora **cluster** endpoint | `clusterEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | *not available in secondary region*
+Aurora **cluster** endpoint | `clusterEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | *not active in the secondary region*
 Aurora **reader** endpoint | `readerEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | RDS service console
 Secrets Manager Secret ARN | `secretArn` | Event Engine Team Dashboard or CloudFormation stack outputs | *used from the primary region*
 EC2 Workstation Identifier | `ec2Instance` | Event Engine Team Dashboard or CloudFormation stack outputs | *not needed in the secondary region*
@@ -285,7 +285,7 @@ What do you see? &mdash; The screen has been refreshed, the read operations to p
 
 <span class="image">![Global Consistency After Deposit](ssm-wfwd-global-after.png?raw=true)</span>
 
-Try refreshing the account summary a few times by pressing `r` then `Enter` at the prompt. Subsequent reads should be consistently slower, compared to our previous consistency tests.
+Try refreshing the account summary a few times by pressing `r` then `Enter` at the prompt. Since each database query waits for the secondary cluster to catch up with committed data as of the time the query began, reads should be consistently slower compared to our previous consistency tests.
 
 <span class="image">![Global Consistency After Refresh](ssm-wfwd-global-refresh.png?raw=true)</span>
 
