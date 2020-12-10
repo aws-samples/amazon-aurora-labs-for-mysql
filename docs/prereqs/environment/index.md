@@ -69,7 +69,9 @@ Please select the option that matches your circumstances best:
     !!! warning "Region Check"
         Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen. Also note, the region should not be US East (N. Virginia) / us-east-1, if you are planning to run the Aurora Global Databsase labs.
 
-    In the field named **Stack Name**, ensure the value `auroralab` is preset. For the **Use AZs** parameter (Regional Settings section) select 3 availability zones (AZs) from the dropdown. If your desired region only supports 2 AZs, please select just the two AZs available.
+    In the field named **Stack Name**, ensure the value `auroralab` is preset.
+
+    If you are planning to run the Aurora Global Database labs, please also select **Yes** for the **Enable Aurora Global Database Labs?** parameter (Lab Features section).
 
     If you are planning to run the Aurora Machine Learning integration labs, please also select **Yes** for the **Enable Aurora ML Labs?** parameter (Lab Features section).
 
