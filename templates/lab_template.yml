@@ -264,7 +264,7 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.08.2
+      dbVersion: 5.7.mysql_aurora.2.09.1
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     scaling:
@@ -816,9 +816,9 @@ Resources:
 
                 # install python pip and aws cli
                 apt-get -y install python3-pip
-                wget https://[[website]]/support/client-requirements.txt
-                pip3 install -r client-requirements.txt
                 cd /home/ubuntu
+                curl -O https://[[website]]/support/client-requirements.txt
+                pip3 install -r client-requirements.txt
                 curl -O https://[[website]]/scripts/reader_loadtest.py
                 curl -O https://[[website]]/scripts/simple_failover.py
                 curl -O https://[[website]]/scripts/aware_failover.py
