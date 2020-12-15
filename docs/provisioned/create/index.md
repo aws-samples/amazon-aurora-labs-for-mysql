@@ -43,14 +43,10 @@ In the **Engine options** section:
 
 * [ ] Choose the `Amazon Aurora` engine type.
 * [ ] Choose the `Amazon Aurora with MySQL compatibility` edition.
-* [ ] Select the `Aurora (MySQL 5.7) 2.08.1` version.
-* [ ] Select the `Regional` database option.
+* [ ] Choose the **Capacity type** of `Provisioned`.
+* [ ] Select the `Aurora (MySQL 5.7) 2.09.1` version.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
-
-In the **Database features** section:
-
-* [ ] Select the `One writer and multiple readers` option.
 
 In the **Templates** section:
 
@@ -63,24 +59,20 @@ In the **Settings** section:
 * [ ] Set the **Master password** to a desired and memorable value, confirm the password.
 * [ ] Ensure the check box **Auto generate a password** is **not checked**.
 
-??? info "What do these selections mean?"
-    The selections so far will instruct AWS to create an Aurora MySQL database cluster with the specified version of the MySQL 5.7 compatible engine in a highly available configuration with one writer and one reader database instance in the cluster. This is called an **Aurora provisioned DB cluster**, because you indicate the specific type of compute capacity that powers your cluster. If you wish to create an Aurora Serverless DB cluster, and test the Aurora Serverless functionality, we have [a different lab for you](/serverless/create/).
-
-<span class="image">![Database Settings](1-db-settings.png?raw=true)</span>
-
 In the **DB instance size** section:
 
 * [ ] Select **Memory Optimized classes**, and choose `r5.large` in the size drop-down.
+
+<span class="image">![Database Settings](1-db-settings.png?raw=true)</span>
 
 In the **Availability & durability** section:
 
 * [ ] Choose `Create an Aurora Replica/Reader node in a different AZ`.
 
-<span class="image">![Database Settings](1-db-size.png?raw=true)</span>
+<span class="image">![Database Settings](1-db-availability.png?raw=true)</span>
 
 In the **Connectivity** section:
 
-* [ ] Expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, we have configured all the networking resources for you.
 * [ ] Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`.
 * [ ] The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should be `auroralab-db-subnet-group`.
 * [ ] Make sure the cluster **Publicly accessible** option is set to `No`.
@@ -128,12 +120,10 @@ Also in the **Additional configuration** section:
     * Regional cluster composed of a writer and a reader DB instance in different availability zones (highly available)
     * Deployed in the VPC and using the network configuration of the lab environment
     * Using custom database engine parameters that enable the slow query log, S3 access and tune a few other configurations
-    * Automatically backed up continuously, retaining backups for 7 days
+    * Automatically backed up continuously, retaining backups for 1 day
     * Using data at rest encryption
     * Retaining 24 hours worth of change data for backtrack purposes
     * With Enhanced Monitoring and Performance Insights enabled
-
-<a href="#" onclick="VerifyAllCheckboxes(); return false;">Verify</a> that all checkboxes are checked.
 
 Click **Create database** to provision the DB cluster.
 
@@ -239,4 +229,4 @@ You should see `masteruser` as the response string. Next, verify the version of 
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 
-You should see a response containing version number `2.08.1`.
+You should see a response containing version number `2.09.1`.

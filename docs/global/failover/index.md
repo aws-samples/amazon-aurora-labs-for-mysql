@@ -99,16 +99,16 @@ Open an additional command line session to the Session Manager workstation in th
 !!! warning "Region Check"
     Ensure you are still working in the **secondary region**, especially if you are the links in this guide to open the service console at the right screen.
 
-Once connected, you need to set up the database credentials on the EC2 workstation in the secondary region. If you have created the original primary DB cluster manually, you have performed a similar step at that time. run the following commands, replacing the placeholders with values as indicated in the below table:
+Once connected, you need to set up the database credentials on the EC2 workstation in the secondary region. If you have created the original primary DB cluster manually, you have performed a similar step at that time. Run the following commands, replacing the placeholders with values as indicated in the below table:
 
 Placeholder | Where to find it
 ----- | -----
 ==[secretArn]== | If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the value of the Secret ARN may be found on the Team Dashboard in Event Engine. Otherwise you will find it in the Outputs of the CloudFormation stack you used to provision the lab environment. The value starts with `arn:aws:secretsmanager:`.
-==[primary_region]== | The identifier of the **primary region** you are using, click on the name in the top right corner of the console. You'll find it next to the name, for example `us-west-2`, although your region may vary.
+==[primaryRegion]== | The identifier of the **primary region** you are using, click on the name in the top right corner of the console. You'll find it next to the name, for example `us-west-2`, although your region may vary.
 
 
 ```shell
-CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] --region [primary_region] | jq -r '.SecretString'`
+CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] --region [primaryRegion] | jq -r '.SecretString'`
 export DBUSER="`echo $CREDS | jq -r '.username'`"
 export DBPASS="`echo $CREDS | jq -r '.password'`"
 echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc

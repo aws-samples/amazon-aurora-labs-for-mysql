@@ -188,4 +188,4 @@ On the setup screen choose **Apply immediately** and click **Continue**.
 
 <span class="image">![RDS DAS Stop](rds-das-stop.png?raw=true)</span>
 
-The status column on the RDS Database home page for the cluster will start showing `configuring-activity-stream`. The operation wil lbe complete when the DB cluster and its DB instances show a status of `Available`.
+The status column on the RDS Database home page for the cluster will start showing `configuring-activity-stream`. The operation will be complete when the DB cluster and DB instances show a status of `Available`.

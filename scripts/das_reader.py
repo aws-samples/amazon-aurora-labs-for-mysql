@@ -79,9 +79,9 @@ def track_analytics():
                 'deployed_gdb': None,
                 'is_secondary': None,
                 'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
-                'event_scope': 'DAS Lab',
+                'event_scope': 'Script',
                 'event_action': 'Execute',
-                'event_message': 'Executed das_reader.py script',
+                'event_message': 'das_reader.py',
                 'ee_event_id': None,
                 'ee_team_id': None,
                 'ee_module_id': None,
@@ -90,7 +90,6 @@ def track_analytics():
 
             # Send the tracking data
             r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            #print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
         except Exception as e:
             # Errors in tracker interaction should not prevent operation of the function in critical path
             print("[ERROR]", e)

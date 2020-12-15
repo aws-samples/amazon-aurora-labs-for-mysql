@@ -66,7 +66,7 @@ First, you need to **disable** the **Backtrack** feature. At present database ba
 
 <span class="image">![RDS Cluster Modify](rds-cluster-action-modify.png?raw=true)</span>
 
-Scroll down to the **Backtrack** section and choose the **Disable Backtrack** option, then click **Continue** at the bottom of the page.
+Scroll down to the **Additional Configuration** section (expand it if needed) and uncheck the **Enable Backtrack** option, then click **Continue** at the bottom of the page.
 
 <span class="image">![RDS Cluster Disable Backtrack](rds-cluster-disable-backtrack.png?raw=true)</span>
 
@@ -89,13 +89,16 @@ Set the following options on the configuration screen for the secondary DB clust
 2. In the **AWS Region** section:
     * [ ] Choose the **Secondary region** of `US East (N. Virginia)`
 
-3. In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration created above:
+3. In the **Connectivity** section, specify where the database cluster will be deployed within your defined network configuration created above:
     * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`
     * [ ] Ensure the correct **Subnet Group** was selected automatically, it should be named `auroralab-db-subnet-group`.
     * [ ] Make sure the **Publicly accessible** option is set to `No`
     * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection
 
-4. Expand the **Advanced configuration** section, and configure the following options:
+4. In the **Read replica write forwarding** section:
+    * [ ] **Check** the box for **Enable read replica write forwarding**
+
+5. Expand the **Advanced configuration** section, and configure the following options:
     * [ ] Set **DB instance identifier** to `auroralab-mysql-node-3`
     * [ ] Set **DB cluster identifier** to `auroralab-mysql-secondary`
     * [ ] For **DB cluster parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)

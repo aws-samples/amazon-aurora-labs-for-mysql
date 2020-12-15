@@ -53,20 +53,20 @@ The command will be sent to the workstation EC2 instance which will prepare the 
 
 ## 2. Understand the Performance Insights interface
 
-While the command is running, open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazon RDS service console</a> in a new tab, if not already open.
+While the command is running, open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring" target="_blank">Amazon RDS service console</a> at the DB cluster details in a new tab, if not already open.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
 
-In the menu on the left hand side, click on the **Performance Insights** menu option.
+Find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance details. 
 
-<span class="image">![RDS Dashboard](2-menu-perf-ins.png?raw=true)</span>
+<span class="image">![RDS Dashboard](2-find-writer.png?raw=true)</span>
 
-Next, select the desired **DB instance** to load the performance metrics for. For Aurora DB clusters, performance metrics are exposed on an individual DB instance basis. As the different Db instances comprising a cluster may run different workload patterns, and might not all have Performance Insights enabled. For this lab we are generating load on the **Writer** (master) DB instance only. Select the DB instance where the name either ends in `-node-01` or `-instance-1`
+Next, select the **Monitoring** tab, click the **Monitoring** button, to expand the list of available actions, and choose **Performance Insights**. This will open a new browser tab with the **Performance Insights Dashboard** for that DB instance.
 
-<span class="image">![Select DB Instance](2-select-instance.png?raw=true)</span>
+<span class="image">![Select DB Instance](2-select-monitoring.png?raw=true)</span>
 
-Once a DB instance is selected, you will see the main dashboard view of RDS Performance Insights. The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual queries, waits, users and hosts generating the load.
+The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual queries, waits, users and hosts generating the load.
 
 <span class="image">![Performance Insights Dashboard](2-pi-dashboard.png?raw=true)</span>
 
