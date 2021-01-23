@@ -140,8 +140,8 @@ Mappings:
       nodeType: db.r5.large
       name: N. Virginia
       az1: us-east-1a
-      az2: us-east-1c
-      az3: us-east-1e
+      az2: us-east-1b
+      az3: us-east-1c
     us-east-2:
       clientAmi: ami-0a91cd140a1fc148a
       supersetAmi: ami-03657b56516ab7912
