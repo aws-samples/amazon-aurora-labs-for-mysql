@@ -24,7 +24,7 @@ This sample code is made available under the MIT-0 license. See the LICENSE file
   background-color: var(--md-default-fg-color--light);
 }
 
-.md-footer-nav {
+.md-footer {
   background-color: var(--md-default-bg-color--lightest);
   color: var(--md-default-fg-color);
 }
@@ -53,6 +53,7 @@ This sample code is made available under the MIT-0 license. See the LICENSE file
   margin: 0 auto;
   width: 200px;
 }
+
 .architecture {
   margin: 0 auto;
   width: 550px;
