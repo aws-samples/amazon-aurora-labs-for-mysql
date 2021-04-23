@@ -259,7 +259,7 @@ In the **Proxy configuration** section, set the Proxy identifier to `auroralab-m
 
 <span class="image">![Configure Proxy](5-config-proxy-target.png?raw=true)</span>
 
-In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretCusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `auroralab-database-sg`.
+In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretClusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `auroralab-database-sg`.
 
 <span class="image">![Configure Proxy Connectivity](5-config-connectivity.png?raw=true)</span>
 

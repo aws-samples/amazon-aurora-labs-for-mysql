@@ -75,7 +75,7 @@ aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster \
 
 ## 4. Create a SageMaker integration function in Aurora
 
-Run the command below, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster to connect to the database:
+Run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster to connect to the database:
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mltest

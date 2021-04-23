@@ -182,7 +182,7 @@ Next, in the **Select which RDS database this secret will access** section, choo
 
 <span class="image">![Configure Secret](5-config-secret.png?raw=true)</span>
 
-Name the secret `secretCusterMasterUser` and provide a relevant description for the secret, then click **Next**.
+Name the secret `secretClusterMasterUser` and provide a relevant description for the secret, then click **Next**.
 
 <span class="image">![Name Secret](5-name-secret.png?raw=true)</span>
 
