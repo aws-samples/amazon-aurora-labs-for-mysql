@@ -701,7 +701,7 @@ Resources:
                 - "ec2.amazonaws.com"
                 - "ssm.amazonaws.com"
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
         - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
         - "arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess"
       Policies:
