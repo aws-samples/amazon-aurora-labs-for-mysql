@@ -18,7 +18,7 @@ This lab requires the following prerequisites:
 
 ## 1. Inject a failure in the primary region
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/) in the **primary region**. Once connected, run the command below, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster.
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/) in the **primary region**. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are the links in this guide to open the service console at the right screen.
@@ -115,7 +115,7 @@ echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
 echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
 ```
 
-Next, run the command below, replacing the ==[newClusterEndpont]== placeholder with the cluster endpoint of your newly promoted DB cluster.
+Next, run the command below, replacing the ==[newClusterEndpoint]== placeholder with the cluster endpoint of your newly promoted DB cluster.
 
 ```shell
 mysql -h[newClusterEndpoint] -u$DBUSER -p"$DBPASS" mylab

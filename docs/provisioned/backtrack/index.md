@@ -43,7 +43,7 @@ Remember or save the time markers displayed by the commands above, you will use 
 
 <span class="image">![Drop Table](1-drop-table.png?raw=true)</span>
 
-Now, run the following command to replace the dropped table using the sysbench command, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster:
+Now, run the following command to replace the dropped table using the sysbench command, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster:
 
 ```shell
 sysbench oltp_write_only \
