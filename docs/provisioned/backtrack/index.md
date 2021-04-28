@@ -10,7 +10,7 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Deploy Environment](/prereqs/environment/)
+* [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 * [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
@@ -20,7 +20,7 @@ This lab requires the following prerequisites:
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
 
-```
+```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
@@ -29,7 +29,7 @@ Next, drop the `sbtest1` table:
 !!! note
     Consider executing the commands below one at a time, waiting a few seconds between each one. This will make it easier to determine a good point in time for testing backtrack. In a real world situation, you will not always have a clean marker to determine when the unintended change was made. Thus you might need to backtrack a few times to find the right point in time.
 
-```
+```sql
 SELECT current_timestamp();
 
 DROP TABLE sbtest1;
@@ -43,9 +43,9 @@ Remember or save the time markers displayed by the commands above, you will use 
 
 <span class="image">![Drop Table](1-drop-table.png?raw=true)</span>
 
-Now, run the following command to replace the dropped table using the sysbench command, replacing the ==[clusterEndpont]== placeholder with the cluster endpoint of your DB cluster:
+Now, run the following command to replace the dropped table using the sysbench command, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster:
 
-```
+```shell
 sysbench oltp_write_only \
 --threads=1 \
 --mysql-host=[clusterEndpoint] \
@@ -88,9 +88,9 @@ Backtrack the database to a time slightly after the second time marker (right af
 !!! note
     Backtrack operations occur at the DB cluster level, the entire database state is rolled back to a designated point in time, even though the example in this lab illustrates the effects of the operation on an individual table.
 
-```
+```shell
 aws rds backtrack-db-cluster \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 --backtrack-to "yyyy-mm-ddThh:mm:ssZ"
 ```
 
@@ -98,9 +98,9 @@ aws rds backtrack-db-cluster \
 
 Run the below command to track the progress of the backtracking operation. Repeat the command several times, if needed. The operation should complete in a few minutes.
 
-```
+```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 | jq -r '.DBClusters[0].Status'
 ```
 
@@ -120,17 +120,17 @@ quit;
 
 Now backtrack again to a time slightly before the first time marker above (right before dropping the table).
 
-```
+```shell
 aws rds backtrack-db-cluster \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 --backtrack-to "yyyy-mm-ddThh:mm:ssZ"
 ```
 
 Track the progress of the backtracking operation, using the command below. The operation should complete in a few minutes. Repeat the command several times, if needed.
 
-```
+```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-cluster \
+--db-cluster-identifier auroralab-mysql-cluster \
 | jq -r '.DBClusters[0].Status'
 ```
 

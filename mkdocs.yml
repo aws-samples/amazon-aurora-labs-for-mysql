@@ -12,36 +12,39 @@
 site_name: Amazon Aurora Labs for MySQL
 site_description: Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features.
 site_author: 'amazon-aurora-labs-for-mysql@amazon.com'
-site_url: 'https://awsauroralabsmysql.com'
+site_url: 'https://awsauroralabsmy.com'
 
 # Repository
 repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
 repo_url: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Copyright
-copyright: '&copy; 2019, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
+copyright: '<a href="https://aws.amazon.com/privacy/">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://aws.amazon.com/terms/">Site terms</a>&nbsp;&nbsp;|&nbsp;&nbsp;&copy; 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
 
 # Theme
 theme:
   name: 'material'
   logo: 'assets/images/aws_smile_logo.png'
   favicon: 'assets/images/aws-favicon.ico'
-  feature:
-    tabs: true
-  custom_dir: 'docs/theme'
+  features:
+    - tabs
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    accent-fg: '#ff0000'
 
 # Customization
 extra_css:
   - 'assets/css/custom.css'
 #extra_javascript:
-#  - 'javascripts/extra.js'
+#  - 'assets/js/custom.js'
 extra:
   social:
-    - type: 'home'
-      link: 'https://awsauroralabsmysql.com'
-    - type: 'amazon'
+    - icon: 'fontawesome/solid/home'
+      link: 'https://awsauroralabsmy.com'
+    - icon: 'fontawesome/brands/amazon'
       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
-    - type: 'github'
+    - icon: 'fontawesome/brands/github'
       link: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Extensions
@@ -52,13 +55,16 @@ markdown_extensions:
       permalink: true
   - pymdownx.details
   - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.tabbed
+  - pymdownx.tasklist:
+      custom_checkbox: false
 
 # Navigation
 nav:
   - Home: 'index.md'
-  - Getting Started: 'modules/index.md'
   - Prerequisites:
-    - Deploy Environment: 'prereqs/environment/index.md'
+    - Get Started: 'prereqs/environment/index.md'
     - Connect to the Session Manager Workstation: 'prereqs/connect/index.md'
   - Provisioned:
     - Create a New DB Cluster: 'provisioned/create/index.md'
@@ -67,9 +73,18 @@ nav:
     - Backtrack a DB Cluster: 'provisioned/backtrack/index.md'
     - Use Performance Insights: 'provisioned/perf-insights/index.md'
     - Test Fault Tolerance: 'provisioned/failover/index.md'
+    - Set up Database Activity Streams: 'provisioned/das/index.md'
+  - Global Database:
+    - Deploy a Global Database: 'global/deploy/index.md'
+    - Connect an Application: 'global/biapp/index.md'
+    - Monitor a Global Database: 'global/monitor/index.md'
+    - Use Write Forwarding: 'global/wfwd/index.md'
+    - Fail Over a Global Database: 'global/failover/index.md'
+    - Fail Back a Global Database: 'global/failback/index.md'
   - Serverless:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
+<<<<<<< HEAD
   - Global Database:
     - Create an Aurora Global Database: 'global/create/index.md'
   - Machine Learning:
@@ -77,7 +92,24 @@ nav:
     - Comprehend on Aurora: 'ml/comprehend/index.md'
     - Sagemaker on Aurora: 'ml/sagemaker/index.md'
     - Cleanup: 'ml/cleanup/index.md'
+=======
+  - Machine Learning:
+    - Overview and Prerequisites: 'ml/overview/index.md'
+    - Use Comprehend with Aurora: 'ml/comprehend/index.md'
+    - Use SageMaker with Aurora: 'ml/sagemaker/index.md'
+    - Cleanup Lab Resources: 'ml/cleanup/index.md'
+>>>>>>> 8c53d6e2beeb879a09ce61ef94b3522f7ad747f0
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
+  - Win the Data:
+    - Get Started: 'win/index.md'
+    - Connect to Aurora MySQL: 'win/ams-connect/index.md'
+    - Clone an Aurora DB cluster: 'win/ams-clone/index.md'
+    - Deploy a Global Database: 'win/ams-gdb/index.md'
+    - Create a Serverless DB cluster: 'win/ams-srvless-create/index.md'
+    - Use the RDS Data API: 'win/ams-srvless-data-api/index.md'
+    - Connect to Aurora PostgreSQL: 'win/apg-connect/index.md'
+    - Use Query Plan Management: 'win/apg-qpm/index.md'
+    - Set up Database Activity Streams: 'win/apg-das/index.md'
   - Contributing: 'contribute.md'
   - License: 'license.md'

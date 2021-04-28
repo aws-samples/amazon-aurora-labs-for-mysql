@@ -1,0 +1,1239 @@
+---
+## Consolidated template for both Aurora MySQL and PostgreSQL
+## Infrastructure template with an Aurora cluster for lab exercises
+##
+## Changelog:
+## 2020-04-29 - Initial version
+##
+## Dependencies:
+## none
+##
+## License:
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Amazon Aurora Labs
+
+
+## Parameters
+Parameters:
+  agreeTracking:
+    Default: "Yes"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Help us improve our labs by agreeing to the collection of anonymous usage statistics for our labs.
+  EEEventId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EETeamId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EEModuleId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EEModuleVersion:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+
+
+## Metadata
+Metadata:
+
+## Friendly UI grouping for parameters
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Help Us Improve Our Labs!"
+        Parameters:
+          - agreeTracking
+          - EEEventId
+          - EETeamId
+          - EEModuleId
+          - EEModuleVersion
+    ParameterLabels:
+      vpcAZs:
+        default: 'Use AZs:'
+      agreeTracking:
+        default: 'Collect Usage Data?'
+      EEEventId:
+        default: 'EventEngine Event'
+      EETeamId:
+        default: 'EventEngine Team'
+      EEModuleId:
+        default: 'EventEngine Module'
+      EEModuleVersion:
+        default: 'EventEngine Version'
+
+
+## Mappings
+Mappings:
+  RegionalSettings:
+    us-east-1:
+      myAmi: ami-07ebfd5b3428b6f4d
+      pgAmi: ami-035b3c7efe6d061d5
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: N. Virginia
+      az1: us-east-1a
+      az2: us-east-1c
+      az3: us-east-1e
+    us-west-2:
+      myAmi: ami-0d1cd67c26f5fca19
+      pgAmi: ami-0f2176987ee50226e
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: Oregon
+      az1: us-west-2b
+      az2: us-west-2c
+      az3: us-west-2d
+    eu-west-1:
+      myAmi: ami-035966e8adab4aaad
+      pgAmi: ami-0862aabda3fb488b5
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: Ireland
+      az1: eu-west-1a
+      az2: eu-west-1b
+      az3: eu-west-1c
+  NetworkSettings:
+    global:
+      vpcCidr: 172.31.0.0/16
+      subPub1Cidr: 172.31.0.0/24
+      subPub2Cidr: 172.31.1.0/24
+      subPub3Cidr: 172.31.2.0/24
+      subPrv1Cidr: 172.31.10.0/24
+      subPrv2Cidr: 172.31.11.0/24
+      subPrv3Cidr: 172.31.12.0/24
+      sshSourceCidr: 0.0.0.0/0
+  ClusterSettings:
+    mysql:
+      dbSchema: mylab
+      dbDriver: mysql
+      dbVersion: 5.7.mysql_aurora.2.08.1
+      dbEngine: aurora-mysql
+      dbFamily: aurora-mysql5.7
+    postgresql:
+      dbSchema: mylab
+      dbDriver: pgsql
+      dbVersion: 10.7
+      dbEngine: aurora-postgresql
+      dbFamily: aurora-postgresql10
+    scaling:
+      maxCapacity: 2
+      minCapacity: 1
+      cpuLoadTarget: 20
+    sysbench:
+      dbSchema: sbtpcc
+      runTime: '3600'
+      numThreads: '2'
+      numTables: '8'
+      numWarehouses: '2'
+    pgbench:
+      dbSchema: pgbench
+      numFillFactor: '90'
+      numScale: '100'
+  MLSettings:
+    global:
+      notebookType: ml.m4.xlarge
+
+
+## Resources
+Resources:
+
+## The VPC
+  vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
+      Tags:
+        - Key: Name
+          Value: auroralab-vpc
+
+## Create an IGW & attach it to the VPC
+  vpcIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: auroralab-igw
+  attachIgwVpc:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref vpc
+      InternetGatewayId: !Ref vpcIgw
+
+## Create a public subnet in each AZ
+  sub1Public:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub1Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: auroralab-pub-sub-1
+  sub2Public:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub2Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: auroralab-pub-sub-2
+  sub3Public:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub3Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: auroralab-pub-sub-3
+
+## Associate the public subnets with a public route table
+  rtbPublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: auroralab-public-rtb
+  rteToIgw:
+    Type: AWS::EC2::Route
+    DependsOn: attachIgwVpc
+    Properties:
+      RouteTableId: !Ref rtbPublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref vpcIgw
+  srta1Public:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub1Public
+      RouteTableId: !Ref rtbPublic
+  srta2Public:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub2Public
+      RouteTableId: !Ref rtbPublic
+  srta3Public:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub3Public
+      RouteTableId: !Ref rtbPublic
+
+## Create a private subnet in each AZ
+  sub1Private:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv1Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: auroralab-prv-sub-1
+  sub2Private:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv2Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: auroralab-prv-sub-2
+  sub3Private:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv3Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: auroralab-prv-sub-3
+
+## Create a NAT Gateway & EIP
+  natEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  vpcNgw:
+    Type: AWS::EC2::NatGateway
+    DependsOn: attachIgwVpc
+    Properties:
+      AllocationId: !GetAtt natEip.AllocationId
+      SubnetId: !Ref sub2Public
+
+## Associate the private subnets with a NATed route table
+  rtbNat:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: auroralab-nat-rtb
+  rteToNgw:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref rtbNat
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref vpcNgw
+  srta1Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub1Private
+      RouteTableId: !Ref rtbNat
+  srta2Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub2Private
+      RouteTableId: !Ref rtbNat
+  srta3Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub3Private
+      RouteTableId: !Ref rtbNat
+
+## Create VPC S3 endpoint
+  s3Enpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref vpc
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      RouteTableIds:
+        - !Ref rtbPublic
+        - !Ref rtbNat
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Principal: '*'
+            Effect: 'Allow'
+            Action: 's3:*'
+            Resource: [ 'arn:aws:s3:::*', 'arn:aws:s3:::*/*' ]
+
+## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
+  bucketLabData:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - !Ref 'AWS::StackName'
+          - auroralab
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref 'AWS::StackId'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref 'AWS::StackName'
+              - auroralab
+              - !Select
+                - 0
+                - !Split
+                  - "-"
+                  - !Select
+                    - 2
+                    - !Split
+                      - "/"
+                      - !Ref 'AWS::StackId'
+
+## Create DB subnet group
+  dbSubnets:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: auroralab-db-subnet-group
+      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
+      Tags:
+        - Key: Name
+          Value: auroralab-db-subnet-group
+
+## Create bastion security group
+  bastionSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: auroralab-bastion-host
+      GroupDescription: Aurora Lab SSH Security Group
+      Tags:
+        - Key: Name
+          Value: auroralab-bastion-host
+
+## Create DB security group
+  dbSecGroupCluster:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: auroralab-mysql-internal
+      GroupDescription: Aurora MySQL Database Firewall
+      Tags:
+        - Key: Name
+          Value: auroralab-db-internal
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref bastionSecGroup
+          Description: Allows MySQL access from bastion host
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref bastionSecGroup
+          Description: Allows PostgreSQL access from bastion host
+  ruleDbSecGroupClusterIngressSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref dbSecGroupCluster
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref dbSecGroupCluster
+
+## Create enhanced monitoring role
+  roleEnhancedMonitoring:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-monitor-${AWS::Region}
+      Description: Allows your Aurora DB cluster to deliver Enhanced Monitoring metrics.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - monitoring.rds.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-monitor-${AWS::Region}
+
+## Create external integration role
+  roleServiceIntegration:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-integrate-${AWS::Region}
+      Description: Allows your Aurora DB cluster to integrate with other AWS services, such as Amazon S3 for import/export.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - rds.amazonaws.com
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:AbortMultipartUpload
+                  - s3:DeleteObject
+                  - s3:ListMultipartUploadParts
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::*/*
+                  - arn:aws:s3:::*
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-integrate-${AWS::Region}
+
+## Create role for bastion host
+  roleBastionHost:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-bastion-${AWS::Region}
+      Description: Permits user interaction with AWS APIs from the EC2-based workstation.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'ec2.amazonaws.com'
+                - 'ssm.amazonaws.com'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+        - 'arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess'
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:*
+                  - s3:*
+                  - ssm:*
+                  - kms:*
+                  - sns:*
+                  - secretsmanager:*
+                  - kinesis:*
+                  - rds-db:connect
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:GetRolePolicy
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:ListPolicies
+                  - iam:ListRoles
+                  - iam:PassRole
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-bastion-${AWS::Region}
+  profileBastionHost:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - Ref: roleBastionHost
+
+## Create a random generated password and store it as a secret
+  secretClusterMasterUser:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: "Master user credentials for auroralab-cluster"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "masteruser"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\$`&'
+      Tags:
+        - Key: Name
+          Value: auroralab-secret
+
+## Create parameter groups for cluster nodes
+  myNodeParams:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: auroralab-mysql
+      Family: !FindInMap [ ClusterSettings, mysql, dbFamily ]
+      Parameters:
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "10"
+        log_output: FILE
+      Tags:
+        - Key: Name
+          Value: auroralab-mysql
+
+## Create parameter groups for cluster nodes
+  pgNodeParams:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: auroralab-postgresql
+      Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
+      Parameters:
+        log_rotation_age: '1440'
+        log_rotation_size: '102400'
+      Tags:
+        - Key: Name
+          Value: auroralab-postgresql
+
+## Create cluster parameter group
+  myClusterParams:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: auroralab-mysql
+      Family: !FindInMap [ ClusterSettings, mysql, dbFamily ]
+      Parameters:
+        aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
+      Tags:
+        - Key: Name
+          Value: auroralab-mysql
+
+## Create cluster parameter group
+  pgClusterParams:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: auroralab-postgresql
+      Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
+      Parameters:
+        rds.force_ssl: 0
+        shared_preload_libraries: 'pg_stat_statements,pg_hint_plan'
+      Tags:
+        - Key: Name
+          Value: auroralab-postgresql
+
+## Create the bastion host
+  bastionMySQL:
+    Type: AWS::EC2::Instance
+    Properties:
+      SubnetId: !Ref sub1Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
+      SecurityGroupIds: [ !Ref bastionSecGroup ]
+      Tags:
+        - Key: Name
+          Value: auroralab-mysql-bastion
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            Iops: 7500
+            VolumeSize: 150
+            VolumeType: io1
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", myAmi ]
+      IamInstanceProfile: !Ref profileBastionHost
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - !Sub |
+                #!/bin/bash -xe
+
+                # update & upgrade packages
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
+                echo "* updated and upgraded packages" >> /debug.log
+
+                # install other supporting packages
+                apt-get -y install unzip
+                echo "* installed supporting packages" >> /debug.log
+
+                # update SSM agent
+                snap remove amazon-ssm-agent
+                wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
+                DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
+                echo "* update ssm-agent to latest" >> /debug.log
+
+                # install jq
+                apt-get -y install jq
+                echo "* installed jq package" >> /debug.log
+
+                # install mysql client tools
+                apt-get -y install mysql-client
+                mysql --version >> /debug.log
+                echo "* installed mysql-client package" >> /debug.log
+
+                # install sysbench
+                curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | sudo bash
+                apt-get update
+                apt-get -y install sysbench
+                sysbench --version >> /debug.log
+                echo "* installed sysbench package" >> /debug.log
+
+                # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
+                git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
+                cd /home/ubuntu/sysbench-tpcc
+                git checkout 288b7687877a2b52772949f13c507713db182d25
+                chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
+                echo "* cloned percona/sysbench-tpcc repo" >> /debug.log
+
+                # download demo databases
+                git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
+                chown -R ubuntu:ubuntu /home/ubuntu/samples
+                echo "* cloned test databases repo" >> /debug.log
+
+                # install python pip and aws cli
+                apt-get -y install python3-pip
+                pip3 install pymysql
+                pip3 install awscli
+                cd /home/ubuntu
+                curl -O https://awsauroralabsmy.com/scripts/reader_loadtest.py
+                curl -O https://awsauroralabsmy.com/scripts/simple_failover.py
+                curl -O https://awsauroralabsmy.com/scripts/aware_failover.py
+                curl -O https://awsauroralabsmy.com/support/sagemaker_policy.json
+                chown -R ubuntu:ubuntu /home/ubuntu/*.py
+                echo "* pulled load test script" >> /debug.log
+
+                # configure AWS CLI
+                mkdir /home/ubuntu/.aws
+                touch /home/ubuntu/.aws/config
+                echo "[default]" >> /home/ubuntu/.aws/config
+                echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
+                chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
+                echo "* configured aws cli" >> /debug.log
+
+                # set environment variables
+                export ANALYTICSURI="https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
+                export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ubuntu/.bashrc
+                export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
+                export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
+              - Fn::Join:
+                  - ""
+                  - - 'export STACKUUID="'
+                    - !Select
+                      - 2
+                      - !Split
+                        - "/"
+                        - !Ref 'AWS::StackId'
+                    - '" && echo "export STACKUUID=\"$STACKUUID\"" >> /home/ubuntu/.bashrc'
+              - !Sub |
+                export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+                export DBCLUSTERPG="${myClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
+                echo "* environemnt vars initialized" >> /debug.log
+
+                # set DB cluster user and password as env variables
+                export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
+                export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
+                export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
+                echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
+                echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+                echo "* db credentials initialized" >> /debug.log
+
+                # reboot
+                echo "* bootstrap complete, rebooting" >> /debug.log
+                shutdown -r now
+
+## Create Aurora cluster
+  myCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: !FindInMap [ ClusterSettings, mysql, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, mysql, dbVersion ]
+      DBSubnetGroupName: !Ref dbSubnets
+      DBClusterParameterGroupName: !Ref myClusterParams
+      DBClusterIdentifier: auroralab-mysql-cluster
+      BackupRetentionPeriod: 1
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
+      DatabaseName: !FindInMap [ ClusterSettings, mysql, dbSchema ]
+      StorageEncrypted: true
+      VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
+      EnableCloudwatchLogsExports: [ error, slowquery ]
+      BacktrackWindow: 0
+      EnableIAMDatabaseAuthentication: true
+      AssociatedRoles:
+        - RoleArn: !GetAtt roleServiceIntegration.Arn
+      Tags:
+        - Key: Name
+          Value: auroralab-mysql-cluster
+
+## Deploy cluster node
+  myNode1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref myCluster
+      DBInstanceIdentifier: auroralab-mysql-node-1
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref myNodeParams
+      Engine: !FindInMap [ ClusterSettings, mysql, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: auroralab-mysql-node-1
+
+## Deploy cluster node
+  myNode2:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref myCluster
+      DBInstanceIdentifier: auroralab-mysql-node-2
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref myNodeParams
+      Engine: !FindInMap [ ClusterSettings, mysql, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: auroralab-mysql-node-2
+
+## Create Aurora cluster
+  pgCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: !FindInMap [ ClusterSettings, postgresql, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, postgresql, dbVersion ]
+      Port: 5432
+      DBSubnetGroupName: !Ref dbSubnets
+      DBClusterParameterGroupName: !Ref pgClusterParams
+      DBClusterIdentifier: auroralab-postgres-cluster
+      BackupRetentionPeriod: 7
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
+      DatabaseName: !FindInMap [ ClusterSettings, postgresql, dbSchema ]
+      StorageEncrypted: true
+      VpcSecurityGroupIds: [ !Ref dbSecGroupCluster ]
+      Tags:
+        - Key: Name
+          Value: auroralab-postgres-cluster
+
+## Deploy cluster node
+  pgNode1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref pgCluster
+      DBInstanceIdentifier: auroralab-postgres-node-1
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: !FindInMap [ ClusterSettings, postgresql, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: auroralab-postgres-node-1
+
+## Deploy cluster node
+  pgNode2:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref pgCluster
+      DBInstanceIdentifier: auroralab-postgres-node-2
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: !FindInMap [ ClusterSettings, postgresql, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: auroralab-postgres-node-2
+
+## Create the bastion host
+  bastionPostgreSQL:
+    Type: AWS::EC2::Instance
+    DependsOn: [ pgNode1, pgNode2 ]
+    Properties:
+      SubnetId: !Ref sub1Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
+      SecurityGroupIds: [ !Ref bastionSecGroup ]
+#      KeyName: !Ref ec2KeyPair
+      Tags:
+        - Key: Name
+          Value: auroralab-postgres-bastion
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            Iops: 7500
+            VolumeSize: 150
+            VolumeType: io1
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", pgAmi ]
+      IamInstanceProfile: !Ref profileBastionHost
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          cd /home/ec2-user/
+          yum -y install autoconf readline-devel gcc zlib-devel
+          wget https://ftp.postgresql.org/pub/source/v10.7/postgresql-10.7.tar.gz
+          tar -xzf postgresql-10.7.tar.gz
+          cd postgresql-10.7
+          wget https://s3.amazonaws.com/aurora-pgbench-patches/pgbench-init-timing.patch
+          yum -y install patch
+          patch -p1 -b  < pgbench-init-timing.patch
+          wget https://s3.amazonaws.com/aurora-pgbench-patches/pgbench10-ppoll.patch
+          patch -p1 -b < pgbench10-ppoll.patch
+          yum -y install autoconf
+          autoconf
+          ./configure
+          make -j 4 all
+          make install
+          cd /home/ec2-user/
+          curl https://codeload.github.com/akopytov/sysbench/tar.gz/b23a7db377916e424cb555108dc5f784f615993b|tar xz
+          mv sysbench-b23a7db377916e424cb555108dc5f784f615993b sysbench
+          cd sysbench
+          yum -y install automake
+          yum -y install libtool
+          ./autogen.sh
+          CFLAGS="-L/usr/local/pgsql/lib/ -I /usr/local/pgsql/include/" | ./configure --with-pgsql --without-mysql --with-pgsql-includes=/usr/local/pgsql/include/ --with-pgsql-libs=/usr/local/pgsql/lib/
+          make install
+          cd sysbench/tests
+          make install
+          export LD_LIBRARY_PATH=/usr/local/pgsql/lib
+          python get-pip.py --user
+          pip install awscli --upgrade --user
+          pip install boto3
+          pip install aws_encryption_sdk
+          yum install -y jq
+          username=$(aws secretsmanager get-secret-value --secret-id ${secretClusterMasterUser} --query SecretString  --region ${AWS::Region} --output text | jq -r .password)
+          echo "the password is: $username" > /tmp/mypassword
+          export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH
+          export PATH=/home/ec2-user/postgresql-10.7/src/bin/psql:$PATH
+          echo "export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH" >> /home/ec2-user/.bash_profile
+          echo "export PATH=/home/ec2-user/postgresql-10.7/src/bin/psql:$PATH" >> /home/ec2-user/.bash_profile
+          curl https://d2yoo9plh0ksz8.cloudfront.net/my_script.py > /home/ec2-user/das-script.py
+          chown ec2-user:ec2-user /home/ec2-user/das-script.py
+          chmod u+x  /home/ec2-user/das-script.py
+          curl https://d2yoo9plh0ksz8.cloudfront.net/clone_setup.sql > /home/ec2-user/clone_setup.sql
+          chown ec2-user:ec2-user /home/ec2-user/clone_setup.sql
+          chmod u+x /home/ec2-user/clone_setup.sql
+          export username
+          PGPASSWORD=$username
+          export PGPASSWORD
+          psql -h ${pgCluster.Endpoint.Address} -p 5432 -U masteruser -d mylab -f /home/ec2-user/clone_setup.sql > /home/ec2-user/clone_setup.output
+          cd /home/ec2-user/postgresql-10.7/src/bin/pgbench
+          nohup ./pgbench -i --fillfactor=100 --scale=100 --host=${pgCluster.Endpoint.Address} --username=masteruser mylab &>> /tmp/nohup.out
+
+## Create sysbench prep SSM document
+  ssmDocSysbenchTest:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Tags:
+        - Key: Name
+          Value: auroralab-sysbench-test
+      Content:
+        schemaVersion: '2.2'
+        description: SysBench Percona TPCC-LIKE Preparation
+        parameters:
+          clusterEndpoint:
+            type: String
+            description: Aurora Cluster Endpoint
+            default: !GetAtt myCluster.Endpoint.Address
+          dbUser:
+            type: String
+            description: DB User
+            default: !Join [ '', [ '{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ] ]
+          dbPassword:
+            type: String
+            description: DB Password
+            default: !Join [ '', [ '{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ] ]
+          dbSchema:
+            type: String
+            description: DB Schema
+            default: !FindInMap [ ClusterSettings, sysbench, dbSchema ]
+          dbDriver:
+            type: String
+            description: DB Driver
+            default: !FindInMap [ ClusterSettings, mysql, dbDriver ]
+            allowedValues: [ mysql, pgsql ]
+          runTime:
+            type: String
+            description: Test Runtime
+            default: !FindInMap [ ClusterSettings, sysbench, runTime ]
+          numThreads:
+            type: String
+            description: Threads
+            default: !FindInMap [ ClusterSettings, sysbench, numThreads ]
+          numTables:
+            type: String
+            description: Tables
+            default: !FindInMap [ ClusterSettings, sysbench, numTables ]
+          numScale:
+            type: String
+            description: Scale
+            default: !FindInMap [ ClusterSettings, sysbench, numWarehouses ]
+        mainSteps:
+        - action: aws:runShellScript
+          name: SysBenchTpccPrepare
+          inputs:
+            runCommand:
+            - 'echo "DROP SCHEMA IF EXISTS {{ dbSchema }}; CREATE SCHEMA {{ dbSchema }};" | mysql -h{{ clusterEndpoint }} -u{{ dbUser }} -p"{{ dbPassword }}" && cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} prepare'
+        - action: aws:runShellScript
+          name: SysBenchTpccRun
+          inputs:
+            runCommand:
+            - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --mysql-ignore-errors=all --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
+
+## Create pgbench SSM document
+  ssmDocPgbenchTest:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Tags:
+        - Key: Name
+          Value: auroralab-pgbench-test
+      Content:
+        schemaVersion: '2.2'
+        description: SysBench Percona TPCC-LIKE Preparation
+        parameters:
+          clusterEndpoint:
+            type: String
+            description: Aurora Cluster Endpoint
+            default: !GetAtt pgCluster.Endpoint.Address
+          dbUser:
+            type: String
+            description: DB User
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:username}}' ]]
+          dbPassword:
+            type: String
+            description: DB Password
+            default: !Join ['', ['{{resolve:secretsmanager:', !Ref secretClusterMasterUser, ':SecretString:password}}' ]]
+          dbSchema:
+            type: String
+            description: DB Schema
+            default: !FindInMap [ ClusterSettings, pgbench, dbSchema ]
+          dbDriver:
+            type: String
+            description: DB Driver
+            default: !FindInMap [ ClusterSettings, postgresql, dbDriver ]
+            allowedValues: [ mysql, pgsql ]
+          numFillFactor:
+            type: String
+            description: Tables
+            default: !FindInMap [ ClusterSettings, pgbench, numFillFactor ]
+          numScale:
+            type: String
+            description: Scale
+            default: !FindInMap [ ClusterSettings, pgbench, numScale ]
+        mainSteps:
+        - action: aws:runShellScript
+          name: SysBenchTpcPostgresql
+          inputs:
+            runCommand:
+            - 'cd /home/ec2-user/postgresql-10.7/src/bin/pgbench && ./pgbench -i --fillfactor={{ numFillFactor }} --scale={{ numScale }} --host={{ clusterEndpoint }} --user-name={{ dbUser }} --password="{{ dbPassword }}" '
+
+## Create role for use with the lab support function
+  roleLabSupport:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-support-${AWS::Region}
+      Description: Role to permit the Lambda support function to interact with relevant AWS APIs.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:DeleteObject
+                  - s3:DeleteObjects
+                  - s3:ListMultipartUploadParts
+                  - s3:PutObject
+                  - s3:ListObjects
+                  - s3:ListObjectsV2
+                  - s3:ListObjectVersions
+                Resource:
+                  - !Sub 'arn:aws:s3:::${bucketLabData}/*'
+                  - !Sub 'arn:aws:s3:::${bucketLabData}'
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-support-${AWS::Region}
+
+## Create Lambda function to implement support operations
+  funcLabSupport:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: auroralab-support
+      Description: Custom Resource to provide support operations for the Aurora MySQL labs.
+      Handler: index.handler
+      Role: !GetAtt roleLabSupport.Arn
+      Runtime: python3.7
+      Timeout: 600
+      Tags:
+        - Key: Name
+          Value: auroralab-support
+      Environment:
+        Variables:
+          REGION: !Ref 'AWS::Region'
+          ANALYTICSURI: 'https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track'
+      Code:
+        ZipFile: |
+          # Dependencies
+          from os import environ
+          import cfnresponse
+          import boto3
+          import urllib3
+          import json
+          import datetime
+
+          print("[INFO]", "Initialize function")
+          session = boto3.session.Session(region_name=environ["REGION"])
+          s3 = boto3.resource('s3')
+          http = urllib3.PoolManager()
+
+          # Lambda handler function / main function
+          def handler(event, context):
+            print("[INFO]", "Invocation start")
+
+            # init response
+            response_status = cfnresponse.FAILED
+            response_data = {}
+
+            # try/catch
+            try:
+              # get cluster properties
+              aurora_cluster = event["ResourceProperties"]["Cluster"]
+
+              # if we got here, set response as success
+              response_data["DBClusterId"] = aurora_cluster.lower()
+              response_data["DBClusterScalableTarget"] = "cluster:%s" % aurora_cluster.lower()
+              response_status = cfnresponse.SUCCESS
+              print("[INFO]", "ScalableTarget computed:", response_data["DBClusterScalableTarget"])
+
+              # only send analytics if agreed
+              if event["ResourceProperties"]["AgreeTracking"] == 'Yes':
+                # try/catch
+                try:
+                  # track analytics
+                  payload = {
+                    'stack_uuid': event["ResourceProperties"]["StackUUID"] if ("StackUUID" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'stack_name': event["ResourceProperties"]["StackName"] if ("StackName" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'stack_region': event["ResourceProperties"]["StackRegion"] if ("StackRegion" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'deployed_cluster': event["ResourceProperties"]["DeployedCluster"] if ("DeployedCluster" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'deployed_ml': event["ResourceProperties"]["DeployedML"] if ("DeployedML" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                    'event_scope': 'Stack',
+                    'event_action': event["RequestType"] if "RequestType" in event else None,
+                    'event_message': "Stack-level operation",
+                    'ee_event_id': event["ResourceProperties"]["EEEventId"] if ("EEEventId" in event["ResourceProperties"] and event["ResourceProperties"]["EEEventId"]) else None,
+                    'ee_team_id': event["ResourceProperties"]["EETeamId"] if ("EETeamId" in event["ResourceProperties"] and event["ResourceProperties"]["EETeamId"]) else None,
+                    'ee_module_id': event["ResourceProperties"]["EEModuleId"] if ("EEModuleId" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleId"]) else None,
+                    'ee_module_version': event["ResourceProperties"]["EEModuleVersion"] if ("EEModuleVersion" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleVersion"]) else None
+                  }
+                  r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+                  print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
+                except Exception as e:
+                  # errors in tracker interaction should not prevent operation of the function in critical path
+                  print("[ERROR]", e)
+              else:
+                print("[INFO]", "Opted out of analytics")
+
+              # cleanup bucket
+              if event["RequestType"] == 'Delete':
+                # delete all objects out of the bucket
+                bucket = s3.Bucket(event["ResourceProperties"]["DataBucket"])
+                bucket.objects.delete()
+                print("[INFO]", "Bucket cleaned up for:", event["ResourceProperties"]["DataBucket"])
+
+            except Exception as e:
+              print("[ERROR]", e)
+
+            # try/catch
+            try:
+              # send response to CloudFormation
+              cfnresponse.send(event, context, response_status, response_data)
+            except Exception as e:
+              print("[ERROR]", e)
+              response_status = cfnresponse.FAILED
+            print("[INFO]", "Invocation end")
+            return response_status
+
+## Custom resource to assign cluster IAM role
+  resLabSupport:
+    Type: Custom::resLabSupport
+    Properties:
+      ServiceToken: !GetAtt funcLabSupport.Arn
+      DataBucket: !Ref bucketLabData
+      StackRegion: !Ref 'AWS::Region'
+      StackName: !Ref 'AWS::StackName'
+      StackUUID: !Select
+        - 2
+        - !Split
+          - "/"
+          - !Ref 'AWS::StackId'
+      AgreeTracking: !Ref agreeTracking
+      DeployedCluster: Yes
+      DeployedML: No
+      Cluster: "mysql+postgresql"
+      EEEventId: !Ref EEEventId
+      EETeamId: !Ref EETeamId
+      EEModuleId: !Ref EEModuleId
+      EEModuleVersion: !Ref EEModuleVersion
+
+
+## Outputs
+Outputs:
+  vpcId:
+    Description: Aurora Lab VPC
+    Value: !Ref vpc
+  dbSubnetGroup:
+    Description: Database Subnet Group
+    Value: !Ref dbSubnets
+  dbSecurityGroup:
+    Description: Database Security Group
+    Value: !Ref dbSecGroupCluster
+  s3BucketName:
+    Description: "S3 Bucket Name for storing lab data"
+    Value: !Ref bucketLabData
+  secretArn:
+    Description: Database Credentials Secret ARN
+    Value: !Ref secretClusterMasterUser
+  bastionMySQL:
+    Description: MySQL - Bastion Instance ID
+    Value: !Ref bastionMySQL
+  mysqlClusterName:
+    Description: MySQL - Cluster Name
+    Value: !Ref myCluster
+  mysqlClusterEndpoint:
+    Description: MySQL - Aurora Cluster Endpoint
+    Value: !GetAtt myCluster.Endpoint.Address
+  mysqlReaderEndpoint:
+    Description: MySQL - Aurora Reader Endpoint
+    Value: !GetAtt myCluster.ReadEndpoint.Address
+  mysqlRunDoc:
+    Description: MySQL - Load Test Execution Command Document
+    Value: !Ref ssmDocSysbenchTest
+  bastionPostgreSQL:
+    Description: PostgreSQL - Bastion Instance ID
+    Value: !Ref bastionPostgreSQL
+  postgresClusterParamGroup:
+    Description: PostgreSQL - Cluster Parameter Group
+    Value: !Ref pgClusterParams
+  postgresNodeParamsGroup:
+    Description: PostgreSQL - Instance Parameter Group
+    Value: !Ref pgNodeParams
+  postgresDbName:
+    Description: PostgreSQL - Database Name
+    Value: !FindInMap [ ClusterSettings, postgresql, dbSchema ]
+  postgresClusterName:
+    Description: PostgreSQL - Cluster Name
+    Value: !Ref pgCluster
+  postgresClusterEndpoint:
+    Description: PostgreSQL - Aurora Cluster Endpoint
+    Value: !GetAtt pgCluster.Endpoint.Address
+  postgresReaderEndpoint:
+    Description: PostgreSQL - Aurora Reader Endpoint
+    Value: !GetAtt pgCluster.ReadEndpoint.Address
+  postgresRunDoc:
+    Description: PostgreSQL - Load Test Execution Command Document
+    Value: !Ref ssmDocPgbenchTest

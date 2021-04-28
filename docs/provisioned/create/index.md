@@ -1,9 +1,11 @@
-# Creating a New Aurora Cluster
-
-!!! tip "Do you already know how to create a DB cluster?"
-    If you are familiar with the basic concepts of Amazon Aurora MySQL, and have created a cluster in the past, you may skip this module, by provisioning the lab environment using the [**lab-with-cluster.yml**](https://[[website]]/templates/lab-with-cluster.yml) CloudFormation template, so the DB cluster is created for you. Skip to [Connect, Load Data and Auto Scale](/provisioned/interact/).
+# Create a New Aurora Cluster
 
 This lab will walk you through the steps of creating an Amazon Aurora database cluster manually, and configuring app the parameters required for the cluster components. At the end of this lab you will have a database cluster ready to be used in subsequent labs.
+
+!!! tip "Do you already know how to create a DB cluster?"
+    If you are familiar with the basic concepts of Amazon Aurora MySQL, and have created a cluster in the past, you may skip this module by provisioning the lab environment using the option to have the DB cluster deployed automatically. See the [Get Started](prereqs/environment/) prerequisites module for details on provisioning the lab environment. Skip to [Connect, Load Data and Auto Scale](/provisioned/interact/).
+
+    If you are running these labs in a formal, organized workshop event, please follow the recommendations of your instructors, and ask any lab assistant for help if you have questions about this lab.
 
 This lab contains the following tasks:
 
@@ -17,12 +19,12 @@ This lab contains the following tasks:
 
 This lab requires the following lab modules to be completed first:
 
-* [Deploy Environment](/prereqs/environment/) (using the `lab-no-cluster.yml` template is sufficient)
+* [Get Started](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
 * [Connect to the Session Manager Workstation](/prereqs/connect/) (needed for task \#6)
 
 ## 1. Create the DB cluster
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/rds/home?region=us-west-2" target="_blank">Amazon RDS service console</a>.
+Open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazon RDS service console</a>.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -31,52 +33,94 @@ Click **Create database** to start the configuration process
 
 <span class="image">![Create Database](1-create-database.png?raw=true)</span>
 
-In the **Choose a database creation method** section, ensure the **Standard Create** option is selected.
+Set the following options on the configuration screen for the new DB cluster:
 
-Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility** edition, the **Aurora (MySQL 5.7) 2.07.0** version and the **Regional** database location.
+In the **Choose a database creation method** section:
+
+* [ ] Ensure the **Standard Create** option is selected.
+
+In the **Engine options** section:
+
+* [ ] Choose the `Amazon Aurora` engine type.
+* [ ] Choose the `Amazon Aurora with MySQL compatibility` edition.
+* [ ] Choose the **Capacity type** of `Provisioned`.
+* [ ] Select the `Aurora (MySQL 5.7) 2.09.1` version.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
-In the **Database features** section, select **One writer and multiple readers**, and in the **Templates** section, select **Production**.
+In the **Templates** section:
 
-??? tip "What do these selections mean?"
-    The selections so far will instruct AWS to create an Aurora MySQL database cluster with the specified version of the MySQL 5.7 compatible engine in a highly available configuration with one writer and one reader database instance in the cluster. This is called an **Aurora provisioned DB cluster**, because you indicate the specific type of compute capacity that powers your cluster. If you wish to create an Aurora Serverless DB cluster, and test the Aurora Serverless functionality, we have [a different lab for you](/serverless/create/).
+* [ ] Select the `Production` option.
 
-In the **Settings** section, set the **DB cluster identifier** to `labstack-cluster`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `masteruser` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
+In the **Settings** section:
+
+* [ ] Set the **DB cluster identifier** to `auroralab-mysql-cluster`. Use this specific name so you don't have to edit commands in subsequent labs.
+* [ ] Set the **Master username** to `masteruser`. This is the user account with the most elevated permissions in the database, you can use a different name but may need to edit commands in subsequent labs.
+* [ ] Set the **Master password** to a desired and memorable value, confirm the password.
+* [ ] Ensure the check box **Auto generate a password** is **not checked**.
+
+In the **DB instance size** section:
+
+* [ ] Select **Memory Optimized classes**, and choose `r5.large` in the size drop-down.
 
 <span class="image">![Database Settings](1-db-settings.png?raw=true)</span>
 
-In the **DB instance size** section, select **Memory Optimized classes**, and choose `r5.large` in the size drop-down. In the **Availability & durability** section, choose **Create an Aurora Replica/Reader node in a different AZ**.
+In the **Availability & durability** section:
 
-<span class="image">![Database Settings](1-db-size.png?raw=true)</span>
+* [ ] Choose `Create an Aurora Replica/Reader node in a different AZ`.
 
+<span class="image">![Database Settings](1-db-availability.png?raw=true)</span>
 
-In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. To simplify the labs, [the CloudFormation stack you already deployed]((/prereqs/environment/)), has configured all the networking resources for you.
+In the **Connectivity** section:
 
-Pick the **Virtual Private Cloud (VPC)** named `labstack-vpc`. Similarly make sure the selected **Subnet Group** also matches the stack name (e.g. `labstack-dbsubnets-[hash]`). Make sure the cluster **Publicly accessible** option is set to **No**. The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group named `labstack-mysql-internal`. Please remove any other security groups, such as `default` from the selection.
+* [ ] Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`.
+* [ ] The DB subnet group will be selected automatically once you choose the right VPC, please verify the selection is correct. The name of the DB subnet group should be `auroralab-db-subnet-group`.
+* [ ] Make sure the cluster **Publicly accessible** option is set to `No`.
+* [ ] At **VPC security group**, make sure the **Choose existing** security group option is selected. The lab environment already provides a security group that allows your lab workspace EC2 instance to connect to the database.
+* [ ] Select the security group named `auroralab-database-sg`.
+* [ ] Please remove any other security groups, such as `default` from the selection.
 
-In the **Database authentication** section, choose **Password and IAM database authentication** (IAM authentication will be used in some of the subsequent labs).
+In the **Database authentication** section:
+
+* [ ] Choose `Password and IAM database authentication`. IAM authentication may be used in some of the subsequent labs.
 
 <span class="image">![Connectivity](1-connectivity.png?raw=true)</span>
 
-Next, expand the **Advanced configuration** section. Set the **Initial database name** to `mylab`. For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups with the stack name in their name (e.g. `labstack-[...]`). Keep the `1 day` **Backup retention period**. Check the box to **Enable encryption** and select the `[default] aws/rds` for the **Master key**.
+Expand the **Additional configuration** section, and configure options as follows:
+
+* [ ] Set the **Initial database name** to `mylab`. You can use a custom name here, too, but you will need to edit commands and scripts in subsequent labs.
+* [ ] For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. 
+* [ ] Set **Backup retention period** to `1 day`.
+* [ ] Check the box to **Enable encryption**.
+* [ ] Set the **Master key** to `[default] aws/rds`.
 
 <span class="image">![Advanced configuration](1-advanced-1.png?raw=true)</span>
 
-Enable the backtrack capability by checking the **Enable Backtrack** box and set a **Target backtrack window** of `24` hours. Check the box to **Enable Performance Insights** with a **Retention period of `Default (7 days)` and use the `[default] aws/rds` **Master key** for monitoring data encryption. Next, check the **Enable Enhanced Monitoring** box, and select a **Granularity** of `1 second`.
+Continue in the **Additional configuration** section:
+
+* [ ] Check the box to **Enable Backtrack**.
+* [ ] Set a **Target backtrack window** of `24` hours.
+* [ ] Check the box to **Enable Performance Insights**.
+* [ ] Set a **Retention period** of `Default (7 days)`.
+* [ ] Set the **Master key** to `[default] aws/rds`.
+* [ ] Check the **Enable Enhanced Monitoring** box.
+* [ ] Select a **Granularity** of `1 second`.
 
 <span class="image">![Advanced configuration](1-advanced-2.png?raw=true)</span>
 
-Also in the **Advanced configuration** section, for **Log exports** check the **Error log** and **Slow query log** boxes. De-select the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
+Also in the **Additional configuration** section:
 
-??? tip "What do these selections mean?"
+* [ ] For **Log exports** check the `Error log` and `Slow query log` boxes.
+* [ ] De-select/turn off the check box **Enable delete protection**. In a production use case, you will want to leave that option checked, but for testing purposes, un-checking this option will make it easier to clean up the resources once you have completed the labs.
+
+??? info "What do these selections mean?"
     You will create a database cluster with the following characteristics:
 
     * Aurora MySQL 5.7 compatible
     * Regional cluster composed of a writer and a reader DB instance in different availability zones (highly available)
     * Deployed in the VPC and using the network configuration of the lab environment
     * Using custom database engine parameters that enable the slow query log, S3 access and tune a few other configurations
-    * Automatically backed up continuously, retaining backups for 7 days
+    * Automatically backed up continuously, retaining backups for 1 day
     * Using data at rest encryption
     * Retaining 24 hours worth of change data for backtrack purposes
     * With Enhanced Monitoring and Performance Insights enabled
@@ -99,7 +143,7 @@ The **Endpoints** section in the **Connectivity and security** tab of the detail
 
 ## 3. Assign an IAM role to the DB cluster
 
-Once created, you should assign an IAM role to the DB cluster, in order to allow the cluster access to Amazon S3 for importing and exporting data. The IAM role has already been created using CloudFormation when you created the lab environment. On the same DB cluster detail page as before, in the **Manage IAM roles** section, choose **Select IAM roles to add to this cluster** and pick the IAM role named starting with `labstack-integrate-[region]` from the dropdown. Then click **Add role**.
+Once created, you should assign an IAM role to the DB cluster, in order to allow the cluster access to Amazon S3 for importing and exporting data. The IAM role has already been created foryou with the lab environment. On the same DB cluster detail page as before, in the **Manage IAM roles** section, choose **Select IAM roles to add to this cluster** and pick the IAM role named starting with `auroralab-integrate-[region]` from the dropdown. If more than one role with that prefix is available, choose the one for the current region you are operating in. Then click **Add role**.
 
 <span class="image">![DB Cluster Add Role](3-add-role.png?raw=true)</span>
 
@@ -114,16 +158,16 @@ In the top right corner of the details page, click on **Actions** and then on **
 
 <span class="image">![DB Cluster Add Auto Scaling](4-add-as-policy.png?raw=true)</span>
 
-Set the **Policy name** based on the stack name: `labstack-autoscale-readers`. For the **Target metric** choose **Average CPU utilization of Aurora Replicas**. Enter a **Target value** of `20` percent. In a production use case this value may need to be set much higher, but we are using a lower value for demonstration purposes. Next, expand the **Additional configuration** section, and change both the **Scale in cooldown period** and **Scale out cooldown period** to a value of `180` seconds. This will reduce the time you have to wait between scaling operations in subsequent labs.
+Set the **Policy name** based on the stack name: `auroralab-autoscale-readers`. For the **Target metric** choose **Average CPU utilization of Aurora Replicas**. Enter a **Target value** of `20` percent. In a production use case this value may need to be set much higher, but we are using a lower value for demonstration purposes. Next, expand the **Additional configuration** section, and change both the **Scale in cooldown period** and **Scale out cooldown period** to a value of `180` seconds. This will reduce the time you have to wait between scaling operations in subsequent labs.
 
-In the **Cluster capacity details** section, set the **Minimum capacity** to `1` and **Maximum capacity** to `2`. In a production use case you may need to use different values, but for demonstration purposes, and to limit the cost of associated with the labs we limit the number of readers to two. Next click **Add policy**.
+In the **Cluster capacity details** section, set the **Minimum capacity** to `1` and **Maximum capacity** to `2`. In a production use case you may need to use different values, but for demonstration purposes, and to limit the cost associated with the labs we limit the number of readers to two. Next click **Add policy**.
 
 <span class="image">![Auto Scaling Configuration](4-as-policy-config.png?raw=true)</span>
 
 
 ## 5. Create an AWS Secrets Manager secret
 
-Open the <a href="https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2" target="_blank">AWS Secrets Manager service console</a>.
+Open the <a href="https://console.aws.amazon.com/secretsmanager/home" target="_blank">AWS Secrets Manager service console</a>.
 
 !!! warning "Region Check"
     Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
@@ -134,11 +178,11 @@ Click **Store a new secret** to start the configuration process.
 
 In the **Select secret type** section, choose **Credentials for RDS database**, then input the **User name** (should be `masteruser`) and **Password** that you provided when you created the DB cluster previously.
 
-Next, in the **Select which RDS database this secret will access** section, choose the DB cluster identifier you assigned to your cluster (e.g. `labstack-cluster`). Click **Next**.
+Next, in the **Select which RDS database this secret will access** section, choose the DB cluster identifier you assigned to your cluster (e.g. `auroralab-mysql-cluster`). Click **Next**.
 
 <span class="image">![Configure Secret](5-config-secret.png?raw=true)</span>
 
-Name the secret `secretCusterMasterUser` and provide a relevant description for the secret, then click **Next**.
+Name the secret `secretClusterMasterUser` and provide a relevant description for the secret, then click **Next**.
 
 <span class="image">![Name Secret](5-name-secret.png?raw=true)</span>
 
@@ -157,13 +201,13 @@ In the detail view of the secret, note the value for **Secret ARN**. Write this 
 <span class="image">![Secret ARN](5-arn-secret.png?raw=true)</span>
 
 
-## 6. Configure the client workstation
+## 6. Configure the EC2 workstation
 
-Subsequent labs on this site use a consistent way to access DB credentials, regardless if the DB cluster was created manually or automatically. To simplify interactions, the lab credentials are saved in environment variables on the client workstation you use to issue commands to the database. When the cluster is created automatically, the credentials are also set up for you, when you create the cluster manually, you need to run a few additional commands to reach parity.
+Subsequent labs on this site use a consistent way to access DB credentials, regardless if the DB cluster was created manually or automatically. To simplify interactions, the lab credentials are saved in environment variables on the EC2 workstation you use to issue commands to the database. When the cluster is created automatically, the credentials are also set up for you. When you create the cluster manually, you need to run a few additional commands to reach parity.
 
 If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[secretArn]== placeholder with the ARN of the secret created above:
 
-```
+```shell
 CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'`
 export DBUSER="`echo $CREDS | jq -r '.username'`"
 export DBPASS="`echo $CREDS | jq -r '.password'`"
@@ -175,14 +219,14 @@ echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
 
 Let's make sure your DB cluster has been created properly. First let's ensure the credentials have been saved correctly in the environment variables, run:
 
-```
+```shell
 echo $DBUSER
 ```
 
-You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpont]== placeholder with the value of the cluster endpoint created in the preceding steps:
+You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpoint]== placeholder with the value of the cluster endpoint created in the preceding steps:
 
-```
+```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 
-You should see a response containing version number `2.07.1`.
+You should see a response containing version number `2.09.1`.

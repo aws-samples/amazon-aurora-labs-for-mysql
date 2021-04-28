@@ -6,6 +6,7 @@
 ## 2019-07-03 - Initial release
 ## 2019-07-30 - Production website configuration (aliases, certificate, conditions)
 ## 2020-01-07 - Replaced node.js indexdoc function with python3.7, less dependencies
+## 2020-04-06 - Moving to awsauroralabsmy.com domain
 ##
 ## Dependencies:
 ## none
@@ -104,7 +105,7 @@ Resources:
               CanonicalUser:
                 - !GetAtt oaiWebsite.S3CanonicalUserId
 
-## Create execution role for IndexDoc function
+  ## Create execution role for IndexDoc function
   roleIndexDoc:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -172,14 +173,14 @@ Resources:
     Properties:
       DistributionConfig:
         Comment: !Sub '${AWS::StackName}-cdn'
-        Aliases: !If [ condProd, [ 'awsauroralabsmysql.com', 'www.awsauroralabsmysql.com' ], !Ref "AWS::NoValue" ]
+        Aliases: !If [ condProd, [ 'awsauroralabsmy.com', 'www.awsauroralabsmy.com' ], !Ref "AWS::NoValue" ]
         DefaultRootObject: index.html
         Enabled: true
         IPV6Enabled: true
         PriceClass: PriceClass_All
         ViewerCertificate:
           CloudFrontDefaultCertificate: !If [ condProd, !Ref "AWS::NoValue", true ]
-          AcmCertificateArn: !If [ condProd, !Sub 'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/09a8aa1c-1e30-45e8-b201-a7d4aee7541f', !Ref "AWS::NoValue" ]
+          AcmCertificateArn: !If [ condProd, !Sub 'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/f81ee321-c868-48c3-8bb8-06a058b06846', !Ref "AWS::NoValue" ]
           MinimumProtocolVersion: 'TLSv1.1_2016'
           SslSupportMethod: !If [ condProd, 'sni-only', !Ref "AWS::NoValue" ]
         Restrictions:
@@ -272,6 +273,521 @@ Resources:
         - Key: Workload
           Value: !Ref 'AWS::StackName'
 
+  ## S3 bucket to host analytics
+  s3Analytics:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-analytics-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+            Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref s3Logs
+        LogFilePrefix: "s3analytics/"
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-analytics-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  ## Role for Firehose to write to S3
+  roleWriteAnalytics:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-analytics-${AWS::Region}'
+      Description: Role to permit the Firehose delivery stream to write to S3.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'firehose.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:AbortMultipartUpload'
+                  - 's3:GetBucketLocation'
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                  - 's3:ListBucketMultipartUploads'
+                  - 's3:PutObject'
+                Resource:
+                  - !GetAtt s3Analytics.Arn
+                  - !Sub 'arn:aws:s3:::${s3Analytics}/*'
+              - Effect: Allow
+                Action: 'glue:GetTableVersions'
+                Resource: '*'
+              - Effect: Allow
+                Action: 'logs:PutLogEvents'
+                Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-analytics-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  ## Create an AWS Glue database
+  ## WARNING: Athena doesn't like dashes in database and table names
+  glueDatabase:
+    Type: 'AWS::Glue::Database'
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: !Sub 'Analytics data for lab activity on stack ${AWS::StackName}'
+        Name: !Join
+          - '_'
+          - !Split [ '-', !Ref "AWS::StackName" ]
+
+  ## Create a table schema for the events
+  ## WARNING: Athena doesn't like dashes in database and table names
+  glueTableEvents:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref glueDatabase
+      TableInput:
+        Description: !Sub 'Clickstream event data for lab activity on stack ${AWS::StackName}'
+        Name: !Sub 'v2events'
+        Retention: 0
+        StorageDescriptor:
+          Columns:
+          - Name: stack_uuid
+            Type: string
+          - Name: stack_name
+            Type: string
+          - Name: stack_region
+            Type: string
+          - Name: deployed_cluster
+            Type: string
+          - Name: deployed_ml
+            Type: string
+          - Name: deployed_gdb
+            Type: string
+          - Name: is_secondary
+            Type: string
+          - Name: event_timestamp
+            Type: timestamp
+          - Name: event_scope
+            Type: string
+          - Name: event_action
+            Type: string
+          - Name: event_message
+            Type: string
+          - Name: ee_event_id
+            Type: string
+          - Name: ee_team_id
+            Type: string
+          - Name: ee_module_id
+            Type: string
+          - Name: ee_module_version
+            Type: string
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          Location: !Sub 's3://${s3Analytics}/v2events/data/'
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+            Parameters:
+              serialization.format: '1'
+          BucketColumns: []
+          SortColumns: []
+          StoredAsSubDirectories: false
+        PartitionKeys:
+        - Name: year
+          Type: string
+        - Name: month
+          Type: string
+        - Name: day
+          Type: string
+        - Name: hour
+          Type: string
+        TableType: EXTERNAL_TABLE
+
+  ## Role for Firehose to write to S3
+  roleCrawlerEvents:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-${glueTableEvents}-${AWS::Region}'
+      Description: Role to permit the Glue crawler to scan S3 and manipulate the table.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'glue.amazonaws.com'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${s3Analytics}/${glueTableEvents}/data/*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-${glueTableEvents}-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  # Create a Glue crawler to keep table schema up to date (partition discovery)
+  glueCrawlerEvents:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: !Sub '${AWS::StackName}-${glueTableEvents}'
+      Configuration: '{"Version":1.0,"CrawlerOutput":{"Partitions":{"AddOrUpdateBehavior":"InheritFromTable"}},"Grouping":{"TableGroupingPolicy":"CombineCompatibleSchemas"}}'
+      DatabaseName: !Ref glueDatabase
+      Description: !Sub 'Clickstream event data crawler for lab activity on stack ${AWS::StackName}'
+      Role: !GetAtt roleCrawlerEvents.Arn
+      Schedule:
+         ScheduleExpression: 'cron(15 0/1 * * ? *)'
+      SchemaChangePolicy:
+        DeleteBehavior: LOG
+        UpdateBehavior: UPDATE_IN_DATABASE
+      Targets:
+        CatalogTargets:
+          - DatabaseName: !Ref glueDatabase
+            Tables: [ !Ref glueTableEvents ]
+      Tags:
+        Name: !Sub '${AWS::StackName}-${glueTableEvents}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
+  ## Create a table schema for the events (old schema for retention purposes)
+  glueTableEventsV1:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref glueDatabase
+      TableInput:
+        Description: !Sub 'Clickstream event data for lab activity on stack ${AWS::StackName}'
+        Name: !Sub 'v1events'
+        Retention: 0
+        StorageDescriptor:
+          Columns:
+          - Name: stack_uuid
+            Type: string
+          - Name: stack_name
+            Type: string
+          - Name: stack_region
+            Type: string
+          - Name: deployed_cluster
+            Type: string
+          - Name: deployed_ml
+            Type: string
+          - Name: event_timestamp
+            Type: timestamp
+          - Name: event_scope
+            Type: string
+          - Name: event_action
+            Type: string
+          - Name: event_message
+            Type: string
+          - Name: ee_event_id
+            Type: string
+          - Name: ee_team_id
+            Type: string
+          - Name: ee_module_id
+            Type: string
+          - Name: ee_module_version
+            Type: string
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          Location: !Sub 's3://${s3Analytics}/v1events/data/'
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+            Parameters:
+              serialization.format: '1'
+          BucketColumns: []
+          SortColumns: []
+          StoredAsSubDirectories: false
+        PartitionKeys:
+        - Name: year
+          Type: string
+        - Name: month
+          Type: string
+        - Name: day
+          Type: string
+        - Name: hour
+          Type: string
+        TableType: EXTERNAL_TABLE
+
+  ## Role for Firehose to write to S3 (old schema for retention purposes)
+  roleCrawlerEventsV1:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-${glueTableEventsV1}-${AWS::Region}'
+      Description: Role to permit the Glue crawler to scan S3 and manipulate the table.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'glue.amazonaws.com'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${s3Analytics}/${glueTableEventsV1}/data/*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-${glueTableEventsV1}-${AWS::Region}'
+        - Key: Environment
+          Value: !Ref tagEnvironment
+        - Key: Workload
+          Value: !Ref 'AWS::StackName'
+
+  # Create a Glue crawler to keep table schema up to date (partition discovery) (old schema for retention purposes)
+  glueCrawlerEventsV1:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: !Sub '${AWS::StackName}-${glueTableEventsV1}'
+      Configuration: '{"Version":1.0,"CrawlerOutput":{"Partitions":{"AddOrUpdateBehavior":"InheritFromTable"}},"Grouping":{"TableGroupingPolicy":"CombineCompatibleSchemas"}}'
+      DatabaseName: !Ref glueDatabase
+      Description: !Sub 'Clickstream event data crawler for lab activity on stack ${AWS::StackName}'
+      Role: !GetAtt roleCrawlerEventsV1.Arn
+      Schedule:
+         ScheduleExpression: 'cron(15 1 * * ? *)'
+      SchemaChangePolicy:
+        DeleteBehavior: LOG
+        UpdateBehavior: UPDATE_IN_DATABASE
+      Targets:
+        CatalogTargets:
+          - DatabaseName: !Ref glueDatabase
+            Tables: [ !Ref glueTableEventsV1 ]
+      Tags:
+        Name: !Sub '${AWS::StackName}-${glueTableEventsV1}'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+
+  ## Firehose access log destination
+  streamLogs:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '${AWS::StackName}-stream'
+      RetentionInDays: 7
+
+  ## Firehose delivery stream to accumulate analytics
+  fireAnalyticsStream:
+    Type: 'AWS::KinesisFirehose::DeliveryStream'
+    Properties:
+      DeliveryStreamName: !Sub '${AWS::StackName}-analytics'
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt s3Analytics.Arn
+        Prefix: !Sub '${glueTableEvents}/data/year=!{timestamp:YYYY}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/'
+        ErrorOutputPrefix: !Sub '${glueTableEvents}/errors/!{firehose:error-output-type}/year=!{timestamp:YYYY}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/'
+        RoleARN: !GetAtt roleWriteAnalytics.Arn
+        BufferingHints:
+          SizeInMBs: 64
+          IntervalInSeconds: 300
+        CompressionFormat: UNCOMPRESSED
+        EncryptionConfiguration:
+          NoEncryptionConfig: NoEncryption
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName: !Ref streamLogs
+          LogStreamName: s3parquet
+        S3BackupMode: Disabled
+        DataFormatConversionConfiguration:
+          SchemaConfiguration:
+            CatalogId: !Ref AWS::AccountId
+            RoleARN: !GetAtt roleWriteAnalytics.Arn
+            DatabaseName: !Ref glueDatabase
+            TableName: !Ref glueTableEvents
+            Region: !Ref AWS::Region
+            VersionId: LATEST
+          InputFormatConfiguration:
+            Deserializer:
+              OpenXJsonSerDe: {}
+          OutputFormatConfiguration:
+            Serializer:
+              ParquetSerDe: {}
+          Enabled: True
+
+  ## HTTP API access log destination
+  httpLogs:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '${AWS::StackName}-api'
+      RetentionInDays: 7
+
+  ## HTTP API
+  ## WARNING: In place modifications of the API or stages via CFN break the API
+  ## Just redeploy the API with a new resource name, if you need to make changes
+  httpApi:
+    Type: 'AWS::Serverless::HttpApi'
+    Properties:
+      StageName: 'v1'
+      Tags:
+        Name: !Sub '${AWS::StackName}-api'
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+      AccessLogSettings:
+        DestinationArn: !GetAtt httpLogs.Arn
+        Format: '$context.identity.sourceIp,$context.requestTime,$context.httpMethod,$context.path,$context.protocol,$context.status,$context.responseLength,$context.requestId'
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 100
+      RouteSettings:
+        "POST /track":
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 100
+      FailOnWarnings: True
+
+  ## Role for API Gateway to write to the Delivery Stream
+  roleProducer:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-producer-${AWS::Region}'
+      Description: Role to permit the API method to integrate with Firehose
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+      Policies:
+        - PolicyName: 'inline-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+                - firehose:PutRecord
+              Resource: "*"
+
+  ## Serverless function for analytics
+  apiProducer:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-producer
+      Description: Validates and emits event to Firehose.
+      Handler: index.handler
+      Role: !GetAtt roleProducer.Arn
+      Runtime: python3.7
+      Timeout: 30
+      Tags:
+        Name: !Sub ${AWS::StackName}-producer
+        Environment: !Ref tagEnvironment
+        Workload: !Ref 'AWS::StackName'
+      Environment:
+        Variables:
+          REGION: !Ref 'AWS::Region'
+          STREAM: !Ref fireAnalyticsStream
+      Events:
+        ExplicitApi: # warning: creates a public endpoint
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref httpApi
+            Method: POST
+            Path: /track
+            TimeoutInMillis: 30000
+            PayloadFormatVersion: "2.0"
+            RouteSettings:
+              ThrottlingBurstLimit: 200
+              ThrottlingRateLimit: 1000
+      InlineCode: |
+        # Dependencies
+        from os import environ
+        import boto3
+        import json
+        import base64
+
+        print("[INFO]", "Initialize function")
+        session = boto3.session.Session(region_name=environ["REGION"])
+        firehose = session.client('firehose')
+
+        # Lambda handler function / main function
+        def handler(event, context):
+          print("[INFO]", "Invocation start")
+
+          # try/catch
+          try:
+            # Get payload in body
+            payload = event["body"]
+            payload = json.loads(payload)
+
+            # Validate payload
+            if ("stack_uuid" in payload and "stack_region" in payload and "event_timestamp" in payload and "event_scope" in payload and "event_action" in payload):
+              # Prepare
+              data = json.dumps(payload) + "\n"
+              data = data.encode('utf-8')
+
+              # Send to Firehose
+              result = firehose.put_record(
+                DeliveryStreamName=environ["STREAM"],
+                Record={
+                    'Data': data
+                }
+              )
+
+              # Produce response
+              print("[INFO]", json.dumps(payload))
+              response = {
+                "statusCode": 200,
+                "body": "Event submitted successfully"
+              }
+            else:
+              print("[ERROR]", "Request received from client does not pass validation")
+              response = {
+                "statusCode": 400,
+                "body": { "message": "Bad request received from client" }
+              }
+          except Exception as e:
+            print("[ERROR]", e)
+            response = {
+              "statusCode": 500,
+              "body": { "message": "Internal execution error" }
+            }
+
+          # Return response
+          return response
+
+
 ## Outputs
 Outputs:
   Environment:
@@ -279,6 +795,8 @@ Outputs:
   ContentBucket:
     Value: !Ref s3Website
   DistroEndpoint:
-    Value: !If [ condProd, 'awsauroralabsmysql.com', !GetAtt cfWebsite.DomainName ]
+    Value: !If [ condProd, 'awsauroralabsmy.com', !GetAtt cfWebsite.DomainName ]
   Region:
     Value: !Ref 'AWS::Region'
+  TrackEndpoint:
+    Value: !Sub '${httpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'

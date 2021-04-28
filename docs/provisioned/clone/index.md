@@ -8,10 +8,11 @@ This lab contains the following tasks:
 2. Verify that the data set is identical
 3. Change data on the clone
 4. Verify that the data diverges
+5. Cleanup lab resources
 
 This lab requires the following prerequisites:
 
-* [Deploy Environment](/prereqs/environment/)
+* [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 * [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
@@ -22,24 +23,24 @@ This lab requires the following prerequisites:
 !!! warning "Workload State Check"
     Before cloning the DB cluster ensure you have stopped any load generating tasks from the previous lab, and exited out of the MySQL client command line using `quit;`.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack:
+If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack, or Event Engine Team Dashboard if you are participating in a formal workshop:
 
-```
+```shell
 aws rds restore-db-cluster-to-point-in-time \
 --restore-type copy-on-write \
 --use-latest-restorable-time \
---source-db-cluster-identifier labstack-cluster \
---db-cluster-identifier labstack-cluster-clone \
+--source-db-cluster-identifier auroralab-mysql-cluster \
+--db-cluster-identifier auroralab-mysql-clone \
 --vpc-security-group-ids [dbSecurityGroup] \
 --db-subnet-group-name [dbSubnetGroup] \
---backtrack-window 86400
+--backtrack-window 0
 ```
 
 Next, check the status of the creation of your clone, by using the following command. The cloning process can take several minutes to complete. See the example output below.
 
-```
+```shell
 aws rds describe-db-clusters \
---db-cluster-identifier labstack-cluster-clone \
+--db-cluster-identifier auroralab-mysql-clone \
 | jq -r '.DBClusters[0].Status, .DBClusters[0].Endpoint'
 ```
 
@@ -53,19 +54,19 @@ Take note of both the ==status== and the ==endpoint== in the command output. Rep
 
 Add a DB instance to the cluster once the status of the cluster becomes **available**, using the following command:
 
-```
+```shell
 aws rds create-db-instance \
 --db-instance-class db.r5.large \
 --engine aurora-mysql \
---db-cluster-identifier labstack-cluster-clone \
---db-instance-identifier labstack-cluster-clone-instance
+--db-cluster-identifier auroralab-mysql-clone \
+--db-instance-identifier auroralab-mysql-clone-instance
 ```
 
 Check the creation of the DB instance within the cluster, by using the following command:
 
-```
+```shell
 aws rds describe-db-instances \
---db-instance-identifier labstack-cluster-clone-instance \
+--db-instance-identifier auroralab-mysql-clone-instance \
 | jq -r '.DBInstances[0].DBInstanceStatus'
 ```
 
@@ -80,7 +81,7 @@ Verify that the data set is identical on both the source and cloned DB clusters,
 
 Connect to the cloned database using the following command (use the endpoint you retrieved from the `describe-db-cluster` command above):
 
-```
+```shell
 mysql -h[cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 ```
 
@@ -89,7 +90,7 @@ mysql -h[cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 
 Next, issue the following command on the clone:
 
-```
+```sql
 checksum table sbtest1;
 ```
 
@@ -107,7 +108,7 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 Execute the same checksum command that you ran on the clone:
 
-```
+```sql
 checksum table sbtest1;
 ```
 
@@ -126,7 +127,7 @@ mysql -h[cluster endpoint of clone] -u$DBUSER -p"$DBPASS" mylab
 
 Delete a row of data and execute the checksum command again:
 
-```
+```sql
 delete from sbtest1 where id = 1;
 
 checksum table sbtest1;
@@ -149,7 +150,7 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 Execute the same checksum command that you ran on the clone:
 
-```
+```sql
 checksum table sbtest1;
 ```
 
@@ -157,6 +158,16 @@ Please take note of the value for your specific source cluster. The checksum val
 
 Disconnect from the DB cluster, using:
 
-```
+```sql
 quit;
+```
+
+## 5. Cleanup lab resources
+
+By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
+
+```shell
+aws rds delete-db-instance --db-instance-identifier auroralab-mysql-clone-instance
+
+aws rds delete-db-cluster --db-cluster-identifier auroralab-mysql-clone --skip-final-snapshot
 ```

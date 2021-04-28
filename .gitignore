@@ -4,6 +4,7 @@
 
 ### taskcat ###
 taskcat_outputs
+eventengine/
 
 ### macOS ###
 # General
@@ -192,10 +193,10 @@ temp/
 
 # VisualStudioCode
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+#!.vscode/settings.json
+#!.vscode/tasks.json
+#!.vscode/launch.json
+#!.vscode/extensions.json
 
 # Ignore all local history of files
 .history

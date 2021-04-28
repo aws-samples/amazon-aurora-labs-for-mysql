@@ -1,0 +1,734 @@
+---
+## Aurora PostgreSQL base template
+## Infrastructure template without Aurora cluster for lab exercises
+##
+## Changelog:
+## 2020-04-29 - Initial version
+##
+## Dependencies:
+## none
+##
+## License:
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Amazon Aurora Labs
+
+
+## Parameters
+Parameters:
+  agreeTracking:
+    Default: "Yes"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Help us improve our labs by agreeing to the collection of anonymous usage statistics for our labs.
+  EEEventId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EETeamId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EEModuleId:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+  EEModuleVersion:
+    Type: String
+    Description: Please leave blank, reserved for EventEngine use.
+
+
+## Metadata
+Metadata:
+
+## Friendly UI grouping for parameters
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Help Us Improve Our Labs!"
+        Parameters:
+          - agreeTracking
+          - EEEventId
+          - EETeamId
+          - EEModuleId
+          - EEModuleVersion
+    ParameterLabels:
+      vpcAZs:
+        default: 'Use AZs:'
+      agreeTracking:
+        default: 'Collect Usage Data?'
+      EEEventId:
+        default: 'EventEngine Event'
+      EETeamId:
+        default: 'EventEngine Team'
+      EEModuleId:
+        default: 'EventEngine Module'
+      EEModuleVersion:
+        default: 'EventEngine Version'
+
+
+## Mappings
+Mappings:
+  RegionalSettings:
+    us-east-1:
+      pgAmi: ami-035b3c7efe6d061d5
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: N. Virginia
+      az1: us-east-1a
+      az2: us-east-1c
+      az3: us-east-1b
+    us-west-2:
+      pgAmi: ami-0f2176987ee50226e
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: Oregon
+      az1: us-west-2b
+      az2: us-west-2c
+      az3: us-west-2d
+    eu-west-1:
+      pgAmi: ami-0862aabda3fb488b5
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: Ireland
+      az1: eu-west-1a
+      az2: eu-west-1b
+      az3: eu-west-1c
+    ap-south-1:
+      pgAmi: ami-0b99c7725b9484f9e
+      bastionType: m5.large
+      nodeType: db.r5.large
+      name: Ireland
+      az1: ap-south-1a
+      az2: ap-south-1b
+      az3: ap-south-1c
+
+  NetworkSettings:
+    global:
+      vpcCidr: 172.31.0.0/16
+      subPub1Cidr: 172.31.0.0/24
+      subPub2Cidr: 172.31.1.0/24
+      subPub3Cidr: 172.31.2.0/24
+      subPrv1Cidr: 172.31.10.0/24
+      subPrv2Cidr: 172.31.11.0/24
+      subPrv3Cidr: 172.31.12.0/24
+      sshSourceCidr: 0.0.0.0/0
+  ClusterSettings:
+    postgresql:
+      dbSchema: mylab
+      dbDriver: pgsql
+      dbVersion: 10.7
+      dbEngine: aurora-postgresql
+      dbFamily: aurora-postgresql10
+    scaling:
+      maxCapacity: 2
+      minCapacity: 1
+      cpuLoadTarget: 20
+    pgbench:
+      dbSchema: pgbench
+      numFillFactor: '90'
+      numScale: '100'
+  MLSettings:
+    global:
+      notebookType: ml.m4.xlarge
+
+
+## Resources
+Resources:
+
+## The VPC
+  vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
+      Tags:
+        - Key: Name
+          Value: auroralab-vpc
+
+## Create an IGW & attach it to the VPC
+  vpcIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: auroralab-igw
+  attachIgwVpc:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref vpc
+      InternetGatewayId: !Ref vpcIgw
+
+## Create a public subnet in each AZ
+  sub1Public:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub1Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: auroralab-pub-sub-1
+  sub2Public:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub2Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: auroralab-pub-sub-2
+  sub3Public:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub3Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: auroralab-pub-sub-3
+
+## Associate the public subnets with a public route table
+  rtbPublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: auroralab-public-rtb
+  rteToIgw:
+    Type: AWS::EC2::Route
+    DependsOn: attachIgwVpc
+    Properties:
+      RouteTableId: !Ref rtbPublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref vpcIgw
+  srta1Public:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub1Public
+      RouteTableId: !Ref rtbPublic
+  srta2Public:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub2Public
+      RouteTableId: !Ref rtbPublic
+  srta3Public:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub3Public
+      RouteTableId: !Ref rtbPublic
+
+## Create a private subnet in each AZ
+  sub1Private:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv1Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: auroralab-prv-sub-1
+  sub2Private:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv2Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: auroralab-prv-sub-2
+  sub3Private:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv3Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: auroralab-prv-sub-3
+
+## Create a NAT Gateway & EIP
+  natEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  vpcNgw:
+    Type: AWS::EC2::NatGateway
+    DependsOn: attachIgwVpc
+    Properties:
+      AllocationId: !GetAtt natEip.AllocationId
+      SubnetId: !Ref sub2Public
+
+## Associate the private subnets with a NATed route table
+  rtbNat:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: auroralab-nat-rtb
+  rteToNgw:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref rtbNat
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref vpcNgw
+  srta1Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub1Private
+      RouteTableId: !Ref rtbNat
+  srta2Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub2Private
+      RouteTableId: !Ref rtbNat
+  srta3Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub3Private
+      RouteTableId: !Ref rtbNat
+
+## Create VPC S3 endpoint
+  s3Enpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref vpc
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      RouteTableIds:
+        - !Ref rtbPublic
+        - !Ref rtbNat
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Principal: '*'
+            Effect: 'Allow'
+            Action: 's3:*'
+            Resource: [ 'arn:aws:s3:::*', 'arn:aws:s3:::*/*' ]
+
+## Create DB subnet group
+  dbSubnets:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: auroralab-db-subnet-group
+      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
+      Tags:
+        - Key: Name
+          Value: auroralab-db-subnet-group
+
+## Create bastion security group
+  bastionSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: auroralab-workstation-sg
+      GroupDescription: Aurora Lab SSH Security Group
+      Tags:
+        - Key: Name
+          Value: auroralab-workstation-sg
+
+## Create DB security group
+  dbSecGroupCluster:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: auroralab-database-sg
+      GroupDescription: Aurora PostgreSQL Database Firewall
+      Tags:
+        - Key: Name
+          Value: auroralab-database-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref bastionSecGroup
+          Description: Allows PostgreSQL access from bastion host
+  ruleDbSecGroupClusterIngressSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref dbSecGroupCluster
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref dbSecGroupCluster
+
+## Create enhanced monitoring role
+  roleEnhancedMonitoring:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-monitor-${AWS::Region}
+      Description: Allows your Aurora DB cluster to deliver Enhanced Monitoring metrics.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - monitoring.rds.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-monitor-${AWS::Region}
+
+## Create external integration role
+  roleServiceIntegration:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-integrate-${AWS::Region}
+      Description: Allows your Aurora DB cluster to integrate with other AWS services, such as Amazon S3 for import/export.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - rds.amazonaws.com
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:AbortMultipartUpload
+                  - s3:DeleteObject
+                  - s3:ListMultipartUploadParts
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::*/*
+                  - arn:aws:s3:::*
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-integrate-${AWS::Region}
+
+## Create role for bastion host
+  roleBastionHost:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-bastion-${AWS::Region}
+      Description: Permits user interaction with AWS APIs from the EC2-based workstation.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - 'ec2.amazonaws.com'
+                - 'ssm.amazonaws.com'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+        - 'arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess'
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:*
+                  - s3:*
+                  - ssm:*
+                  - kms:*
+                  - sns:*
+                  - secretsmanager:*
+                  - kinesis:*
+                  - rds-db:connect
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:GetRolePolicy
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:ListPolicies
+                  - iam:ListRoles
+                  - iam:PassRole
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-bastion-${AWS::Region}
+  profileBastionHost:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - Ref: roleBastionHost
+
+## Create parameter groups for cluster nodes
+  pgNodeParams:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: auroralab-postgresql
+      Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
+      Parameters:
+        log_rotation_age: '1440'
+        log_rotation_size: '102400'
+      Tags:
+        - Key: Name
+          Value: auroralab-postgresql
+
+## Create cluster parameter group
+  pgClusterParams:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: auroralab-postgresql
+      Family: !FindInMap [ ClusterSettings, postgresql, dbFamily ]
+      Parameters:
+        rds.force_ssl: 0
+        shared_preload_libraries: 'pg_stat_statements,pg_hint_plan'
+      Tags:
+        - Key: Name
+          Value: auroralab-postgresql
+
+## Create the bastion host
+  bastionPostgreSQL:
+    Type: AWS::EC2::Instance
+    Properties:
+      SubnetId: !Ref sub1Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", bastionType ]
+      SecurityGroupIds: [ !Ref bastionSecGroup ]
+      Tags:
+        - Key: Name
+          Value: auroralab-postgres-bastion
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            Iops: 7500
+            VolumeSize: 150
+            VolumeType: io1
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", pgAmi ]
+      IamInstanceProfile: !Ref profileBastionHost
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          cd /home/ec2-user/
+          yum -y install autoconf readline-devel gcc zlib-devel
+          wget https://ftp.postgresql.org/pub/source/v10.7/postgresql-10.7.tar.gz
+          tar -xzf postgresql-10.7.tar.gz
+          cd postgresql-10.7
+          wget https://s3.amazonaws.com/aurora-pgbench-patches/pgbench-init-timing.patch
+          yum -y install patch
+          patch -p1 -b  < pgbench-init-timing.patch
+          wget https://s3.amazonaws.com/aurora-pgbench-patches/pgbench10-ppoll.patch
+          patch -p1 -b < pgbench10-ppoll.patch
+          yum -y install autoconf
+          autoconf
+          ./configure
+          make -j 4 all
+          make install
+          cd /home/ec2-user/
+          curl https://codeload.github.com/akopytov/sysbench/tar.gz/b23a7db377916e424cb555108dc5f784f615993b|tar xz
+          mv sysbench-b23a7db377916e424cb555108dc5f784f615993b sysbench
+          cd sysbench
+          yum -y install automake
+          yum -y install libtool
+          ./autogen.sh
+          CFLAGS="-L/usr/local/pgsql/lib/ -I /usr/local/pgsql/include/" | ./configure --with-pgsql --without-mysql --with-pgsql-includes=/usr/local/pgsql/include/ --with-pgsql-libs=/usr/local/pgsql/lib/
+          make install
+          cd sysbench/tests
+          make install
+          export LD_LIBRARY_PATH=/usr/local/pgsql/lib
+          python get-pip.py --user
+          pip install awscli --upgrade --user
+          pip install boto3
+          pip install aws_encryption_sdk
+          yum install -y jq
+          export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH
+          export PATH=/home/ec2-user/postgresql-10.7/src/bin/psql:$PATH
+          echo "export PATH=/home/ec2-user/postgresql-10.7/src/bin/pgbench:$PATH" >> /home/ec2-user/.bash_profile
+          echo "export PATH=/home/ec2-user/postgresql-10.7/src/bin/psql:$PATH" >> /home/ec2-user/.bash_profile
+          curl https://d2yoo9plh0ksz8.cloudfront.net/my_script.py > /home/ec2-user/das-script.py
+          chown ec2-user:ec2-user /home/ec2-user/das-script.py
+          chmod u+x  /home/ec2-user/das-script.py
+          curl https://d2yoo9plh0ksz8.cloudfront.net/clone_setup.sql > /home/ec2-user/clone_setup.sql
+          chown ec2-user:ec2-user /home/ec2-user/clone_setup.sql
+          chmod u+x /home/ec2-user/clone_setup.sql
+
+## Create role for use with the lab support function
+  roleLabSupport:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub auroralab-support-${AWS::Region}
+      Description: Role to permit the Lambda support function to interact with relevant AWS APIs.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+      Tags:
+        - Key: Name
+          Value: !Sub auroralab-support-${AWS::Region}
+
+## Create Lambda function to implement support operations
+  funcLabSupport:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: auroralab-support
+      Description: Custom Resource to provide support operations for the Aurora MySQL labs.
+      Handler: index.handler
+      Role: !GetAtt roleLabSupport.Arn
+      Runtime: python3.7
+      Timeout: 600
+      Tags:
+        - Key: Name
+          Value: auroralab-support
+      Environment:
+        Variables:
+          REGION: !Ref 'AWS::Region'
+          ANALYTICSURI: 'https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track'
+      Code:
+        ZipFile: |
+          # Dependencies
+          from os import environ
+          import cfnresponse
+          import boto3
+          import urllib3
+          import json
+          import datetime
+
+          print("[INFO]", "Initialize function")
+          session = boto3.session.Session(region_name=environ["REGION"])
+          s3 = boto3.resource('s3')
+          http = urllib3.PoolManager()
+
+          # Lambda handler function / main function
+          def handler(event, context):
+            print("[INFO]", "Invocation start")
+
+            # init response
+            response_status = cfnresponse.FAILED
+            response_data = {}
+
+            # try/catch
+            try:
+              # get cluster properties
+              aurora_cluster = event["ResourceProperties"]["Cluster"]
+
+              # if we got here, set response as success
+              response_data["DBClusterId"] = aurora_cluster.lower()
+              response_data["DBClusterScalableTarget"] = "cluster:%s" % aurora_cluster.lower()
+              response_status = cfnresponse.SUCCESS
+              print("[INFO]", "ScalableTarget computed:", response_data["DBClusterScalableTarget"])
+
+              # only send analytics if agreed
+              if event["ResourceProperties"]["AgreeTracking"] == 'Yes':
+                # try/catch
+                try:
+                  # track analytics
+                  payload = {
+                    'stack_uuid': event["ResourceProperties"]["StackUUID"] if ("StackUUID" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'stack_name': event["ResourceProperties"]["StackName"] if ("StackName" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'stack_region': event["ResourceProperties"]["StackRegion"] if ("StackRegion" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'deployed_cluster': event["ResourceProperties"]["DeployedCluster"] if ("DeployedCluster" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'deployed_ml': event["ResourceProperties"]["DeployedML"] if ("DeployedML" in event["ResourceProperties"] and event["ResourceProperties"]["StackUUID"]) else None,
+                    'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                    'event_scope': 'Stack',
+                    'event_action': event["RequestType"] if "RequestType" in event else None,
+                    'event_message': "Stack-level operation",
+                    'ee_event_id': event["ResourceProperties"]["EEEventId"] if ("EEEventId" in event["ResourceProperties"] and event["ResourceProperties"]["EEEventId"]) else None,
+                    'ee_team_id': event["ResourceProperties"]["EETeamId"] if ("EETeamId" in event["ResourceProperties"] and event["ResourceProperties"]["EETeamId"]) else None,
+                    'ee_module_id': event["ResourceProperties"]["EEModuleId"] if ("EEModuleId" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleId"]) else None,
+                    'ee_module_version': event["ResourceProperties"]["EEModuleVersion"] if ("EEModuleVersion" in event["ResourceProperties"] and event["ResourceProperties"]["EEModuleVersion"]) else None
+                  }
+                  r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+                  print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
+                except Exception as e:
+                  # errors in tracker interaction should not prevent operation of the function in critical path
+                  print("[ERROR]", e)
+              else:
+                print("[INFO]", "Opted out of analytics")
+
+            except Exception as e:
+              print("[ERROR]", e)
+
+            # try/catch
+            try:
+              # send response to CloudFormation
+              cfnresponse.send(event, context, response_status, response_data)
+            except Exception as e:
+              print("[ERROR]", e)
+              response_status = cfnresponse.FAILED
+            print("[INFO]", "Invocation end")
+            return response_status
+
+## Custom resource to assign cluster IAM role
+  resLabSupport:
+    Type: Custom::resLabSupport
+    Properties:
+      ServiceToken: !GetAtt funcLabSupport.Arn
+      StackRegion: !Ref 'AWS::Region'
+      StackName: !Ref 'AWS::StackName'
+      StackUUID: !Select
+        - 2
+        - !Split
+          - "/"
+          - !Ref 'AWS::StackId'
+      AgreeTracking: !Ref agreeTracking
+      DeployedCluster: Yes
+      DeployedML: No
+      Cluster: "postgresql"
+      EEEventId: !Ref EEEventId
+      EETeamId: !Ref EETeamId
+      EEModuleId: !Ref EEModuleId
+      EEModuleVersion: !Ref EEModuleVersion
+
+
+## Outputs
+Outputs:
+  vpcId:
+    Description: Aurora Lab VPC
+    Value: !Ref vpc
+  dbSubnetGroup:
+    Description: Database Subnet Group
+    Value: !Ref dbSubnets
+  dbSecurityGroup:
+    Description: Database Security Group
+    Value: !Ref dbSecGroupCluster
+  bastionPostgreSQL:
+    Description: PostgreSQL - Bastion Instance ID
+    Value: !Ref bastionPostgreSQL
+  postgresClusterParamGroup:
+    Description: PostgreSQL - Cluster Parameter Group
+    Value: !Ref pgClusterParams
+  postgresNodeParamsGroup:
+    Description: PostgreSQL - Instance Parameter Group
+    Value: !Ref pgNodeParams
+  postgresDbName:
+    Description: PostgreSQL - Database Name
+    Value: !FindInMap [ ClusterSettings, postgresql, dbSchema ]

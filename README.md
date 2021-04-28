@@ -2,7 +2,7 @@
 
 Workshop and lab content for Amazon Aurora MySQL compatible databases. This code will contain a series of templates, instructional guides and sample code to educate users on how to use Amazon Aurora features. The AWS CloudFormation templates will create the relevant resources in a user's account, the Bash and Python scripts will support the lab, by automating tasks, generating load or execute changes on resources created using AWS CloudFormation.
 
-To run and use the labs, visit the website at: https://awsauroralabsmysql.com
+To run and use the labs, visit the website at: https://awsauroralabsmy.com
 
 The instructional guides are packaged into a website that can be deployed using AWS CloudFormantion, Amazon CloudFront, Amazon S3 and AWS Lambda. If you wish to contribute to the project follow the installation and deployment steps below.
 
@@ -22,21 +22,16 @@ brew install python3
 brew install mkdocs
 brew install node
 brew install jq
-pip3 install mkdocs-material
-pip3 install pymdown-extensions
-pip3 install taskcat
+pip3 install virtualenv
+virtualenv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
 
 npm install -g npm
 npm install -g grunt-cli
 ```
 
 Install project dependencies (from [project root] folder):
-
-```
-npm install
-```
-
-Install dependencies for the individual AWS Lambda functions. For each function in `[project root]/website/lambda/[function name]/src/` run
 
 ```
 npm install
@@ -87,4 +82,5 @@ Additionally, this project installs the following software for the purposes of d
 * [mysql-client](https://dev.mysql.com/doc/refman/5.6/en/programs-client.html) package. MySQL open source software is provided under the GPL License.
 * [sysbench](https://github.com/akopytov/sysbench) available using the GPL License.
 * [test_db](https://github.com/datacharmer/test_db) available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
-* [percona sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Percona's sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Apache Superset](https://superset.apache.org/index.html) available using the Apache License 2.0.
