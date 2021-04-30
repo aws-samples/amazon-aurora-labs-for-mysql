@@ -129,32 +129,35 @@ from sagemaker.sklearn.model import SKLearnModel
 model = SKLearnModel(
     model_data=artifact,
     role=get_execution_role(),
+    framework_version='0.20.0',
     entry_point='script.py')
+
 endpoint_name = 'auroraml-churn-endpoint'
 
-model.deploy(
+predictor = model.deploy(
     instance_type='ml.c5.large',
     initial_instance_count=1,
     endpoint_name=endpoint_name)
 
 
 # In[ ]:
-
-
-import sagemaker.sklearn
-from sagemaker.predictor import json_serializer, csv_serializer, json_deserializer, RealTimePredictor
-from sagemaker.content_types import CONTENT_TYPE_CSV, CONTENT_TYPE_JSON
-
-
-predictor = RealTimePredictor(
-    endpoint=endpoint_name,
-    sagemaker_session=sess,
-    content_type=CONTENT_TYPE_CSV,
-    accept=CONTENT_TYPE_CSV)
+import boto3
+import sagemaker
+runtime = boto3.client('sagemaker-runtime')
 
 test_data = test_data.drop("churn", axis=1)
 train_data = train_data.drop("churn", axis=1)
 
-for i in range(10):
-    predictor.predict(test_data.to_csv(sep=',', header=False, index=False))
-    predictor.predict(train_data.to_csv(sep=',', header=False, index=False))
+response_test_data = runtime.invoke_endpoint(
+    EndpointName=predictor.endpoint,
+    Body=test_data.to_csv(header=False, index=False).encode('utf-8'),
+    ContentType='text/csv')
+
+print(response_test_data['Body'].read())
+
+response_train_data = runtime.invoke_endpoint(
+    EndpointName=predictor.endpoint,
+    Body=train_data.to_csv(header=False, index=False).encode('utf-8'),
+    ContentType='text/csv')
+
+print(response_train_data['Body'].read())
