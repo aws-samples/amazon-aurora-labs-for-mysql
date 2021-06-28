@@ -14,7 +14,7 @@ This lab contains the following tasks:
 
 *Optional:* Performance schema
 
-## 1 [Lab setup / Preparation of lab]
+## 1 Lab setup / Preparation of lab
 
 ### Connect to the DB cluster
 
@@ -103,6 +103,7 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@lon
 ```
 
 Before proceeding further, please ensure the output looks like this.
+
 <span class="image">![long query output](long_query_out.png?raw=true)</span>
 
 *Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements
@@ -126,8 +127,7 @@ You can monitor DB instances using Amazon CloudWatch, which collects and process
 
 We can see that the base metrics like *CPU, DB connections, write latency,* *Read latency* and many more are spiking up for the same period. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period.
 
-  <span class="image">![CW Metrics](latency.png?raw=true)</span>
-  <span class="image">![CW Metrics](db-cpu.png?raw=true)</span>
+  <span class="image">![CW Metrics](latency.png?raw=true)</span> <span class="image">![CW Metrics](db-cpu.png?raw=true)</span>
 
 During performance issues, although all the metrics are important its ideal to look at CPU,DB Connections,DML/DDL metrics.
 
@@ -139,7 +139,9 @@ In general
 * Database activity variables responsible for tracking *throughput* are modified when the statement is received by the server.
 * Database activity variables responsible for tracking *latency* are modified after the statement completes. This is quite intuitive: statement latency (i.e. execution time) is not known until the statement finishes.
 
-[Image: Screenshot 2021-05-03 at 23.15.02.png][Image: Screenshot 2021-05-03 at 23.13.12.png]
+[Image: Screenshot 2021-05-03 at 23.15.02.png]
+[Image: Screenshot 2021-05-03 at 23.13.12.png]
+
 *Note:*To learn more about how to plan for Aurora monitoring and Performance guidelines please refer our doc (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/MonitoringOverview.html).
 
 DMLLatency metric reveals a spike at 22:57, when the metric reached 4442 milliseconds. In other words, 4.4 seconds is the average latency of all DML statements that finished during this 1-minute period. 4 seconds is significantly higher than the baseline latency observed before the spike, therefore it’s worth investigating.
