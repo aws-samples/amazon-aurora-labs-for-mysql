@@ -326,7 +326,7 @@ So far we have *3* *slow_query_log files and for the purpose of the lab, let’s
 
 For the purpose of the lab, lets call this as *slow_query_final.log*
 
-```shell
+```SQL
 [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
 [Q2] CALL insert_temp ;
     INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
@@ -341,15 +341,16 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 ### EXPLAIN plan
 
 
-The [EXPLAIN!](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN (https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT!](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE!](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT!](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE!](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE!](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN!](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
+The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
 
 Lets go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below
 
+```sql
 *EXPLAIN* query name.
-
+```
 Below is an explain plan for the [*Q5*]
 
-```shell
+```sql
 EXPLAIN SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DE
 SC ;
 ```
@@ -364,15 +365,15 @@ The explain plan has multiple fields and the most common ones to look at it are
 
 In this example, we see that the estimation of rows to be examined is very high and we can also see the absence of key for this.
 
-*To learn more about EXPLAIN plan outputs you can refer to* *link* (https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)*.*
+*To learn more about EXPLAIN plan outputs you can refer to [link](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)*.*
 
-*Hint:* you can also use *explain format=json (https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)* if you are interested in understanding how subqueries are materialized.
+*Hint:* you can also use [explain format=json](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)* if you are interested in understanding how subqueries are materialized.
 
-Our earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. Let’s take a look at where this query is spending its time. In order to indentify that we can make use of PROFILE (https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
+Our earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. Let’s take a look at where this query is spending its time. In order to indentify that we can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
 
 ### PROFILE
 
-The SHOW [PROFILE!](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES!](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
+The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
 
 In order to perform profiling for the *[Q5]*, please run the below.
 
@@ -428,7 +429,6 @@ Empty set (0.01 sec)
 ```
 We can see that *mylab.weather* table does not have any primary keys. 
 
-*https://quip-amazon.com/CzE8AOHIhJuM/slowqueryfinallog*
 
 ```shell
 [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
@@ -577,7 +577,7 @@ As a background, performance insights uses performance schema and other global c
 
 *P_S* feature works by counting and timing server events and gathers in memory and expose them through a collection of tables in the performance schema database. 
 
-Let’s use [events_statements_summary_global_by_event_name!](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html) and [events_statements_summary_by_digest!](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html)  table to capture top queries, events etc
+Let’s use [events_statements_summary_global_by_event_name](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html) and [events_statements_summary_by_digest](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html)  table to capture top queries, events etc
 
 *Note:* Performance Schema tables are kept in memory and their contents will be lost in the event of server reboot. 
 
@@ -611,7 +611,7 @@ mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star A
 _name='mylab' ORDER BY tmp_disk_tables desc limit 5;
 ```
 
-*Note:* To learn more about abour *Statement Digest aggregation rules* please refer [official doc!](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
+*Note:* To learn more about abour *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
 
 
 ### Understand the workload
@@ -621,7 +621,7 @@ To get an idea about workload you can run show process-list to see active transa
 
 ### SHOW PROCESSLIST:
 
-To understand transactions running inside dbengine, you can run SHOW ENGINE INNODB STATUS (https://dev.mysql.com/doc/refman/5.7/en/show-engine.html) on the writer note. Please note this query works only on the writer and not on the reader. This command exposes outputs from various InnoDB monitors and can be instrumental in understanding the internal state of InnoDB engine. Information returned by the command includes but is not limited to:
+To understand transactions running inside dbengine, you can run [SHOW ENGINE INNODB STATUS](https://dev.mysql.com/doc/refman/5.7/en/show-engine.html) on the writer note. Please note this query works only on the writer and not on the reader. This command exposes outputs from various InnoDB monitors and can be instrumental in understanding the internal state of InnoDB engine. Information returned by the command includes but is not limited to:
 
 * Details of most recently detected deadlocks and foreign key errors,
 * Transactions and their activity,
@@ -630,10 +630,10 @@ To understand transactions running inside dbengine, you can run SHOW ENGINE INNO
 ```sql
 SHOW ENGINE INNODB STATUS \G
 ```
-To understand locking transactions you can query [information_schema!](https://dev.mysql.com/doc/refman/5.7/en/innodb-information-schema-examples.html) like below..
+To understand locking transactions you can query [information_schema](https://dev.mysql.com/doc/refman/5.7/en/innodb-information-schema-examples.html) like below..
 
 ```sql
 SELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_query waiting_query, b.trx_id blocking_trx_id, b.trx_mysql_thread_id blocking_thread, b.trx_query blocking_query FROM information_schema.innodb_lock_waits w INNER JOIN information_schema.innodb_trx b ON b.trx_id = w.blocking_trx_id INNER JOIN information_schema.innodb_trx r ON r.trx_id = w.requesting_trx_id;
 ```
 
-[Image: Screenshot 2021-05-03 at 22.59.19.png] With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics!](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
+[Image: Screenshot 2021-05-03 at 22.59.19.png] With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
