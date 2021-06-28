@@ -563,27 +563,30 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 
 *First thing you would have noticed is that the script which took around 3.5 minutes earlier is now completed within 1 minute.*
 
-Let’s take a look at CW metrics and we cannot see any peak periods compared to before.
+Let’s take a look at **CW metrics** and we cannot see any peak periods compared to before.
 
 [Image: Screenshot 2021-05-21 at 19.56.27.png]<add screenshots>(should I include this?)
 
 [Image: Screenshot 2021-05-21 at 19.56.39.png]
 
-Let’s take a look at *EM metrics* and we can see there are no peak periods compared to before.
+Let’s take a look at **EM metrics** and we can see there are *no peak periods* compared to before.
 
 [Image: Screenshot 2021-05-21 at 19.58.56.png]
 
-*Let’s take a look at slow query logs*
+Let’s take a look at **slow query logs**.We can see that the query time has been *drastically reduced* and the number of rows examined is also reduced from *1M* to less than *1K* rows.
 
-We can see that the query time has been drastically reduced and the number of rows examined is also reduced from *1M* to less than *1K* rows.
 [Image: Screenshot 2021-05-21 at 19.54.31.png]
-Let’s take a revisit at the *performance schema* metrics. As you could see from the screenshot, the execution time is no longer than 1 minute as compared to around 4 minutes before adding the index.
 
-From the counter metrics, we can see earlier the number of rows scanned is *1.2+M* however now this has come down to only *1.6K .* The CPU total consumption is at a *baseline* average and CPU spike is not visible now. Also there are hardly any slow query log entries.
-[Image: Screenshot 2021-05-04 at 19.21.09.png]We can see that earlier we has sessions exceeding max vCPUs however the execution was rather quick and didn’t throttle the CPU. This also means our solution worked *without scaling up* the instance.
+From the counter metrics, we can see earlier the number of rows scanned is *1.2+M* however now this has come down to only *1.6K .* The CPU total consumption is at a *baseline* average and CPU spike is not visible now. Also there are *hardly any slow query log entries*.
+
+[Image: Screenshot 2021-05-04 at 19.21.09.png]
+
+We can see that earlier we has sessions exceeding **max vCPUs** however the execution was rather quick and didn’t throttle the CPU. This also means our solution worked *without scaling up* the instance.
 
 [Image: Screenshot 2021-05-21 at 19.50.12.png]
+
 We can also see from the top SQL, the queries which appeared before adding indexes are not appearing anymore. This indicates that indexes helps those queries in consuming less resources and therefore they do not appear as top SQL queries.
+
 [Image: Screenshot 2021-05-21 at 19.51.18.png]
 
 We have used :
