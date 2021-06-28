@@ -14,9 +14,7 @@ This lab contains the following tasks:
 
 *Optional:* Performance schema
 
-1 Lab setup / Preparation of lab:
-
- https://quip-amazon.com/JdhRAhCPt9Y4 
+1 [Lab setup / Preparation of lab!](https://quip-amazon.com/JdhRAhCPt9Y4)
 
 Connect to the DB cluster
 
@@ -27,6 +25,7 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 Once connected to the database, use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
 
+```shell
 DROP TABLE IF EXISTS `weather`;
 CREATE TABLE `weather` (
   `date_Str` date NOT NULL COMMENT 'Date and Time of Readings',
@@ -40,7 +39,9 @@ CREATE TABLE `weather` (
   type char(25) NOT NULL COMMENT 'weather condition',
   serialid int(11) NOT NULL COMMENT 'serial id of log'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 ;
+```
 
+```shell
 DELIMITER $$
 DROP PROCEDURE IF EXISTS insert_temp;
 CREATE PROCEDURE insert_temp()
@@ -51,7 +52,7 @@ INSERT INTO mylab.weather VALUES (1993-12-10,14.38,'USC00147271',-100.92,38.47,2
 DELETE from mylab.weather  where serialid=key_value;
 END$$
 DELIMITER ;
-
+```
 
 Load an initial data set from S3
 
@@ -76,7 +77,7 @@ Current setup should look like this when you run the query
 $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@long_query_time,@@log_output;"
 
 [Image: Screenshot 2021-05-06 at 13.26.11.png]
-Let’s modify *long_query_time * to 1 second, *slow_query_log to 1*, log_output to *FILE* . To do so, open the Amazon RDS service console (https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
+Let’s modify *long_query_time * to 1 second, *slow_query_log to 1*, log_output to *FILE* . To do so, open the [Amazon RDS service console!](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
 [Image: Screenshot 2021-04-30 at 00.16.06.png]
 *Note:* You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our doc (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating).
 
@@ -96,15 +97,16 @@ Before proceeding further, please ensure the output looks like this.
 
 Run the workload
 
-On the session manager terminal (https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
+On the [session manager terminal!](https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
 
  Script can be downloaded from https://quip-amazon.com/JdhRAhCPt9Y4
 
+```shell
 python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
-
+```
 This script will take around ~*5* minutes to complete.
 
-2 Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
+## 2 Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
 
 CloudWatch Metrics
 
