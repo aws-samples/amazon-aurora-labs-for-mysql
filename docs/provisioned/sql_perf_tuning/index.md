@@ -599,32 +599,33 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 
 Let’s take a look at **CW metrics** and we cannot see any peak periods compared to before.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](PF1.png?raw=true)</span>
+
 <add screenshots>(should I include this?)
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](PF1.png?raw=true)</span>
 
 
 Let’s take a look at **EM metrics** and we can see there are *no peak periods* compared to before.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](perf3.png?raw=true)</span>
 
 
 Let’s take a look at **slow query logs**.We can see that the query time has been *drastically reduced* and the number of rows examined is also reduced from *1M* to less than *1K* rows.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](perf4.png?raw=true)</span>
 
 From the counter metrics, we can see earlier the number of rows scanned is *1.2+M* however now this has come down to only *1.6K .* The CPU total consumption is at a *baseline* average and CPU spike is not visible now. Also there are *hardly any slow query log entries*.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](perf5.png?raw=true)</span>
 
 We can see that earlier we has sessions exceeding **max vCPUs** however the execution was rather quick and didn’t throttle the CPU. This also means our solution worked *without scaling up* the instance.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](perf6.png?raw=true)</span>
 
 We can also see from the top SQL, the queries which appeared before adding indexes are not appearing anymore. This indicates that indexes helps those queries in consuming less resources and therefore they do not appear as top SQL queries.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Perf Review](perf7.png?raw=true)</span>
 
 We have used :
 
@@ -709,4 +710,7 @@ To understand locking transactions you can query [information_schema](https://de
 SELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_query waiting_query, b.trx_id blocking_trx_id, b.trx_mysql_thread_id blocking_thread, b.trx_query blocking_query FROM information_schema.innodb_lock_waits w INNER JOIN information_schema.innodb_trx b ON b.trx_id = w.blocking_trx_id INNER JOIN information_schema.innodb_trx r ON r.trx_id = w.requesting_trx_id;
 ```
 
-[Image: Screenshot 2021-05-03 at 22.59.19.png] With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
+<span class="image">![Optional](opt1.png?raw=true)</span>
+
+
+With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
