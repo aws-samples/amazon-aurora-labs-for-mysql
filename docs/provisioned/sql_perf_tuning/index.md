@@ -104,7 +104,6 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@lon
 Before proceeding further, please ensure the output looks like this.
 [Image: Screenshot 2021-05-01 at 17.06.27.png]*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements 
 
-
 ### Run the workload
 
 On the [session manager terminal](https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
@@ -114,10 +113,11 @@ On the [session manager terminal](https://awsauroralabsmy.com/prereqs/connect/),
 ```shell
 python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
-This script will take around ~*5* minutes to complete.
+This script will take around **4** minutes to complete.
 
 ## 2 Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
-CloudWatch Metrics
+
+### CloudWatch Metrics
 
 You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
 
@@ -128,7 +128,6 @@ We can see that the base metrics like *CPU, DB connections, write latency,* *Rea
 During performance issues, although all the metrics are important its ideal to look at CPU,DB Connections,DML/DDL metrics.
 
 (add the screenshots)
-
 
 Amazon Aurora also provides a range of [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
@@ -153,7 +152,7 @@ A useful piece of information readily available from DMLThroughput metric . At 2
 
 *Optional:* Once the performance baseline is understood you can setup alarms against CW metrics when it exceeds the baseline for corrective actions.
 
-#### Enhanced Monitoring
+### Enhanced Monitoring
 
 You must have noticed that the CW metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, then Enhanced Monitoring(EM) should help.
 
@@ -166,32 +165,52 @@ From the above, the CPU is driven by *user* and *drop* in Free memory for the sa
 
 ### Doing more with performance insights
 
- Identify *top* SQL queries using performance insights dashboard.
+#### Identify *top* SQL queries using performance insights dashboard.
 
 Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance. To view the current performance insights dashboard, please go to the [RDS console](https://console.aws.amazon.com/rds/) and in the navigation pane, click performance insights and choose the writer node. You should see the console like below.  
+
 [Image: Screenshot 2021-04-21 at 16.42.32.png]
+
 The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/). 
 
 So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*? Let’s enable additional components on the *counter metrics* and also on the *Session Activity* preferences at the bottom. We will also slightly change the view of *Database Load.*
 
 Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
 [Image: Screenshot 2021-05-07 at 11.26.26.png]
+
 Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS metrics
-[Image: Screenshot 2021-04-21 at 19.00.45.png][Image: Screenshot 2021-04-21 at 18.57.40.png]
+
+[Image: Screenshot 2021-04-21 at 19.00.45.png]
+[Image: Screenshot 2021-04-21 at 18.57.40.png]
+
 Click Update graph and once done, the counter metrics should look like below. We can see the innodb rows read,cpu utilisation  and slow queries counters surged and stayed high for this period.
+
 [Image: Screenshot 2021-05-21 at 19.19.03.png]
+
 We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
 
 Next change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ and show the top queries during this time . We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption. As a temporary workaround you may scale up the instance to improve the situation but it’s not a scalable solution.
 
-[Image: Screenshot 2021-05-07 at 11.30.39.png][Image: Screenshot 2021-04-30 at 11.55.45.png]
+[Image: Screenshot 2021-05-07 at 11.30.39.png]
+[Image: Screenshot 2021-04-30 at 11.55.45.png]
+
 *Note:* Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
 Now let’s modify the *Session activity* part. The default interface for Top SQL contains AAS and SQL statements should look like this. Please go to the preferences section(gear icon at the right hand bottom) and add additional columns components.
-[Image: Screenshot 2021-05-06 at 22.35.29.png]To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
-[Image: Screenshot 2021-05-21 at 14.49.13.png][Image: Screenshot 2021-05-21 at 14.49.24.png]
+
+[Image: Screenshot 2021-05-06 at 22.35.29.png]
+
+To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
+
+[Image: Screenshot 2021-05-21 at 14.49.13.png]
+
+[Image: Screenshot 2021-05-21 at 14.49.24.png]
+
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent . 
-[Image: Screenshot 2021-05-21 at 16.46.18.png]*Note:* To see the queries inside the stored procedure, please click and expand the + icon.
+
+[Image: Screenshot 2021-05-21 at 16.46.18.png]
+
+*Note:* To see the queries inside the stored procedure, please click and expand the + icon.
 
 You can note down the top SQL queries but please keep in mind not all TOP SQL queries are slow queries it only means that these queries are consuming the load at given point of time.
 
@@ -200,12 +219,14 @@ As you noticed we can see performance insights are very good to understand avera
 
 ## 3 View *slow* queries 
 
-#### View and download slow query logs using the console
+### View and download slow query logs using the console
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
 [Image: Screenshot 2021-05-21 at 19.03.08.png]
+
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*. 
 [Image: Screenshot 2021-05-21 at 19.05.49.png]
+
 You should see slow queries in the console. The log file content will have the following
  
 *Query_time*: The statement execution time in seconds.
@@ -219,13 +240,16 @@ You can download the logs via *console* or *CLI* using [download-db-log-file-por
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
-#### Leveraging CloudWatch logs and Log insights to view and analyze slow queries
+###  Leveraging CloudWatch logs and Log insights to view and analyze slow queries
 
 Slow logs are great for troubleshooting but viewing/downloading individual logs could be time consuming. Also the logs could get rotated(if log_output= FILE) periodically. In addition to viewing and downloading DB instance logs from the console, you can *publish* logs to Amazon CloudWatch Logs . With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
 
 We have already *enabled* export Cloudwatch logs option when we created the cluster. This can be verified by going to the RDS console, under cluster *configuration→ Published logs* like below. Please proceed to next step only if you see slow query  in it.
+
 [Image: Screenshot 2021-04-30 at 10.03.17.png]
+
 *Note:* To enable/disable these logs or add additional logs, you can click *Modify* at the *right top → Log exports → tick/untick prefered logs → continue → modify cluster.*
+
 [Image: Screenshot 2021-04-30 at 13.02.34.png]
  
 You can also verify the status of CloudWatch export and the type of logs thats currently enabled for export by executing the *CLI* below on the session manager terminal.
@@ -235,7 +259,8 @@ aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster --q
 ```
 You should see the output like below. This sample output shows that currently export CloudWatch logs option is enabled for error logs and slow query logs.
 [Image: Screenshot 2021-04-20 at 10.25.32.png]
-_*View exported logs in CloudWatch*_
+
+###  View exported logs in CloudWatch
 
 After enabling Aurora MySQL log events, you can monitor the events in Amazon CloudWatch Logs. A new log group is automatically created for the Aurora DB cluster under the following prefix, in which cluster-name represents the DB cluster name, and log_type represents the log type.
 
@@ -263,11 +288,14 @@ This query parses the slow query logs and captures the individual fields like *T
 [Image: Screenshot 2021-05-04 at 19.00.42.png]
 
 The queries listed are the offending queries which takes longer than the *long_query_time*. We could see around 100+ entries in the last 30 minutes.You can select any query to expand to find more information about it.
+
 [Image: Screenshot 2021-05-04 at 19.00.57.png]
+
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
+
 [Image: Screenshot 2021-04-21 at 16.18.24.png]
 
-#### Percona pt-query-digest 
+### Percona pt-query-digest 
 
 *One challenge is that it requires manual effort or some automation technique to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
@@ -279,13 +307,13 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 *Step1:* First you need to download the *slow query logs* on the client. You can either do this over the *console* or *CLI*
 
-### *Download using console*
+#### Download using console
 
 [Image: Screenshot 2021-05-03 at 11.39.47.png]
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
-### *Download using cli* 
+#### Download using cli*
 
 *CLI example*
 
@@ -318,7 +346,7 @@ For the queries listed above in the previous section, this section contains indi
 [Image: Screenshot 2021-05-04 at 19.05.20.png]
 
 
-### 4 Analyze the queries using EXPLAIN and PROFILE
+## 4 Analyze the queries using EXPLAIN and PROFILE
 
 In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*.
 
@@ -338,7 +366,7 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 
 *Optional:* You can also go ahead and run the above queries individually on the terminal and see the individual response time.
 
-#### EXPLAIN plan
+### EXPLAIN plan
 
 
 The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
@@ -371,7 +399,7 @@ In this example, we see that the estimation of rows to be examined is very high 
 
 Our earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. Let’s take a look at where this query is spending its time. In order to indentify that we can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
 
-#### PROFILE
+### PROFILE
 
 The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
 
@@ -389,7 +417,7 @@ the output should look like below.
 [Image: Screenshot 2021-05-04 at 13.13.39.png]
 From this, we can see where this query is spending its resources. In this example, we can see its spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
 
-#### Index presence
+### Index presence
 
 In order to do so, let’s check the *schema* in question to see if table have any indexes, so that we can use them in the queries to improve the read performance. The use of indexes to assist with large blocks of tables, data may have considerable impact on reducing MySQL query execution and, thus, overall CPU overhead. Non-indexed tables are nothing more than unordered lists; hence, the MySQL engine must search them from starting to end. This may have little impact when working with small tables, but may dramatically affect search time for larger tables.
 
