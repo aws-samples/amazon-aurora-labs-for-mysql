@@ -1,6 +1,6 @@
 # Aurora MySQL SQL Performance Troubleshooting (WIP)
 
-In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics*, *P.I, slow query logs, CloudWatch logs and CloudWatch log insights.pt-query-digest ,EXPLAIN, PROFILE*  to troubleshoot / identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
+In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics, P.I, slow query logs, CloudWatch logs and CloudWatch log insights,pt-query-digest ,EXPLAIN, PROFILE*  to troubleshoot/identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
 
 This lab contains the following tasks:
 
@@ -10,11 +10,11 @@ This lab contains the following tasks:
 * *View* slow queries using  various options like *RDS console, CloudWatch logs, CloudWatch log insights, pt-query digest*
 * *Analyse* the slow queries using MySQL *Explain* plan, *profiling*
 * *Tune* the Queries
-* *Review*
+* *Performance Review*
 
 *Optional:* Performance schema
 
-## 1 Lab setup / Preparation of lab
+## 1. Lab setup / Preparation of lab
 
 ### Connect to the DB cluster
 
@@ -55,7 +55,7 @@ END$$
 DELIMITER ;
 ```
 
-Load an initial data set from S3
+### Load an initial data set from S3
 
 Next, load an initial data set by importing data from an Amazon S3 bucket:
 
@@ -210,9 +210,8 @@ Now let’s modify the *Session activity* part. The default interface for Top SQ
 
 To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
 
-<span class="image">![P.I](P.I_expand_gear1.png?raw=true)</span>
+<span class="image">![P.I](P.I_expand_gear.png?raw=true)</span>
 
-<span class="image">![P.I](P.I_expand_gear2.png?raw=true)</span>
 
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent .
 
