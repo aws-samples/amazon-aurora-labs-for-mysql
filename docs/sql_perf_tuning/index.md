@@ -1,4 +1,4 @@
-Aurora MySQL SQL Performance Troubleshooting - 1 Final(WIP) 
+Aurora MySQL SQL Performance Troubleshooting - 1 Final(WIP-) 
 
 In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics*, *P.I, slow query logs, CloudWatch logs and CloudWatch log insights.pt-query-digest ,EXPLAIN, PROFILE*  to troubleshoot / identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
 
@@ -14,14 +14,13 @@ This lab contains the following tasks:
 
 *Optional:* Performance schema
 
-1 Lab setup / Preparation of lab:
+1 [Lab setup / Preparation of lab:!](https://quip-amazon.com/JdhRAhCPt9Y4)
 
- https://quip-amazon.com/JdhRAhCPt9Y4 
-
+  
 Connect to the DB cluster
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect.
-If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these instructions (https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the [clusterEndpoint] placeholder with the cluster endpoint of your DB cluster.
+If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions!](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the [clusterEndpoint] placeholder with the cluster endpoint of your DB cluster.
 
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
