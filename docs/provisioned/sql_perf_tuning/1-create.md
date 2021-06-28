@@ -14,7 +14,7 @@ This lab contains the following tasks:
 
 *Optional:* Performance schema
 
-## 1 [Lab setup / Preparation of lab:!](https://quip-amazon.com/JdhRAhCPt9Y4)
+1 [Lab setup / Preparation of lab:!](https://quip-amazon.com/JdhRAhCPt9Y4)
 
   
 Connect to the DB cluster
@@ -26,7 +26,6 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
 Once connected to the database, use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
 
-```shell
 DROP TABLE IF EXISTS `weather`;
 CREATE TABLE `weather` (
   `date_Str` date NOT NULL COMMENT 'Date and Time of Readings',
@@ -40,9 +39,7 @@ CREATE TABLE `weather` (
   type char(25) NOT NULL COMMENT 'weather condition',
   serialid int(11) NOT NULL COMMENT 'serial id of log'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 ;
-```
 
-```shell
 DELIMITER $$
 DROP PROCEDURE IF EXISTS insert_temp;
 CREATE PROCEDURE insert_temp()
@@ -53,16 +50,14 @@ INSERT INTO mylab.weather VALUES (1993-12-10,14.38,'USC00147271',-100.92,38.47,2
 DELETE from mylab.weather  where serialid=key_value;
 END$$
 DELIMITER ;
-```
+
 
 Load an initial data set from S3
 
 Next, load an initial data set by importing data from an Amazon S3 bucket:
 
-```shell
 LOAD DATA FROM S3 's3-eu-west-1://auroralab-data-4cc625f0/weather-anomalies.csv'
 INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
-```
 
 Data loading may take several minutes, you will receive a successful query message once it completes. When completed, exit the MySQL command line:
 
@@ -77,18 +72,14 @@ The slow query log can be used to find queries that take a long time to execute 
 
 Current setup should look like this when you run the query
 
-```shell
 $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@long_query_time,@@log_output;"
-```
 
 [Image: Screenshot 2021-05-06 at 13.26.11.png]
-Let’s modify *long_query_time * to 1 second, *slow_query_log to 1*, log_output to *FILE* . To do so, open the [Amazon RDS service console!](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
+Let’s modify *long_query_time * to 1 second, *slow_query_log to 1*, log_output to *FILE* . To do so, open the Amazon RDS service console (https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
 [Image: Screenshot 2021-04-30 at 00.16.06.png]
-*Note:* You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our [doc!](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating).
+*Note:* You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our doc (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating).
 
 Click the *parameter group* associated, which would bring the parameter group page. For *Parameter group actions*, choose *Edit parameters*. Search for long_query_time under parameters and modify the long_query_time  from *10 to 1.*Choose Save changes*. Since long_query_time is a dynamic parameter, no reboot is required. Please wait for the parameter group to sync with DB instance before the slow queries start appearing in the slow query logs.*
-
-<span class="image">![Create Database](1-create.png?raw=true)</span>
 
 [Image: Screenshot 2021-05-01 at 16.52.41.png]
 
@@ -96,9 +87,7 @@ Click the *parameter group* associated, which would bring the parameter group pa
 
  Now run the command below replacing the [clusterEndpoint] placeholder with the value of the cluster endpoint created in the preceding steps. 
 
-```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@long_query_time,@@log_output;"
-```
 
 Before proceeding further, please ensure the output looks like this.
 [Image: Screenshot 2021-05-01 at 17.06.27.png]*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements 
@@ -106,19 +95,19 @@ Before proceeding further, please ensure the output looks like this.
 
 Run the workload
 
-On the [session manager terminal!](https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
+On the session manager terminal (https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
 
  Script can be downloaded from https://quip-amazon.com/JdhRAhCPt9Y4
 
-```shell
 python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
-```
+
 This script will take around ~*5* minutes to complete.
 
-## 2 Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
+2 Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
+
 CloudWatch Metrics
 
-You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console!](https://console.aws.amazon.com/rds/home) and click on [Databases!](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
+You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the Amazon RDS service console (https://console.aws.amazon.com/rds/home) and click on Databases (https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
 
 <screenshot>
 
@@ -129,7 +118,7 @@ During performance issues, although all the metrics are important its ideal to l
 <add the screenshots)
 
 
-Amazon Aurora also provides a range of [CloudWatch metrics!](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
+Amazon Aurora also provides a range of CloudWatch metrics (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
 In general
 
@@ -143,12 +132,11 @@ DMLLatency metric reveals a spike at 22:57, when the metric reached 4442 millise
 
 A useful piece of information readily available from DMLThroughput metric . At 22.57 DML throughput is 0.907 which is roughly 54 operations. This could be the reason for the DML latency we noticed before.
 
-```shell
 
 .907 Operations
      ---------- X 60s= 54.42 ~ 54 operations
         s
-```
+
 
 *Optional:* Once the performance baseline is understood you can setup alarms against CW metrics when it exceeds the baseline for corrective actions.
 
@@ -167,9 +155,9 @@ _*Doing more with performance insights*_
 
  Identify *top* SQL queries using performance insights dashboard.
 
-Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance. To view the current performance insights dashboard, please go to the [RDS console!](https://console.aws.amazon.com/rds/) and in the navigation pane, click performance insights and choose the writer node. You should see the console like below.  
+Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance. To view the current performance insights dashboard, please go to the RDS console (https://console.aws.amazon.com/rds/) and in the navigation pane, click performance insights and choose the writer node. You should see the console like below.  
 [Image: Screenshot 2021-04-21 at 16.42.32.png]
-The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab!](https://awsauroralabsmy.com/provisioned/perf-insights/). 
+The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the previous lab (https://awsauroralabsmy.com/provisioned/perf-insights/). 
 
 So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*? Let’s enable additional components on the *counter metrics* and also on the *Session Activity* preferences at the bottom. We will also slightly change the view of *Database Load.*
 
@@ -198,11 +186,11 @@ As you noticed we can see performance insights are very good to understand avera
 
 You can also retrieve these results using performance schema which is covered https://quip-amazon.com/HCbBAcUh5scB/Performance-troubleshooting. (This is covered in self managed MySQL compatible instance). 
 
-## View *slow* queries 
+3 View *slow* queries 
 
 _*View and download slow query logs using the console*_
 
-Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console!](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
+Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon RDS service console (https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
 [Image: Screenshot 2021-05-21 at 19.03.08.png]
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*. 
 [Image: Screenshot 2021-05-21 at 19.05.49.png]
@@ -213,9 +201,9 @@ You should see slow queries in the console. The log file content will have the f
 *Rows_sent*: The number of rows sent to the client.
 *Rows_examined*: The number of rows examined by the server layer (not counting any processing internal to storage engines).
 
-To learn more about slow queries, please check the [official doc!](https://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html). ** 
+To learn more about slow queries, please check the official doc (https://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html). ** 
 
-You can download the logs via *console* or *CLI* using [download-db-log-file-portion!](https://docs.aws.amazon.com/cli/latest/reference/rds/download-db-log-file-portion.html). For now, let’s call this log as *slow_query_log1*.
+You can download the logs via *console* or *CLI* using download-db-log-file-portion (https://docs.aws.amazon.com/cli/latest/reference/rds/download-db-log-file-portion.html). For now, let’s call this log as *slow_query_log1*.
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
@@ -250,12 +238,10 @@ Under *Log streams*, pick your current *writer* node (since that is where we ran
 
 To increase the readability of these logs, we are going to use *Insights*. Click on the *insights* and select your log group in the drop down list. For slow queries, it will be in the format of /aws/rds/cluster/auroralab-mysql-cluster (https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-mysql-cluster;is-cluster=true;tab=logs-and-events)/slowquery. In the text field, enter the following insights query by replacing the <writer node>
 
-```shell
 filter @logStream = 'auroralab-mysql-node-1'
 | parse @message "# Time: * User@Host: * Id: * Query_time: * Lock_time: * Rows_sent: * Rows_examined: * timestamp=*;*" as Time, User, Id, Query_time,Lock_time,Rows_sent,Rows_examined,timestamp,Query
 | display Time, Query_time, Query,Rows_sent,Rows_examined
 | sort Query_time asc
-```
 
 This query parses the slow query logs and captures the individual fields like *Time, Query_time, Query,Rows_sent,Rows_examined*. Once entered and *Run query*, the output should look something like below.
 
@@ -272,7 +258,7 @@ Percona pt-query-digest
 
 Disclaimer: Percona pt-query-digest is a third party software licensed under GNU so please use official documentation (https://www.percona.com/doc/percona-toolkit/2.0/pt-query-digest.html) for reference.
 
-*pt-query-digest * is a open source tool from percona which analyzes MySQL queries from slow, general, and binary log files. You can learn more about this tool and download it from [here!](https://www.percona.com/doc/percona-toolkit/LATEST/installation.html).
+*pt-query-digest * is a open source tool from percona which analyzes MySQL queries from slow, general, and binary log files. You can learn more about this tool and download it from here (https://www.percona.com/doc/percona-toolkit/LATEST/installation.html).
 
 In short, this tool summaries the top queries based on the input log file ranked by response time. This is a two step process. 
 
@@ -288,16 +274,14 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 *CLI example*
 
-```shell
 aws rds download-db-log-file-portion --db-instance-identifier [writerendpoint] \
 --starting-token 0 --output text --log-file-name slowquery/<slowlogname> > slow_log.txt
-```
+
 
 *Step2:*Once downloaded, you can run the pt-query-digest like below using the slow query log file we just downloaded.Please ensure the log name is correct.
 
-```shell
 $ pt-query-digest <slow_log_file.txt>
-```
+
 
 (1) This is a highly summarized view of the unique events in the detailed query report that follows. It contains the following columns and basically ranks the top offending queries and rank them from the slow query log which is easier to
 
@@ -324,7 +308,7 @@ So far we have *3* *slow_query_log files and for the purpose of the lab, let’s
 
 For the purpose of the lab, lets call this as *slow_query_final.log*
 
-```shell
+
 [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
 [Q2] CALL insert_temp ;
     INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
@@ -332,14 +316,14 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
 [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
 [Q5] SELECT sql_no_cache station_name, count(type) type_of_weather FROM weather WHERE type = 'Strong Cold';
-```
+
 
 *Optional:* You can also go ahead and run the above queries individually on the terminal and see the individual response time.
 
 _*EXPLAIN plan*_
 
 
-The [EXPLAIN!](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN (https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT!](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE!](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT!](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE!](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE!](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN!](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
+The EXPLAIN (https://dev.mysql.com/doc/refman/8.0/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN (https://dev.mysql.com/doc/refman/8.0/en/explain.html) works with SELECT (https://dev.mysql.com/doc/refman/8.0/en/select.html), DELETE (https://dev.mysql.com/doc/refman/8.0/en/delete.html), INSERT (https://dev.mysql.com/doc/refman/8.0/en/insert.html), REPLACE (https://dev.mysql.com/doc/refman/8.0/en/replace.html), and UPDATE (https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of EXPLAIN (https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
 
 Lets go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below
 
@@ -347,10 +331,8 @@ Lets go ahead capture the explain plan for those queries listed above . You can 
 
 Below is an explain plan for the [*Q5*]
 
-```shell
 EXPLAIN SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DE
 SC ;
-```
 
 [Image: Screenshot 2021-04-30 at 14.53.18.png]
 The explain plan has multiple fields and the most common ones to look at it are
@@ -370,17 +352,16 @@ Our earlier investigations says that query[5] is slow and P.I also suggested thi
 
 _PROFILE_
 
-The SHOW [PROFILE!](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES!](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
+The SHOW PROFILE (https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and SHOW PROFILES (https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
 
 In order to perform profiling for the *[Q5]*, please run the below.
 
-```shell
+
 SET profiling = 1;
 SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
 SHOW PROFILES;
 SHOW PROFILE FOR QUERY 1;
 SET profiling = 0;
-```
 
 the output should look like below. 
 [Image: Screenshot 2021-05-04 at 13.13.39.png]
@@ -396,7 +377,6 @@ Presence of index can be done by running one of the methods below:
 
 We can check the DDL of the table to see if it has any indexes like show create table mylab.weather \G
 
-```shell
 mysql> show create table weather \G
        Table: weather
 Create Table: CREATE TABLE weather (
@@ -412,32 +392,30 @@ Create Table: CREATE TABLE weather (
   serialid int(11) NOT NULL COMMENT 'serial id of log'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 1 row in set (0.01 sec)
-```
 
 From the above schema we can see the table does not have any *keys/indexes* and this explains why the queries are scanning huge number of rows and results in slowness.
-```shell
+
 using SHOW INDEX
-```
+
 Alternatively you can run show index from mylab.weather \G
 
-```shell
 mysql> show index from mylab.weather \G
 Empty set (0.01 sec)
-```
+
 We can see that *mylab.weather* table does not have any primary keys. 
 
 *https://quip-amazon.com/CzE8AOHIhJuM/slowqueryfinallog*
 
-```shell
+
 [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
 [Q2] CALL insert_temp ;
     INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
     DELETE from mylab.weather  where serialid=key_value;
 [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
 [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-```
 
-## 6 Tune 
+
+6 Tune 
 
 In real world, based on the type of wait events, schemas, resource utilisation the tuning approach varies.There are many ways you can take appropriate corrective actions like tune the server parameters, tune a query by re-writing it, tune the database schemas or even tune the code(App,DB). 
 
@@ -506,7 +484,7 @@ Once executed, this should look like below. We can see that compared to earlier 
 [Image: Screenshot 2021-05-03 at 11.58.50.png]
 We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
-## 6 Performance review:
+6 Performance review:
 
 Now after adding the indexes, let’s *re-run* the script and compare and review the performance in whole for before and after. Before re-running the tests lets truncate the performance schema tables to have fresh counters. This would make our before vs after comparison much easier. Please run the commands below on the mysql terminal
 
@@ -558,49 +536,43 @@ As a background, performance insights uses performance schema and other global c
 
 *P_S* feature works by counting and timing server events and gathers in memory and expose them through a collection of tables in the performance schema database. 
 
-Let’s use [events_statements_summary_global_by_event_name!](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html) and [events_statements_summary_by_digest!](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html)  table to capture top queries, events etc
+Let’s use ** events_statements_summary_global_by_event_name (https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html) ** and ** events_statements_summary_by_digest (https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html)  table to capture top queries, events etc
 
 *Note:* Performance Schema tables are kept in memory and their contents will be lost in the event of server reboot. 
 
 Syntax (top 5, wait events)
 
-```shell
 select event_name as wait_event, count_star as all_occurrences, CONCAT(ROUND(sum_timer_wait / 1000000000000, 2), ' s') as total_wait_time, CONCAT(ROUND(avg_timer_wait / 1000000000000, 2), ' s') as avg_wait_time from performance_schema.events_waits_summary_global_by_event_name where count_star > 0 and event_name <> 'idle' order by sum_timer_wait desc limit 5;
-```
 
 Syntax (top 5 statements, order by total execution time)
 
-```shell
 select replace(event_name, 'statement/sql/', '') as statement, count_star as all_occurrences, CONCAT(ROUND(sum_timer_wait / 1000000000000, 2), ' s') as total_latency, CONCAT(ROUND(avg_timer_wait / 1000000000000, 2), ' s') as avg_latency, CONCAT(ROUND(sum_lock_time / 1000000000000, 2), ' s') as total_lock_time, sum_rows_affected as sum_rows_changed, sum_rows_sent as sum_rows_selected, sum_rows_examined as sum_rows_scanned, sum_created_tmp_tables, sum_created_tmp_disk_tables, if(sum_created_tmp_tables = 0, 0, concat(truncate(sum_created_tmp_disk_tables/sum_created_tmp_tables*100, 0))) as tmp_disk_tables_percent, sum_select_scan, sum_no_index_used, sum_no_good_index_used from performance_schema.events_statements_summary_global_by_event_name where event_name like 'statement/sql/%' and count_star > 0 order by sum_timer_wait desc limit 5;
-```
+
 Syntax (top 5 queries, order by total execution time):
 
-```shell
 select digest_text as normalized_query, count_star as all_occurr, CONCAT(ROUND(sum_timer_wait / 1000000000000, 3), ' s') as total_t, CONCAT(ROUND(min_timer_wait / 1000000000000, 3), 's') as min_t, CONCAT(ROUND(max_timer_wait / 1000000000000, 3), ' s') as max_t, CONCAT(ROUND(avg_timer_wait / 1000000000000, 3), ' s') as avg_t, CONCAT(ROUND(sum_lock_time / 1000000000000, 3), ' s') as total_lock_t, sum_rows_affected as sum_rows_changed, sum_rows_sent as sum_rows_selected, sum_rows_examined as sum_rows_scanned, sum_created_tmp_tables, sum_created_tmp_tables, sum_select_scan, sum_no_index_used from performance_schema.events_statements_summary_by_digest where schema_name iS NOT NULL order by sum_timer_wait desc limit 5 ;
-```
 
 Syntax (top 5 queries performing Full table scan)
-```shell
+
 SELECT schema_name, substr(digest_text, 1, 100) AS statement, count_star AS cnt, sum_select_scan AS full_table_scan FROM performance_schema.events_statements_summary_by_digest WHERE sum_select_scan > 0 and schema_name iS NOT NULL ORDER BY sum_select_scan desc limit 5;
-```
+
 *Note:* Before every load, to get fresh counters you can consider truncating the performance schema tables that you want to query.
 
 *Syntax (top 5 queries for which Temporary tables spilled to disk)*
 
-```shell
 mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star AS cnt, sum_created_tmp_disk_tables AS tmp_disk_tables,sum_created_tmp_tables AS tmp_tables FROM performance_schema.events_statements_summary_by_digest WHERE sum_created_tmp_disk_tables > 0 OR sum_created_tmp_tables >0 and schema
 _name='mylab' ORDER BY tmp_disk_tables desc limit 5;
-```
-
-*Note:* To learn more about abour *Statement Digest aggregation rules* please refer [official doc!](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
 
 
-### Understand the workload
+*Note:* To learn more about abour *Statement Digest aggregation rules* please refer official doc (https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
+
+
+Understand the workload
 
 To get an idea about workload you can run show process-list to see active transactions, idle/sleep transactions etc
 
 
-### SHOW PROCESSLIST:
+SHOW PROCESSLIST:
 
 To understand transactions running inside dbengine, you can run SHOW ENGINE INNODB STATUS (https://dev.mysql.com/doc/refman/5.7/en/show-engine.html) on the writer note. Please note this query works only on the writer and not on the reader. This command exposes outputs from various InnoDB monitors and can be instrumental in understanding the internal state of InnoDB engine. Information returned by the command includes but is not limited to:
 
@@ -610,10 +582,8 @@ To understand transactions running inside dbengine, you can run SHOW ENGINE INNO
 
 SHOW ENGINE INNODB STATUS \G
 
-To understand locking transactions you can query [information_schema!](https://dev.mysql.com/doc/refman/5.7/en/innodb-information-schema-examples.html) like below..
+To understand locking transactions you can query information schema (https://dev.mysql.com/doc/refman/5.7/en/innodb-information-schema-examples.html) like below..
 
-```shell
 SELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_query waiting_query, b.trx_id blocking_trx_id, b.trx_mysql_thread_id blocking_thread, b.trx_query blocking_query FROM information_schema.innodb_lock_waits w INNER JOIN information_schema.innodb_trx b ON b.trx_id = w.blocking_trx_id INNER JOIN information_schema.innodb_trx r ON r.trx_id = w.requesting_trx_id;
-```
 
-[Image: Screenshot 2021-05-03 at 22.59.19.png] With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics!](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
+[Image: Screenshot 2021-05-03 at 22.59.19.png] With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through Deadlocks CW metrics (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
