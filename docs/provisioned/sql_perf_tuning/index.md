@@ -124,13 +124,13 @@ This script will take around **4** minutes to complete.
 
 You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
 
-<screenshot>
-
 We can see that the base metrics like *CPU, DB connections, write latency,* *Read latency* and many more are spiking up for the same period. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period.
-[Image: Screenshot 2021-05-03 at 23.11.39.png]
+
+  <span class="image">![CW Metrics](latency.png?raw=true)</span>
+  <span class="image">![CW Metrics](db-cpu.png?raw=true)</span>
+
 During performance issues, although all the metrics are important its ideal to look at CPU,DB Connections,DML/DDL metrics.
 
-(add the screenshots)
 
 Amazon Aurora also provides a range of [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
@@ -162,7 +162,7 @@ You must have noticed that the CW metrics didn’t start populating right away a
 If you have Enhanced Monitoring option enabled for the database instance, select *Enhanced Monitoring* option from the *Monitoring* dropdown list.For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
 
 You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage) .
-[Image: Screenshot 2021-04-30 at 21.20.33.png]
+<span class="image">![EM](EM.png?raw=true)</span>
 
 From the above, the CPU is driven by *user* and *drop* in Free memory for the same period where there is Increase in *Load average 1 min.*
 
@@ -179,18 +179,19 @@ The dashboard is divided into 3 sections, allowing you to drill down from high l
 So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*? Let’s enable additional components on the *counter metrics* and also on the *Session Activity* preferences at the bottom. We will also slightly change the view of *Database Load.*
 
 Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Performance Insights](P.I_manage.png?raw=true)</span>
 
 
 Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS metrics
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Performance Insights](P.I_DB.png?raw=true)</span>
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Performance Insights](P.I_os.png?raw=true)</span>
 
 Click Update graph and once done, the counter metrics should look like below. We can see the innodb rows read,cpu utilisation  and slow queries counters surged and stayed high for this period.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Performance Insights](P.I_counter.png?raw=true)</span>
+
 
 We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
 
