@@ -208,9 +208,9 @@ Now let’s modify the *Session activity* part. The default interface for Top SQ
 
 To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
 
-<span class="image">![P.I](P.I_expand gear1.png?raw=true)</span>
+<span class="image">![P.I](P.I_expand_gear1.png?raw=true)</span>
 
-<span class="image">![P.I](P.I_expand gear2.png?raw=true)</span>
+<span class="image">![P.I](P.I_expand_gear2.png?raw=true)</span>
 
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent .
 
