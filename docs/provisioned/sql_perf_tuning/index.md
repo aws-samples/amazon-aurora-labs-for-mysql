@@ -1,4 +1,4 @@
-Aurora MySQL SQL Performance Troubleshooting (WIP) 
+# Aurora MySQL SQL Performance Troubleshooting (WIP) 
 
 In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics*, *P.I, slow query logs, CloudWatch logs and CloudWatch log insights.pt-query-digest ,EXPLAIN, PROFILE*  to troubleshoot / identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
 
