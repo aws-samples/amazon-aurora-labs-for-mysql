@@ -70,8 +70,6 @@ Data loading may take several minutes, you will receive a successful query messa
 quit;
 ```
 
-Alternate option to install/load can be found at the bottom of the page https://quip-amazon.com/JdhRAhCPt9Y4 
-
 ### Setup Parameters to log slow queries
 
 The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization.Slow query logs are controlled by various parameters and the most notable ones are slow_query_log, long_query_time and log_output . MySQL enables you to log queries that exceed a predefined time limit controlled by long_query_time. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is *disabled* by default on RDS instances. 
@@ -169,46 +167,48 @@ From the above, the CPU is driven by *user* and *drop* in Free memory for the sa
 
 Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance. To view the current performance insights dashboard, please go to the [RDS console](https://console.aws.amazon.com/rds/) and in the navigation pane, click performance insights and choose the writer node. You should see the console like below.  
 
-[Image: Screenshot 2021-04-21 at 16.42.32.png]
+<span class="image">![Performance Insights](P.I_doing_more.png?raw=true)</span>
 
 The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/). 
 
 So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*? Let’s enable additional components on the *counter metrics* and also on the *Session Activity* preferences at the bottom. We will also slightly change the view of *Database Load.*
 
 Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
-[Image: Screenshot 2021-05-07 at 11.26.26.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
 
 Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS metrics
 
-[Image: Screenshot 2021-04-21 at 19.00.45.png]
-[Image: Screenshot 2021-04-21 at 18.57.40.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 Click Update graph and once done, the counter metrics should look like below. We can see the innodb rows read,cpu utilisation  and slow queries counters surged and stayed high for this period.
 
-[Image: Screenshot 2021-05-21 at 19.19.03.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
 
 Next change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ and show the top queries during this time . We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption. As a temporary workaround you may scale up the instance to improve the situation but it’s not a scalable solution.
 
-[Image: Screenshot 2021-05-07 at 11.30.39.png]
-[Image: Screenshot 2021-04-30 at 11.55.45.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 *Note:* Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
 Now let’s modify the *Session activity* part. The default interface for Top SQL contains AAS and SQL statements should look like this. Please go to the preferences section(gear icon at the right hand bottom) and add additional columns components.
 
-[Image: Screenshot 2021-05-06 at 22.35.29.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
 
-[Image: Screenshot 2021-05-21 at 14.49.13.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
-[Image: Screenshot 2021-05-21 at 14.49.24.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent . 
 
-[Image: Screenshot 2021-05-21 at 16.46.18.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 *Note:* To see the queries inside the stored procedure, please click and expand the + icon.
 
@@ -222,7 +222,7 @@ As you noticed we can see performance insights are very good to understand avera
 ### View and download slow query logs using the console
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
-[Image: Screenshot 2021-05-21 at 19.03.08.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*. 
 [Image: Screenshot 2021-05-21 at 19.05.49.png]
@@ -246,11 +246,11 @@ Slow logs are great for troubleshooting but viewing/downloading individual logs 
 
 We have already *enabled* export Cloudwatch logs option when we created the cluster. This can be verified by going to the RDS console, under cluster *configuration→ Published logs* like below. Please proceed to next step only if you see slow query  in it.
 
-[Image: Screenshot 2021-04-30 at 10.03.17.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 *Note:* To enable/disable these logs or add additional logs, you can click *Modify* at the *right top → Log exports → tick/untick prefered logs → continue → modify cluster.*
 
-[Image: Screenshot 2021-04-30 at 13.02.34.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
  
 You can also verify the status of CloudWatch export and the type of logs thats currently enabled for export by executing the *CLI* below on the session manager terminal.
 
@@ -258,7 +258,8 @@ You can also verify the status of CloudWatch export and the type of logs thats c
 aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster --query DBClusters[*].EnabledCloudwatchLogsExports
 ```
 You should see the output like below. This sample output shows that currently export CloudWatch logs option is enabled for error logs and slow query logs.
-[Image: Screenshot 2021-04-20 at 10.25.32.png]
+
+  <span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 ###  View exported logs in CloudWatch
 
@@ -268,9 +269,9 @@ After enabling Aurora MySQL log events, you can monitor the events in Amazon Clo
 
 For our DB cluster auroralab-mysql-cluster, slow query data is stored in the /aws/rds/cluster/auroralab-mysql-cluster/slowquery log group. Open the [Amazon Cloudwatch](https://console.aws.amazon.com/cloudwatch/home?p=clw&cp=bn&ad=c) console and select *Log groups* on the left hand side and search for auroralab-mysql-cluster/slowquery and it should see like below
 
-[Image: Screenshot 2021-05-21 at 19.27.40.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 Under *Log streams*, pick your current *writer* node (since that is where we ran our script against) to view the slow query logs and you should see like below
-[Image: Screenshot 2021-04-30 at 13.06.00.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 *Note:* The default log retention period is *Never Expire* however this can be changed*. Please see* *Change log data retention in CloudWatch Logs* (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html)*.*
 
@@ -285,15 +286,15 @@ filter @logStream = 'auroralab-mysql-node-1'
 
 This query parses the slow query logs and captures the individual fields like *Time, Query_time, Query,Rows_sent,Rows_examined*. Once entered and *Run query*, the output should look something like below.
 
-[Image: Screenshot 2021-05-04 at 19.00.42.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 The queries listed are the offending queries which takes longer than the *long_query_time*. We could see around 100+ entries in the last 30 minutes.You can select any query to expand to find more information about it.
 
-[Image: Screenshot 2021-05-04 at 19.00.57.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
-[Image: Screenshot 2021-04-21 at 16.18.24.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 ### Percona pt-query-digest 
 
@@ -309,7 +310,7 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 #### Download using console
 
-[Image: Screenshot 2021-05-03 at 11.39.47.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
@@ -341,9 +342,9 @@ V/M           The Variance-to-mean ratio of response time
 Item          The distilled query
 ```
 
-[Image: Screenshot 2021-05-04 at 19.05.05.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like concurrency(calculated as a function of the timespan and total Query_time), exec time, rows sent, rows examine etc. This also provides the number of occurrences of a query in the log.
-[Image: Screenshot 2021-05-04 at 19.05.20.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 
 ## 4 Analyze the queries using EXPLAIN and PROFILE
@@ -488,14 +489,19 @@ UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
   EXPLAIN UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
 ```
 
-[Image: Screenshot 2021-05-21 at 19.32.15.png]From this, we can see the *absence* of keys and the number of rows *scanned* is high. Let’s try adding an index on this column and continue to investigate if this helps.
+ <span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+  From this, we can see the *absence* of keys and the number of rows *scanned* is high. Let’s try adding an index on this column and continue to investigate if this helps.
 *_ADD INDEX_*
 
 ```sql
 ALTER TABLE mylab.weather ADD index idx_id (id);
 ```
 
-[Image: Screenshot 2021-04-30 at 15.03.44.png]After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+  
+  After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
 [Image: Screenshot 2021-05-03 at 12.00.56.png]Using the same logic, let’s add index to the field *serialid* for ** which we found inside the stored procedure *[Q2] .* Before that lets capture the explain plan and once index is added, lets capture the explain plan again.
 
 ```sql
@@ -505,15 +511,20 @@ EXPLAIN DELETE from mylab.weather where serialid=3150000;
 ```
 
 Output should look like below.
-[Image: Screenshot 2021-05-03 at 12.04.00.png]While we are at it, lets also check the Explain plan for [Q3]  before and after to see the impact of indexes on this.
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+  
+  While we are at it, lets also check the Explain plan for [Q3]  before and after to see the impact of indexes on this.
 
 ```sql
 [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC\G
 ```
 
 *Before index*
-[Image: Screenshot 2021-05-21 at 19.36.42.png]*After index*
-[Image: Screenshot 2021-04-30 at 15.12.26.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+  *After index*
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 composite index
 
 In [*Q4*], we can see *station_name* and *type* is used for filtering the results. As you know with MySQL we can use multiple-column indexes for queries that test all the columns in the index, or queries that test just the first column, the first two columns, the first three columns, and so on. composite indexes (that is, indexes on multiple columns) and keep in mind MySQL allows you to create composite index up to 16 columns.
@@ -531,8 +542,11 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 ```
 
 *Before Index*
-[Image: Screenshot 2021-05-03 at 12.06.14.png]*After index*
-[Image: Screenshot 2021-05-03 at 12.06.06.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+  *After index*
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.* 
 
 _*RE-VIST PROFILE*_
@@ -565,29 +579,32 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 
 Let’s take a look at **CW metrics** and we cannot see any peak periods compared to before.
 
-[Image: Screenshot 2021-05-21 at 19.56.27.png]<add screenshots>(should I include this?)
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<add screenshots>(should I include this?)
 
-[Image: Screenshot 2021-05-21 at 19.56.39.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
 
 Let’s take a look at **EM metrics** and we can see there are *no peak periods* compared to before.
 
-[Image: Screenshot 2021-05-21 at 19.58.56.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
 
 Let’s take a look at **slow query logs**.We can see that the query time has been *drastically reduced* and the number of rows examined is also reduced from *1M* to less than *1K* rows.
 
-[Image: Screenshot 2021-05-21 at 19.54.31.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 From the counter metrics, we can see earlier the number of rows scanned is *1.2+M* however now this has come down to only *1.6K .* The CPU total consumption is at a *baseline* average and CPU spike is not visible now. Also there are *hardly any slow query log entries*.
 
-[Image: Screenshot 2021-05-04 at 19.21.09.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 We can see that earlier we has sessions exceeding **max vCPUs** however the execution was rather quick and didn’t throttle the CPU. This also means our solution worked *without scaling up* the instance.
 
-[Image: Screenshot 2021-05-21 at 19.50.12.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 We can also see from the top SQL, the queries which appeared before adding indexes are not appearing anymore. This indicates that indexes helps those queries in consuming less resources and therefore they do not appear as top SQL queries.
 
-[Image: Screenshot 2021-05-21 at 19.51.18.png]
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 We have used :
 
