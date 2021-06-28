@@ -392,7 +392,8 @@ EXPLAIN SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE ma
 SC ;
 ```
 
-[Image: Screenshot 2021-04-30 at 14.53.18.png]
+<span class="image">![Explain](EX1.png?raw=true)</span>
+
 The explain plan has multiple fields and the most common ones to look at it are
 
 * It was again a SELECT against the same table “weather”  using filesort.If an index cannot be used to satisfy an ORDER BY clause, MySQL performs a filesort operation that reads table rows and sorts them. A filesort constitutes an extra sorting phase in query execution.
@@ -423,7 +424,10 @@ SET profiling = 0;
 ```
 
 the output should look like below.
-[Image: Screenshot 2021-05-04 at 13.13.39.png]
+
+<span class="image">![PROFILE](PF1.png?raw=true)</span>
+
+
 From this, we can see where this query is spending its resources. In this example, we can see its spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
 
 ### Index presence
@@ -497,7 +501,7 @@ UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
   EXPLAIN UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
 ```
 
- <span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+ <span class="image">![Tune](T1.png?raw=true)</span>
 
   From this, we can see the *absence* of keys and the number of rows *scanned* is high. Let’s try adding an index on this column and continue to investigate if this helps.
 *_ADD INDEX_*
@@ -506,11 +510,15 @@ UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
 ALTER TABLE mylab.weather ADD index idx_id (id);
 ```
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Tune](T2.png?raw=true)</span>
 
 
   After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
-[Image: Screenshot 2021-05-03 at 12.00.56.png]Using the same logic, let’s add index to the field *serialid* for ** which we found inside the stored procedure *[Q2] .* Before that lets capture the explain plan and once index is added, lets capture the explain plan again.
+
+  <span class="image">![Tune](T3.png?raw=true)</span>
+
+
+Using the same logic, let’s add index to the field *serialid* for ** which we found inside the stored procedure *[Q2] .* Before that lets capture the explain plan and once index is added, lets capture the explain plan again.
 
 ```sql
 EXPLAIN DELETE from mylab.weather where serialid=3150000;
@@ -519,7 +527,8 @@ EXPLAIN DELETE from mylab.weather where serialid=3150000;
 ```
 
 Output should look like below.
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+<span class="image">![Tune](T4.png?raw=true)</span>
 
 
   While we are at it, lets also check the Explain plan for [Q3]  before and after to see the impact of indexes on this.
@@ -529,10 +538,10 @@ Output should look like below.
 ```
 
 *Before index*
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Tune](T5.png?raw=true)</span>
 
   *After index*
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+  <span class="image">![Tune](T6.png?raw=true)</span>
 composite index
 
 In [*Q4*], we can see *station_name* and *type* is used for filtering the results. As you know with MySQL we can use multiple-column indexes for queries that test all the columns in the index, or queries that test just the first column, the first two columns, the first three columns, and so on. composite indexes (that is, indexes on multiple columns) and keep in mind MySQL allows you to create composite index up to 16 columns.
@@ -550,10 +559,10 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 ```
 
 *Before Index*
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![Tune](T7.png?raw=true)</span>
 
   *After index*
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+  <span class="image">![Tune](T8.png?raw=true)</span>
 
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.*
 
@@ -570,7 +579,10 @@ SET profiling = 0;
 ```
 
 Once executed, this should look like below. We can see that compared to earlier snapshot, we could see the query is spending less time on “sending data“, which indicates the disk reads are much faster since it has to scan very few rows compared to earlier because of index.
-[Image: Screenshot 2021-05-03 at 11.58.50.png]
+
+<span class="image">![Tune](T9.png?raw=true)</span>
+
+
 We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
 ## 6 Performance review:
