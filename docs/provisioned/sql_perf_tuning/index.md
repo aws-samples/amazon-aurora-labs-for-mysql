@@ -349,7 +349,9 @@ Item          The distilled query
 ```
 
 <span class="image">![PTQ](PTQ2.png?raw=true)</span>
+
 For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like concurrency(calculated as a function of the timespan and total Query_time), exec time, rows sent, rows examine etc. This also provides the number of occurrences of a query in the log.
+
 <span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
 
