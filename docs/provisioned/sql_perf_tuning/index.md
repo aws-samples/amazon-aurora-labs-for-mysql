@@ -320,7 +320,7 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
-#### Download using cli*
+#### Download using cli
 
 *CLI example*
 
