@@ -316,7 +316,7 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 #### Download using console
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![PTQ](PTQ1.png?raw=true)</span>
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
@@ -348,9 +348,9 @@ V/M           The Variance-to-mean ratio of response time
 Item          The distilled query
 ```
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![PTQ](PTQ2.png?raw=true)</span>
 For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like concurrency(calculated as a function of the timespan and total Query_time), exec time, rows sent, rows examine etc. This also provides the number of occurrences of a query in the log.
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
 
 ## 4 Analyze the queries using EXPLAIN and PROFILE
