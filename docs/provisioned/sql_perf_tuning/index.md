@@ -80,16 +80,19 @@ Current setup should look like this when you run the query
 $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@long_query_time,@@log_output;"
 ```
 
-[Image: Screenshot 2021-05-06 at 13.26.11.png]
+<span class="image">![Slow parameters](setup_slow_param.png?raw=true)</span>
+
+
 Let’s modify *long_query_time * to 1 second, *slow_query_log to 1*, log_output to *FILE* . To do so, open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
-[Image: Screenshot 2021-04-30 at 00.16.06.png]
+
+<span class="image">![parameter group](param_group.png?raw=true)</span>
+
 *Note:* You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating).
 
 Click the *parameter group* associated, which would bring the parameter group page. For *Parameter group actions*, choose *Edit parameters*. Search for long_query_time under parameters and modify the long_query_time  from *10 to 1.*Choose Save changes*. Since long_query_time is a dynamic parameter, no reboot is required. Please wait for the parameter group to sync with DB instance before the slow queries start appearing in the slow query logs.*
 
-<span class="image">![Create Database](1-create.png?raw=true)</span>
+<span class="image">![long query](long_query.png?raw=true)</span>
 
-[Image: Screenshot 2021-05-01 at 16.52.41.png]
 
 *Hint:* In production systems, you can change the values in multiple iterations eg. 10 to 5 and then 5 to 3 and so on.  
 
@@ -100,7 +103,9 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@lon
 ```
 
 Before proceeding further, please ensure the output looks like this.
-[Image: Screenshot 2021-05-01 at 17.06.27.png]*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements 
+<span class="image">![long query output](long_query_out.png?raw=true)</span>
+
+*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements 
 
 ### Run the workload
 
