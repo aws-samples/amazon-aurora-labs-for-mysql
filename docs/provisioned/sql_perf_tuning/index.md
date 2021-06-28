@@ -195,10 +195,10 @@ Click Update graph and once done, the counter metrics should look like below. We
 
 We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
 
-Next change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ and show the top queries during this time . We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption. As a temporary workaround you may scale up the instance to improve the situation but it’s not a scalable solution.
+Next change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ and show the top queries during this time . We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption. 
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![P.I](P.I_DB_Load_1.png?raw=true)</span>
+<span class="image">![P.I](P.I_DB_Load_2.png?raw=true)</span>
 
 *Note:* Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
@@ -208,9 +208,9 @@ Now let’s modify the *Session activity* part. The default interface for Top SQ
 
 To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![P.I](P.I_expand gear1.png?raw=true)</span>
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![P.I](P.I_expand gear2.png?raw=true)</span>
 
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent . 
 
