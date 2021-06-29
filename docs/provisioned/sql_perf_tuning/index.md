@@ -576,7 +576,7 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.*
 
-### RE-VIST PROFILE
+### Re-visit PROFILE
 
 While we are it, lets revisit the *PROFILING* to see if it has been changed after adding the index for [q5]. We already captured the profiling for [*Q4*] in the previous section . Let’s capture it again using the below query on the terminal.
 
@@ -595,7 +595,7 @@ Once executed, this should look like below. We can see that compared to earlier 
 
 We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
-## 7. Performance review:
+## 7. Performance review
 
 Now after adding the indexes, let’s *re-run* the script and compare and review the performance in whole for before and after. Before re-running the tests lets truncate the performance schema tables to have fresh counters. This would make our before vs after comparison much easier. Please run the commands below on the mysql terminal
 
@@ -610,16 +610,6 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 Let’s take a look at **CW metrics** and we cannot see any peak periods compared to before.
 
 <span class="image">![Perf Review](CW_after_index.png?raw=true)</span>
-
-<add screenshots>(should I include this?)
-
-<span class="image">![Perf Review](xx.png?raw=true)</span>
-
-
-Let’s take a look at **EM metrics** and we can see there are *no peak periods* compared to before.
-
-<span class="image">![Perf Review](perf3.png?raw=true)</span>
-
 
 Let’s take a look at **slow query logs**.We can see that the query time has been *drastically reduced* and the number of rows examined is also reduced from *1M* to less than *1K* rows.
 
