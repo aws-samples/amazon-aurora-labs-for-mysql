@@ -127,9 +127,9 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 This script will take around **4** minutes to complete.
 
-## 2 Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
+## 2. Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
 
-### CloudWatch Metrics
+### 2.1 CloudWatch Metrics
 
 You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
 
@@ -165,7 +165,7 @@ A useful piece of information readily available from DMLThroughput metric . At 2
 
 *Optional:* Once the performance baseline is understood you can setup alarms against CW metrics when it exceeds the baseline for corrective actions.
 
-### Enhanced Monitoring
+### 2.2 Enhanced Monitoring
 
 You must have noticed that the CW metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, then Enhanced Monitoring(EM) should help.
 
@@ -176,7 +176,7 @@ You will see additional counters showing metrics captured at the guest OS level 
 
 From the above, the CPU is driven by *user* and *drop* in Free memory for the same period where there is Increase in *Load average 1 min.*
 
-### Doing more with performance insights
+### 2.3 Doing more with performance insights
 
 #### Identify *top* SQL queries using performance insights dashboard.
 
@@ -230,9 +230,9 @@ You can note down the top SQL queries but please keep in mind not all TOP SQL qu
 As you noticed we can see performance insights are very good to understand average activity sessions however if you would like to get individual query stats/execution time then we should seek slow query logs.
 
 
-## 3 View *slow* queries
+## 3. View *slow* queries
 
-### View and download slow query logs using the console
+### 3.1 View and download slow query logs using the console
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
 <span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
@@ -253,7 +253,7 @@ You can download the logs via *console* or *CLI* using [download-db-log-file-por
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
-###  Leveraging CloudWatch logs and Log insights to view and analyze slow queries
+### 3.2 Leveraging CloudWatch logs and Log insights to view and analyze slow queries
 
 Slow logs are great for troubleshooting but viewing/downloading individual logs could be time consuming. Also the logs could get rotated(if log_output= FILE) periodically. In addition to viewing and downloading DB instance logs from the console, you can *publish* logs to Amazon CloudWatch Logs . With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
 
@@ -274,7 +274,7 @@ You should see the output like below. This sample output shows that currently ex
 
 <span class="image">![CWL](CWL3.png?raw=true)</span>
 
-###  View exported logs in CloudWatch
+### 3.3 View exported logs in CloudWatch
 
 After enabling Aurora MySQL log events, you can monitor the events in Amazon CloudWatch Logs. A new log group is automatically created for the Aurora DB cluster under the following prefix, in which cluster-name represents the DB cluster name, and log_type represents the log type.
 
@@ -308,7 +308,7 @@ The queries listed are the offending queries which takes longer than the *long_q
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
 
-### Percona pt-query-digest
+### 3.4 Percona pt-query-digest
 
 *One challenge is that it requires manual effort or some automation technique to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
@@ -361,7 +361,7 @@ For the queries listed above in the previous section, this section contains indi
 <span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
 
-## 4 Analyze the queries using EXPLAIN and PROFILE
+## 4. Analyze the queries using EXPLAIN and PROFILE
 
 In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*.
 
@@ -381,7 +381,7 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 
 *Optional:* You can also go ahead and run the above queries individually on the terminal and see the individual response time.
 
-### EXPLAIN plan
+### 4.1 EXPLAIN plan
 
 
 The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
@@ -415,7 +415,7 @@ In this example, we see that the estimation of rows to be examined is very high 
 
 Our earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. Let’s take a look at where this query is spending its time. In order to indentify that we can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
 
-### PROFILE
+### 4.2 PROFILE
 
 The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
 
@@ -436,7 +436,7 @@ the output should look like below.
 
 From this, we can see where this query is spending its resources. In this example, we can see its spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
 
-### Index presence
+### 4.3 Index presence
 
 In order to do so, let’s check the *schema* in question to see if table have any indexes, so that we can use them in the queries to improve the read performance. The use of indexes to assist with large blocks of tables, data may have considerable impact on reducing MySQL query execution and, thus, overall CPU overhead. Non-indexed tables are nothing more than unordered lists; hence, the MySQL engine must search them from starting to end. This may have little impact when working with small tables, but may dramatically affect search time for larger tables.
 
@@ -486,7 +486,7 @@ We can see that *mylab.weather* table does not have any primary keys.
 [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
 ```
 
-## 6 Tune
+## 6. Tune
 
 In real world, based on the type of wait events, schemas, resource utilisation the tuning approach varies.There are many ways you can take appropriate corrective actions like tune the server parameters, tune a query by re-writing it, tune the database schemas or even tune the code(App,DB).
 
@@ -591,7 +591,7 @@ Once executed, this should look like below. We can see that compared to earlier 
 
 We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
-## 6 Performance review:
+## 7. Performance review:
 
 Now after adding the indexes, let’s *re-run* the script and compare and review the performance in whole for before and after. Before re-running the tests lets truncate the performance schema tables to have fresh counters. This would make our before vs after comparison much easier. Please run the commands below on the mysql terminal
 
@@ -642,9 +642,9 @@ We have used :
 * Fine tune by adding indexes to improve the performance without rewriting the query or rewriting the app.
 
 
-## Optional:
+## 8. Optional:
 
-### Performance Schema
+### 8.1 Performance Schema
 
 The Performance Schema(*P_S*) is an advanced MySQL diagnostic tool for monitoring MySQL Server. Due to certain CPU and memory overhead, Performance schema is *disabled* by default. However when performance insights is enabled, performance schema is automatically enabled by default.
 
@@ -689,7 +689,7 @@ _name='mylab' ORDER BY tmp_disk_tables desc limit 5;
 *Note:* To learn more about abour *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
 
 
-### Understand the workload
+### 8.2 Understand the workload
 
 #### Processlist
 To get an idea about workload you can run *show process-list* to see active transactions, idle/sleep transactions etc
