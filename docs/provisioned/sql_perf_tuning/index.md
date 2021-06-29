@@ -26,8 +26,7 @@ This lab requires the following prerequisites:
 
 ### Connect to the DB cluster
 
-Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect.
-If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the [clusterEndpoint] placeholder with the cluster endpoint of your DB cluster.
+Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect.If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the [clusterEndpoint] placeholder with the cluster endpoint of your DB cluster.
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
@@ -80,7 +79,7 @@ quit;
 
 ### Setup Parameters to log slow queries
 
-The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization.Slow query logs are controlled by various parameters and the most notable ones are slow_query_log, long_query_time and log_output . MySQL enables you to log queries that exceed a predefined time limit controlled by long_query_time. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is *disabled* by default on RDS instances.
+The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization.Slow query logs are controlled by various parameters and the most notable ones are **slow_query_log, long_query_time and log_output** . MySQL enables you to log queries that exceed a predefined time limit controlled by **long_query_time**. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is **disabled** by default on RDS instances.
 
 Current setup should look like this when you run the query
 
@@ -91,18 +90,17 @@ $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@
 <span class="image">![Slow parameters](setup_slow_param.png?raw=true)</span>
 
 
-Let’s modify *long_query_time * to 1 second, *slow_query_log to 1*, log_output to *FILE* . To do so, open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
+Let’s modify **long_query_time**  to 1 second, **slow_query_log** to 1, **log_output** to FILE . To do so, open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
 
 <span class="image">![parameter group](param_group.png?raw=true)</span>
 
-*Note:* You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating).
+??? tip  "You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating)".
 
-Click the *parameter group* associated, which would bring the parameter group page. For *Parameter group actions*, choose *Edit parameters*. Search for long_query_time under parameters and modify the long_query_time  from *10 to 1.*Choose Save changes*. Since long_query_time is a dynamic parameter, no reboot is required. Please wait for the parameter group to sync with DB instance before the slow queries start appearing in the slow query logs.*
+Click the *parameter group* associated, which would bring the parameter group page. For *Parameter group actions*, choose *Edit parameters*. Search for **long_query_time** under parameters and modify the long_query_time  from **10 to 1** and * Save changes*. Since long_query_time is a dynamic parameter, no reboot is required. Please wait for the parameter group to sync with DB instance before the slow queries start appearing in the slow query logs.*
 
 <span class="image">![long query](long_query.png?raw=true)</span>
 
-
-*Hint:* In production systems, you can change the values in multiple iterations eg. 10 to 5 and then 5 to 3 and so on.  
+??? tip  " In production systems, you can change the values in multiple iterations eg. 10 to 5 and then 5 to 3 and so on".  
 
  Now run the command below replacing the [clusterEndpoint] placeholder with the value of the cluster endpoint created in the preceding steps.
 
@@ -114,18 +112,16 @@ Before proceeding further, please ensure the output looks like this.
 
 <span class="image">![long query output](long_query_out.png?raw=true)</span>
 
-*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements
+*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements.
 
 ### Run the workload
 
 On the [session manager terminal](https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
 
- Script can be downloaded from https://quip-amazon.com/JdhRAhCPt9Y4
-
 ```shell
 python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
-This script will take around **4** minutes to complete.
+This script will take about **4~5** minutes to complete.
 
 ## 2. Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
 
