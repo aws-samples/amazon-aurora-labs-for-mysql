@@ -299,7 +299,6 @@ The queries listed are the offending queries which takes longer than the *long_q
 
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
- <span class="image">![CWL](CWL8.png?raw=true)</span>
 
 ### Percona pt-query-digest
 
