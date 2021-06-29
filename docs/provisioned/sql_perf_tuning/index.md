@@ -133,8 +133,7 @@ We can see that the base metrics like *CPU, DB connections, write latency,* *Rea
 
   <span class="image">![CW Metrics](latency.png?raw=true)</span> <span class="image">![CW Metrics](db-cpu.png?raw=true)</span>
 
-During performance issues, although all the metrics are important its ideal to look at CPU,DB Connections,DML/DDL metrics.
-
+During performance issues, although all the metrics are important its ideal to look at **CPU,DB Connections,DML/DDL** metrics to get a thorough understanding of the workload.
 
 Amazon Aurora also provides a range of [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
