@@ -186,9 +186,7 @@ Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. 
 
 Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS metrics
 
-<span class="image">![Performance Insights](P.I_DB.png?raw=true)</span>
-
-<span class="image">![Performance Insights](P.I_os.png?raw=true)</span>
+<span class="image">![Performance Insights](P.I_counter_split.png?raw=true)</span>
 
 Click Update graph and once done, the counter metrics should look like below. We can see the innodb rows read,cpu utilisation  and slow queries counters surged and stayed high for this period.
 
