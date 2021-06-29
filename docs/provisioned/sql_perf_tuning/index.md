@@ -189,8 +189,8 @@ The dashboard is divided into 3 sections, allowing you to drill down from high l
 So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*? Let’s enable additional components on the *counter metrics* and also on the *Session Activity* preferences at the bottom. We will also slightly change the view of *Database Load.*
 
 Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
-<span class="image">![Performance Insights](P.I_manage.png?raw=true)</span>
 
+<span class="image">![Performance Insights](counter_manage.png?raw=true)</span>
 
 Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS metrics
 
@@ -198,7 +198,7 @@ Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS me
 
 Click Update graph and once done, the counter metrics should look like below. We can see the innodb rows read,cpu utilisation  and slow queries counters surged and stayed high for this period.
 
-<span class="image">![Performance Insights](P.I_counter.png?raw=true)</span>
+<span class="image">![Performance Insights](counter_before_index.png?raw=true)</span>
 
 
 We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
