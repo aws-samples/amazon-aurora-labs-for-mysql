@@ -79,7 +79,7 @@ quit;
 
 ### 1.3 Setup Parameters to log slow queries
 
-The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization.Slow query logs are controlled by various parameters and the most notable ones are **slow_query_log, long_query_time and log_output** . MySQL enables you to log queries that exceed a predefined time limit controlled by **long_query_time**. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is **disabled** by default on RDS instances.
+The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are **slow_query_log, long_query_time and log_output** . MySQL enables you to log queries that exceed a predefined time limit controlled by **long_query_time**. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is **disabled** by default on RDS instances.
 
 Current setup should look like this when you run the query
 
