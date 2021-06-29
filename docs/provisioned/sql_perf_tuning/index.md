@@ -22,9 +22,9 @@ This lab requires the following prerequisites:
 * [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
 
 
-## 1. Lab setup / Preparation of lab
+## 1. Preparation of lab
 
-### Connect to the DB cluster
+### 1.1 Connect to the DB cluster
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect.If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the [clusterEndpoint] placeholder with the cluster endpoint of your DB cluster.
 
@@ -62,9 +62,9 @@ END$$
 DELIMITER ;
 ```
 
-### Load an initial data set from S3
+### 1.2 Load an initial data set from S3
 
-Next, load an initial data set by importing data from an Amazon S3 bucket:
+Next, load an initial data set by importing data from an Amazon S3 bucket(fix the bucket):
 
 ```sql
 LOAD DATA FROM S3 's3-eu-west-1://auroralab-data-4cc625f0/weather-anomalies.csv'
@@ -77,7 +77,7 @@ Data loading may take several minutes, you will receive a successful query messa
 quit;
 ```
 
-### Setup Parameters to log slow queries
+### 1.3 Setup Parameters to log slow queries
 
 The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization.Slow query logs are controlled by various parameters and the most notable ones are **slow_query_log, long_query_time and log_output** . MySQL enables you to log queries that exceed a predefined time limit controlled by **long_query_time**. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is **disabled** by default on RDS instances.
 
