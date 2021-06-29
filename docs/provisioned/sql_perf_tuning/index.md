@@ -627,15 +627,17 @@ Let’s take a look at **slow query logs**.We can see that the query time has be
 
 From the counter metrics, we can see earlier the number of rows scanned is *1.2+M* however now this has come down to only *1.6K .* The CPU total consumption is at a *baseline* average and CPU spike is not visible now. Also there are *hardly any slow query log entries*.
 
-<span class="image">![Perf Review](perf5.png?raw=true)</span>
+<span class="image">![Perf Review](P.I_review_after_index.png?raw=true)</span>
+
+<span class="image">![Perf Review](P.I_review_counter_after_index.png?raw=true)</span>
 
 We can see that earlier we has sessions exceeding **max vCPUs** however the execution was rather quick and didn’t throttle the CPU. This also means our solution worked *without scaling up* the instance.
 
-<span class="image">![Perf Review](perf6.png?raw=true)</span>
+<span class="image">![Perf Review](P.I_review_DBload_after_index.png?raw=true)</span>
 
 We can also see from the top SQL, the queries which appeared before adding indexes are not appearing anymore. This indicates that indexes helps those queries in consuming less resources and therefore they do not appear as top SQL queries.
 
-<span class="image">![Perf Review](perf7.png?raw=true)</span>
+<span class="image">![Perf Review](P.I_review_top_after_index.png?raw=true)</span>
 
 We have used :
 
