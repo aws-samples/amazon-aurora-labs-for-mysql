@@ -131,7 +131,7 @@ You can monitor DB instances using Amazon CloudWatch, which collects and process
 
 We can see that the base metrics like *CPU, DB connections, write latency,* *Read latency* and many more are spiking up for the same period. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period.
 
-  <span class="image">![CW Metrics](latency.png?raw=true)</span> <span class="image">![CW Metrics](db-cpu.png?raw=true)</span>
+  <span class="image">![CW Metrics](db-cpu.png?raw=true)</span> <span class="image">![CW Metrics](latency.png?raw=true)</span>
 
 During performance issues, although all the metrics are important its ideal to look at **CPU,DB Connections,DML/DDL** metrics to get a thorough understanding of the workload.
 
