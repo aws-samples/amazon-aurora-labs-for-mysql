@@ -678,7 +678,7 @@ mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star A
 _name='mylab' ORDER BY tmp_disk_tables desc limit 5;
 ```
 
-*Note:* To learn more about abour *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
+*Note:* To learn more about *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
 
 
 ### 8.2 Understand the workload
