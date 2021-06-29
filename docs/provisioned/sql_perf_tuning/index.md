@@ -14,6 +14,14 @@ This lab contains the following tasks:
 
 *Optional:* Performance schema
 
+This lab requires the following prerequisites:
+
+* Get Started
+* Connect to the Session Manager Workstation
+* Create a New DB Cluster (conditional, only if you plan to create a cluster manually)
+* Connect, Load Data and Auto Scale (connectivity and data loading sections only)
+
+
 ## 1. Lab setup / Preparation of lab
 
 ### Connect to the DB cluster
