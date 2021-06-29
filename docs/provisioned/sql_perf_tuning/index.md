@@ -174,7 +174,7 @@ From the above, the CPU is driven by *user* and *drop* in Free memory for the sa
 
 Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance. To view the current performance insights dashboard, please go to the [RDS console](https://console.aws.amazon.com/rds/) and in the navigation pane, click performance insights and choose the writer node. You should see the console like below.  
 
-<span class="image">![Performance Insights](P.I_doing_more.png?raw=true)</span>
+<span class="image">![Performance Insights](P.I_load.png?raw=true)</span>
 
 The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/).
 
