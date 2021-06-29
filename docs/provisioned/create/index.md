@@ -44,7 +44,7 @@ In the **Engine options** section:
 * [ ] Choose the `Amazon Aurora` engine type.
 * [ ] Choose the `Amazon Aurora with MySQL compatibility` edition.
 * [ ] Choose the **Capacity type** of `Provisioned`.
-* [ ] Select the `Aurora (MySQL 5.7) 2.09.1` version.
+* [ ] Select the `Aurora (MySQL 5.7) 2.10.0` version.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
@@ -61,7 +61,7 @@ In the **Settings** section:
 
 In the **DB instance size** section:
 
-* [ ] Select **Memory Optimized classes**, and choose `r5.large` in the size drop-down.
+* [ ] Select **Memory Optimized classes**, and choose `r6g.large` in the size drop-down.
 
 <span class="image">![Database Settings](1-db-settings.png?raw=true)</span>
 
@@ -89,7 +89,7 @@ In the **Database authentication** section:
 Expand the **Additional configuration** section, and configure options as follows:
 
 * [ ] Set the **Initial database name** to `mylab`. You can use a custom name here, too, but you will need to edit commands and scripts in subsequent labs.
-* [ ] For the **DB cluster parameter group** and **DB parameter group** selectors, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. 
+* [ ] For the **DB cluster parameter group** selector, choose the groups named starting with either `auroralab-[...]` or `mod-[...]`. 
 * [ ] Set **Backup retention period** to `1 day`.
 * [ ] Check the box to **Enable encryption**.
 * [ ] Set the **Master key** to `[default] aws/rds`.
