@@ -2,15 +2,6 @@
 ## Amazon Aurora Labs for MySQL
 ## Infrastructure template with an Aurora cluster for lab exercises
 ##
-## Changelog:
-## 2020-02-12 - Added support for Aurora ML labs
-## 2020-04-10 - Unified the 'with-cluster' and 'no-cluster' in a single template
-## 2020-04-10 - Added anonymized tracking to the labs
-## 2020-04-10 - Lambda support function empties the bucket (eg ML lab data on delete)
-## 2020-04-10 - Updated EC2 AMIs
-## 2020-04-30 - Switched to hardcoded AZs to support EventEngine
-## 2020-05-29 - Conditional naming and other changes to support EventEngine
-##
 ## Dependencies:
 ## none
 ##
@@ -137,6 +128,7 @@ Mappings:
       clientAmi: ami-0885b1f6bd170450c
       supersetAmi: ami-0947d2ba12ee1ff75
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
       az1: us-east-1a
@@ -146,16 +138,18 @@ Mappings:
       clientAmi: ami-0a91cd140a1fc148a
       supersetAmi: ami-03657b56516ab7912
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Ohio
       az1: us-east-2c
       az2: us-east-2a
       az3: us-east-2b
     us-west-2:
-      clientAmi: ami-07dd19a7900a1f049
-      supersetAmi: ami-0528a5175983e7f28
-      clientType: m5.large
-      nodeType: db.r5.large
+      clientAmi: ami-09d9c897fc36713bf
+      supersetAmi: ami-0721c9af7b9b75114
+      clientType: m6g.large
+      supersetType: m5.large
+      nodeType: db.r6g.large
       name: Oregon
       az1: us-west-2b
       az2: us-west-2c
@@ -164,6 +158,7 @@ Mappings:
       clientAmi: ami-02e44367276fe7adc
       supersetAmi: ami-0c2f25c1f66a1ff4d
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Montreal
       az1: ca-central-1c
@@ -173,6 +168,7 @@ Mappings:
       clientAmi: ami-0502e817a62226e03
       supersetAmi: ami-00a205cb8e06c3c4e
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
       az1: eu-central-1b
@@ -182,6 +178,7 @@ Mappings:
       clientAmi: ami-0aef57767f5404a3c
       supersetAmi: ami-0bb3fad3c0286ebd5
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Ireland
       az1: eu-west-1a
@@ -191,6 +188,7 @@ Mappings:
       clientAmi: ami-0ff4c8fb495a5a50d
       supersetAmi: ami-0a669382ea0feb73a
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: London
       az1: eu-west-2b
@@ -200,6 +198,7 @@ Mappings:
       clientAmi: ami-0d3f551818b21ed81
       supersetAmi: ami-0de12f76efe134f2f
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Paris
       az1: eu-west-3c
@@ -209,6 +208,7 @@ Mappings:
       clientAmi: ami-0c20b8b385217763f
       supersetAmi: ami-015a6758451df3cb9
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Singapore
       az1: ap-southeast-1c
@@ -218,6 +218,7 @@ Mappings:
       clientAmi: ami-07fbdcfe29326c4fb
       supersetAmi: ami-0f96495a064477ffb
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Sydney
       az1: ap-southeast-2a
@@ -227,6 +228,7 @@ Mappings:
       clientAmi: ami-0a4a70bd98c6d6441
       supersetAmi: ami-0e306788ff2473ccb
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Mumbai
       az1: ap-south-1a
@@ -236,6 +238,7 @@ Mappings:
       clientAmi: ami-0f2dd5fc989207c82
       supersetAmi: ami-0ce107ae7af2e92b5
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Tokyo
       az1: ap-northeast-1d
@@ -245,6 +248,7 @@ Mappings:
       clientAmi: ami-007b7745d0725de95
       supersetAmi: ami-03b42693dc6a7dc35
       clientType: m5.large
+      supersetType: m5.large
       nodeType: db.r5.large
       name: Seoul
       az1: ap-northeast-2a
@@ -264,13 +268,13 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.09.1
+      dbVersion: 5.7.mysql_aurora.2.10.0
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
     scaling:
       maxCapacity: 2
       minCapacity: 1
-      cpuLoadTarget: 20
+      cpuLoadTarget: 30
     sysbench:
       dbSchema: sbtpcc
       runTime: '600'
@@ -780,12 +784,6 @@ Resources:
                 apt-get -y install unzip
                 echo "$(date "+%F %T") * installed supporting packages" >> /debug.log
 
-                # update SSM agent
-                snap remove amazon-ssm-agent
-                wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
-                DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
-                echo "$(date "+%F %T") * update ssm-agent to latest" >> /debug.log
-
                 # install jq
                 apt-get -y install jq
                 echo "$(date "+%F %T") * installed jq package" >> /debug.log
@@ -804,8 +802,6 @@ Resources:
 
                 # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
                 git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
-                cd /home/ubuntu/sysbench-tpcc
-                git checkout 288b7687877a2b52772949f13c507713db182d25
                 chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
                 echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
 
@@ -876,7 +872,7 @@ Resources:
     Condition: condDeployGDBResources
     Properties:
       SubnetId: !Ref sub2Public
-      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetType ]
       SecurityGroupIds: [ !Ref supersetSecGroup ]
       Tags:
         - Key: Name
@@ -902,15 +898,15 @@ Resources:
 
                 # update SSM & upgrade packages
                 echo "$(date "+%F %T") * updating SSM agent and python packages" >> /debug.log           
-                sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-                sudo systemctl start amazon-ssm-agent
+                yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+                systemctl start amazon-ssm-agent
                 source ~/.bashrc
-                sudo yum update -y >> /debug.log
+                yum update -y >> /debug.log
                 echo "$(date "+%F %T") * updated SSM agent" >> /debug.log
 
                 # install dependencies for superset
-                sudo amazon-linux-extras install postgresql10 vim epel
-                sudo yum install gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq -y >> /debug.log
+                amazon-linux-extras install postgresql10 vim epel
+                yum install -y gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq git
                 echo "$(date "+%F %T") * installed python and MySQL/pgSQL dependencies" >> /debug.log
 
                 # path management
@@ -920,10 +916,11 @@ Resources:
                 alias pip=pip3
                 echo "$(date "+%F %T") * updated paths" >> /debug.log
 
+                # install latest version of superset
                 # downgrade/force installation packages to last good known versions for superset and dependencies
                 # desired path: wget https://[[website]]/support/superset-requirements.txt
                 wget https://[[website]]/support/superset-requirements.txt
-                sudo pip3 install -r superset-requirements.txt >> /debug.log
+                pip3 install -r superset-requirements.txt >> /debug.log
                 echo "$(date "+%F %T") * force installed superset to frozen application packages list" >> /debug.log
 
                 # create an admin user
@@ -951,21 +948,6 @@ Resources:
                 echo "$(date "+%F %T") * serving web traffic with gunicorn" >> /debug.log
                 nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
 
-## Create parameter groups for cluster nodes
-  pgNodeParams:
-    Type: "AWS::RDS::DBParameterGroup"
-    Properties:
-      Description: !If [ condEventEngine, "auroralab-mysql-node-params", !Sub "${AWS::StackName}-mysql-node-params" ]
-      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
-      Parameters:
-        innodb_stats_persistent_sample_pages: "256"
-        slow_query_log: "1"
-        long_query_time: "10"
-        log_output: FILE
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-node-params", !Sub "${AWS::StackName}-mysql-node-params" ]
-
 ## Create cluster parameter group
   cpgClusterParams:
     Type: "AWS::RDS::DBClusterParameterGroup"
@@ -974,6 +956,10 @@ Resources:
       Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "10"
+        log_output: FILE
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
@@ -1012,7 +998,6 @@ Resources:
       DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
-      DBParameterGroupName: !Ref pgNodeParams
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
@@ -1032,7 +1017,6 @@ Resources:
       DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
-      DBParameterGroupName: !Ref pgNodeParams
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       MonitoringInterval: 1
       MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
