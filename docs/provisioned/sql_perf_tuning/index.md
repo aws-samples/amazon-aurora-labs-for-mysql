@@ -494,7 +494,7 @@ In real world, based on the type of wait events, schemas, resource utilisation t
 
 In this section, we are going to take the queries from the  *slow_query_final.log *and we are going to take advantage of explain plan to understand the bottleneck and how to fix them. We will also compare the *plans* before and after fixing queries.
 
-
+### Index
 *[Q1] CALL update_temp ;*
 
 ```sql
@@ -509,7 +509,8 @@ UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
 
  <span class="image">![Tune](explain_before_simple.png?raw=true)</span>
 
-  From this, we can see the *absence* of keys and the number of rows *scanned* is high. Let’s try adding an index on this column and continue to investigate if this helps.
+From this, we can see the *absence* of keys and the number of rows *scanned* is high. Let’s try adding an index on this column and continue to investigate if this helps.
+
 *_ADD INDEX_*
 
 ```sql
@@ -518,8 +519,7 @@ ALTER TABLE mylab.weather ADD index idx_id (id);
 
 <span class="image">![Tune](alter.png?raw=true)</span>
 
-
-  After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
+After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
 
   <span class="image">![Tune](explain_after_simple.png?raw=true)</span>
 
@@ -536,19 +536,21 @@ Output should look like below.
 
 <span class="image">![Tune](explain_before_After.png?raw=true)</span>
 
-
-  While we are at it, lets also check the Explain plan for [Q3]  before and after to see the impact of indexes on this.
+While we are at it, lets check the Explain plan for [Q3] before and after to see the impact of indexes on this.
 
 ```sql
 [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC\G
 ```
 
 *Before index*
+
 <span class="image">![Tune](explain_before_index_1.png?raw=true)</span>
 
-  *After index*
-  <span class="image">![Tune](explain_after_index_1.png?raw=true)</span>
-composite index
+*After index*
+
+<span class="image">![Tune](explain_after_index_1.png?raw=true)</span>
+
+### Composite Index
 
 In [*Q4*], we can see *station_name* and *type* is used for filtering the results. As you know with MySQL we can use multiple-column indexes for queries that test all the columns in the index, or queries that test just the first column, the first two columns, the first three columns, and so on. composite indexes (that is, indexes on multiple columns) and keep in mind MySQL allows you to create composite index up to 16 columns.
 
@@ -574,7 +576,7 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.*
 
-_*RE-VIST PROFILE*_
+### RE-VIST PROFILE
 
 While we are it, lets revisit the *PROFILING* to see if it has been changed after adding the index for [q5]. We already captured the profiling for [*Q4*] in the previous section . Let’s capture it again using the below query on the terminal.
 
