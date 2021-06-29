@@ -609,7 +609,7 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 
 Let’s take a look at **CW metrics** and we cannot see any peak periods compared to before.
 
-<span class="image">![Perf Review](xx.png?raw=true)</span>
+<span class="image">![Perf Review](CW_after_index.png?raw=true)</span>
 
 <add screenshots>(should I include this?)
 
