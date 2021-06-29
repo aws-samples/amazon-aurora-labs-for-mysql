@@ -212,7 +212,7 @@ Next change the view of *DB Load section* from “Slice by wait“ to ”Slice b
 
 Now let’s modify the *Session activity* part. The default interface for Top SQL contains AAS and SQL statements should look like this. Please go to the preferences section(gear icon at the right hand bottom) and add additional columns components.
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![SQL troubleshooting](session_manage.png?raw=true)</span>
 
 To understand the performance profile it’s important to have additional information about the query access pattern. For the purpose of this lab, please enable Rows affected/sec,Rows affected/call,Rows examined/sec,Rows examined/call,Rows sent/sec,Rows sent/call and click *save*.
 
