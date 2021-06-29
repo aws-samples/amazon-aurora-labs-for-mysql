@@ -274,9 +274,9 @@ After enabling Aurora MySQL log events, you can monitor the events in Amazon Clo
 
 For our DB cluster auroralab-mysql-cluster, slow query data is stored in the /aws/rds/cluster/auroralab-mysql-cluster/slowquery log group. Open the [Amazon Cloudwatch](https://console.aws.amazon.com/cloudwatch/home?p=clw&cp=bn&ad=c) console and select *Log groups* on the left hand side and search for auroralab-mysql-cluster/slowquery and it should see like below
 
-<span class="image">![CWL](CWL4.png?raw=true)</span>
+<span class="image">![CWL](CWL_slow_query_1.png?raw=true)</span>
 Under *Log streams*, pick your current *writer* node (since that is where we ran our script against) to view the slow query logs and you should see like below
-<span class="image">![CWL](CWL5.png?raw=true)</span>
+<span class="image">![CWL](CWL_slow_query_select.png?raw=true)</span>
 
 *Note:* The default log retention period is *Never Expire* however this can be changed*. Please see* *Change log data retention in CloudWatch Logs* (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html)*.*
 
@@ -291,11 +291,11 @@ filter @logStream = 'auroralab-mysql-node-1'
 
 This query parses the slow query logs and captures the individual fields like *Time, Query_time, Query,Rows_sent,Rows_examined*. Once entered and *Run query*, the output should look something like below.
 
-<span class="image">![CWL](CWL6.png?raw=true)</span>
+<span class="image">![CWL](CWL_slow_query.png?raw=true)</span>
 
 The queries listed are the offending queries which takes longer than the *long_query_time*. We could see around 100+ entries in the last 30 minutes.You can select any query to expand to find more information about it.
 
-<span class="image">![CWL](CWL7.png?raw=true)</span>
+<span class="image">![CWL](CWL_slow_query_expand.png?raw=true)</span>
 
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
@@ -315,7 +315,7 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 #### Download using console
 
-<span class="image">![PTQ](PTQ1.png?raw=true)</span>
+<span class="image">![PTQ](view_slow_logs.png?raw=true)</span>
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
@@ -391,7 +391,7 @@ EXPLAIN SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE ma
 SC ;
 ```
 
-<span class="image">![Explain](EX1.png?raw=true)</span>
+<span class="image">![Explain](explain_before_index_1.png?raw=true)</span>
 
 The explain plan has multiple fields and the most common ones to look at it are
 
@@ -424,7 +424,7 @@ SET profiling = 0;
 
 the output should look like below.
 
-<span class="image">![PROFILE](PF1.png?raw=true)</span>
+<span class="image">![PROFILE](profile_before_index.png?raw=true)</span>
 
 
 From this, we can see where this query is spending its resources. In this example, we can see its spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
@@ -500,7 +500,7 @@ UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
   EXPLAIN UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
 ```
 
- <span class="image">![Tune](T1.png?raw=true)</span>
+ <span class="image">![Tune](explain_before_simple.png?raw=true)</span>
 
   From this, we can see the *absence* of keys and the number of rows *scanned* is high. Let’s try adding an index on this column and continue to investigate if this helps.
 *_ADD INDEX_*
@@ -509,12 +509,12 @@ UPDATE mylab.weather SET max_temp = 10.00 where id='USC00103882';
 ALTER TABLE mylab.weather ADD index idx_id (id);
 ```
 
-<span class="image">![Tune](T2.png?raw=true)</span>
+<span class="image">![Tune](alter.png?raw=true)</span>
 
 
   After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
 
-  <span class="image">![Tune](T3.png?raw=true)</span>
+  <span class="image">![Tune](explain_after_simple.png?raw=true)</span>
 
 
 Using the same logic, let’s add index to the field *serialid* for ** which we found inside the stored procedure *[Q2] .* Before that lets capture the explain plan and once index is added, lets capture the explain plan again.
@@ -527,7 +527,7 @@ EXPLAIN DELETE from mylab.weather where serialid=3150000;
 
 Output should look like below.
 
-<span class="image">![Tune](T4.png?raw=true)</span>
+<span class="image">![Tune](explain_before_After.png?raw=true)</span>
 
 
   While we are at it, lets also check the Explain plan for [Q3]  before and after to see the impact of indexes on this.
@@ -537,10 +537,10 @@ Output should look like below.
 ```
 
 *Before index*
-<span class="image">![Tune](T5.png?raw=true)</span>
+<span class="image">![Tune](explain_before_index_1.png?raw=true)</span>
 
   *After index*
-  <span class="image">![Tune](T6.png?raw=true)</span>
+  <span class="image">![Tune](explain_after_index_1.png?raw=true)</span>
 composite index
 
 In [*Q4*], we can see *station_name* and *type* is used for filtering the results. As you know with MySQL we can use multiple-column indexes for queries that test all the columns in the index, or queries that test just the first column, the first two columns, the first three columns, and so on. composite indexes (that is, indexes on multiple columns) and keep in mind MySQL allows you to create composite index up to 16 columns.
@@ -558,10 +558,10 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 ```
 
 *Before Index*
-<span class="image">![Tune](T7.png?raw=true)</span>
+<span class="image">![Tune](explain_composite_before_index.png?raw=true)</span>
 
   *After index*
-  <span class="image">![Tune](T8.png?raw=true)</span>
+  <span class="image">![Tune](explain_composite_after_index.png?raw=true)</span>
 
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.*
 
@@ -579,7 +579,7 @@ SET profiling = 0;
 
 Once executed, this should look like below. We can see that compared to earlier snapshot, we could see the query is spending less time on “sending data“, which indicates the disk reads are much faster since it has to scan very few rows compared to earlier because of index.
 
-<span class="image">![Tune](T9.png?raw=true)</span>
+<span class="image">![Tune](profile_after_index.png?raw=true)</span>
 
 
 We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
@@ -598,11 +598,11 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 
 Let’s take a look at **CW metrics** and we cannot see any peak periods compared to before.
 
-<span class="image">![Perf Review](PF1.png?raw=true)</span>
+<span class="image">![Perf Review](xx.png?raw=true)</span>
 
 <add screenshots>(should I include this?)
 
-<span class="image">![Perf Review](PF1.png?raw=true)</span>
+<span class="image">![Perf Review](xx.png?raw=true)</span>
 
 
 Let’s take a look at **EM metrics** and we can see there are *no peak periods* compared to before.
