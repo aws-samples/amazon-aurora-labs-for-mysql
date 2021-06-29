@@ -565,10 +565,12 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 ```
 
 *Before Index*
+
 <span class="image">![Tune](explain_composite_before_index.png?raw=true)</span>
 
-  *After index*
-  <span class="image">![Tune](explain_composite_after_index.png?raw=true)</span>
+*After index*
+
+<span class="image">![Tune](explain_composite_after_index.png?raw=true)</span>
 
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.*
 
