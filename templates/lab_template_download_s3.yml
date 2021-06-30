@@ -811,8 +811,8 @@ Resources:
                 echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
 
                 # install percona query digest
-                wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb
-                sudo dpkg -i percona-release_latest.generic_all.deb
+                sudo apt-get -y install percona-toolkit
+                pt-query-digest --version >> /debug.log 
                 echo "$(date "+%F %T") * installed perconca toolkit" >> /debug.log
 
                 # download demo databases
@@ -830,6 +830,7 @@ Resources:
                 curl -O https://awsauroralabsmy.com/scripts/aware_failover.py
                 curl -O https://awsauroralabsmy.com/scripts/das_reader.py
                 curl -O https://awsauroralabsmy.com/scripts/bank_deposit.py
+                #curl -O https://awsauroralabsmy.com/scripts/weather_perf.py
                 curl -O https://awsauroralabsmy.com/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
                 echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log
