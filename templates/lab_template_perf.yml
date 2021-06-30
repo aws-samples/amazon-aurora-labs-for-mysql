@@ -811,9 +811,9 @@ Resources:
                 echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
 
                 # install percona query digest
-                sudo apt-get -y install percona-toolkit
-                pt-query-digest --version > /debug.log
-                echo "$(date "+%F %T") * installed perconca query digest" >> /debug.log
+                wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+                sudo dpkg -i percona-release_latest.generic_all.deb
+                echo "$(date "+%F %T") * installed perconca toolkit" >> /debug.log
 
                 # download demo databases
                 git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
