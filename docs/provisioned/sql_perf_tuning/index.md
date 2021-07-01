@@ -129,11 +129,9 @@ This script will take about **4~5** minutes to complete.
 
 You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
 
-We can see that the base metrics like *CPU, DB connections, write latency,* *Read latency* and many more are spiking up for the same period. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period.
+Although all the metrics are important to monitor, we can see that the base metrics like *CPU, DB connections, write latency,* *Read latency* etc are spiking up during this workload. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period to understand the overall workload and its impact on the DB.
 
   <span class="image">![CW Metrics](db-cpu.png?raw=true)</span> <span class="image">![CW Metrics](latency.png?raw=true)</span>
-
-During performance issues, although all the metrics are important its ideal to look at **CPU,DB Connections,DML/DDL** metrics to get a thorough understanding of the workload.
 
 Amazon Aurora also provides a range of [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
