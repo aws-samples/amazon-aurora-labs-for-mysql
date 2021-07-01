@@ -161,7 +161,7 @@ A useful piece of information readily available from DMLThroughput metric . At 2
 
 You must have noticed that the CW metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS/host level metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, [Enhanced Monitoring(EM)](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.CloudWatchLogs.html) should help.
 
-If you have Enhanced Monitoring option enabled for the database instance, you can view the metrics by **selecting the node(writer)->Monitoring->select *Enhanced Monitoring* option from the *Monitoring* dropdown list**. For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
+If you have Enhanced Monitoring option enabled for the database instance, you can view the metrics by selecting the **node(writer)** -> **Monitoring** -> select **Enhanced Monitoring** option from the Monitoring **dropdown** list. For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
 
 
 <span class="image">![EM](EM.png?raw=true)</span>
@@ -170,7 +170,7 @@ From the above, we could see when the workload kicked in, there is a sharp *spik
 
 **Note:** You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage).
 
-### 2.3 Doing more with performance insights
+### 2.3 Doing more with Performance Insights
 
 #### Identify *top* SQL queries using performance insights dashboard.
 
@@ -178,9 +178,7 @@ Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so tha
 
 <span class="image">![Performance Insights](P.I_load.png?raw=true)</span>
 
-The dashboard is divided into 3 sections(Counter Metrics, Database Load and Top SQL activity), allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/).
-
-So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*?
+The dashboard is divided into 3 sections(Counter Metrics, Database Load and Top SQL activity), allowing you to drill down from high level performance indicator metrics down to individual *queries*, *wait events*, *latency* etc. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/).
 
 ##### Adding additional counters:
 
@@ -192,18 +190,22 @@ Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS me
 
 <span class="image">![Performance Insights](P.I_counter_split.png?raw=true)</span>
 
-Click Update graph and once done, the counter metrics should look like below. We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
+Click Update graph and once done, the counter metrics should look like below. We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* and slow logs were getting logged for this duration.
 
 <span class="image">![Performance Insights](counter_before_index.png?raw=true)</span>
 
 ##### Getting different perspective of DB Load:
 
-Next change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ and show the top queries during this time . We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption.
+Let's look at the DB wait events to understand the workload. We can see different wait events on the right hand side. Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents)
+
 
 <span class="image">![P.I](P.I_DB_Load_1.png?raw=true)</span>
+
+We can also change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ to understand the AAS of different queries during this time. We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption.
+
+
 <span class="image">![P.I](P.I_DB_Load_2.png?raw=true)</span>
 
-*Note:* Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
 ##### Getting additional information from the session activity:
 
