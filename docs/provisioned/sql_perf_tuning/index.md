@@ -133,15 +133,14 @@ Although all the metrics are important to monitor, we can see that the base metr
 
   <span class="image">![CW Metrics](db-cpu.png?raw=true)</span> <span class="image">![CW Metrics](latency.png?raw=true)</span>
 
-Amazon Aurora also provides a range of [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
+Amazon Aurora also provides a range of dedicated [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
 In general
 
 * Database activity variables responsible for tracking *throughput* are modified when the statement is received by the server.
 * Database activity variables responsible for tracking *latency* are modified after the statement completes. This is quite intuitive: statement latency (i.e. execution time) is not known until the statement finishes.
 
-[Image: Screenshot 2021-05-03 at 23.15.02.png]
-[Image: Screenshot 2021-05-03 at 23.13.12.png]
+<span class="image">![CW Metrics](DML_throughput.png?raw=true)</span> <span class="image">![CW Metrics](DML_latency.png?raw=true)</span>
 
 *Note:*To learn more about how to plan for Aurora monitoring and Performance guidelines please refer our doc (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/MonitoringOverview.html).
 
@@ -156,18 +155,20 @@ A useful piece of information readily available from DMLThroughput metric . At 2
         s
 ```
 
-*Optional:* Once the performance baseline is understood you can setup alarms against CW metrics when it exceeds the baseline for corrective actions.
+**Optional:** Once the performance baseline is understood you can setup alarms against CW metrics when it exceeds the baseline for corrective actions.
 
 ### 2.2 Enhanced Monitoring
 
-You must have noticed that the CW metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, then Enhanced Monitoring(EM) should help.
+You must have noticed that the CW metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS/host level metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, [Enhanced Monitoring(EM)](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.CloudWatchLogs.html) should help.
 
-If you have Enhanced Monitoring option enabled for the database instance, select *Enhanced Monitoring* option from the *Monitoring* dropdown list.For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
+If you have Enhanced Monitoring option enabled for the database instance, you can view the metrics by **selecting the node(writer)->Monitoring->select *Enhanced Monitoring* option from the *Monitoring* dropdown list**. For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
 
-You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage) .
+
 <span class="image">![EM](EM.png?raw=true)</span>
 
-From the above, the CPU is driven by *user* and *drop* in Free memory for the same period where there is Increase in *Load average 1 min.*
+From the above, we could see when the workload kicked in, there is a sharp *spike* in CPU driven by *User* and *drop* in Free memory. We can also see the *Load average* of the DB instance increased during this period.
+
+**Note:** You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage).
 
 ### 2.3 Doing more with performance insights
 
@@ -177,11 +178,13 @@ Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so tha
 
 <span class="image">![Performance Insights](P.I_load.png?raw=true)</span>
 
-The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/).
+The dashboard is divided into 3 sections(Counter Metrics, Database Load and Top SQL activity), allowing you to drill down from high level performance indicator metrics down to individual *queries*, *waits*, *users* and *hosts* generating the load. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/).
 
-So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*? Let’s enable additional components on the *counter metrics* and also on the *Session Activity* preferences at the bottom. We will also slightly change the view of *Database Load.*
+So far so good we can see wait types, wait events and the top queries but can we do more with *P.I*?
 
-Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
+##### Adding additional counters:
+
+Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running etc and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
 
 <span class="image">![Performance Insights](counter_manage.png?raw=true)</span>
 
@@ -189,12 +192,11 @@ Enable *slow_queries* under DB Metrics and *cpuUtilization*  *total* under OS me
 
 <span class="image">![Performance Insights](P.I_counter_split.png?raw=true)</span>
 
-Click Update graph and once done, the counter metrics should look like below. We can see the innodb rows read,cpu utilisation  and slow queries counters surged and stayed high for this period.
+Click Update graph and once done, the counter metrics should look like below. We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
 
 <span class="image">![Performance Insights](counter_before_index.png?raw=true)</span>
 
-
-We could see the CPU spike of ~100% for the ~4 minute period and the number of rows read is *1+ million* for 4 min period and slow logs were getting logged for this duration.
+##### Getting different perspective of DB Load:
 
 Next change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ and show the top queries during this time . We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption.
 
@@ -202,6 +204,8 @@ Next change the view of *DB Load section* from “Slice by wait“ to ”Slice b
 <span class="image">![P.I](P.I_DB_Load_2.png?raw=true)</span>
 
 *Note:* Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
+
+##### Getting additional information from the session activity:
 
 Now let’s modify the *Session activity* part. The default interface for Top SQL contains AAS and SQL statements should look like this. Please go to the preferences section(gear icon at the right hand bottom) and add additional columns components.
 
