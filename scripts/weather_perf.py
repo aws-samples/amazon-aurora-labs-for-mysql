@@ -40,7 +40,7 @@ args = parser.parse_args()
 query_count = 0
 temp_id = 50
 max_id= 2500000
-query_iterations = 5
+query_iterations = 50
 lock = threading.Lock()
 
 
