@@ -3,10 +3,6 @@ Amazon Aurora Labs for MySQL
 Read load generator using multiple threads. The script will randomize a set of query patterns,
 including point query, range query, aggregation and expensive stored procedure.
 
-Changelog:
-2019-06-14 - Initial release
-2019-06-20 - Changed threading, added CPU heavy queries to boost load
-
 Dependencies:
 none
 
@@ -172,8 +168,8 @@ _thread.start_new_thread(progress_func, ())
 
 # Start readers
 for thread_id in range(args.threads):
-        _thread.start_new_thread(thread_func, (args.endpoint, args.username, args.password, args.database, max_id, query_iterations))
+    _thread.start_new_thread(thread_func, (args.endpoint, args.username, args.password, args.database, max_id, query_iterations))
 
 # Loop indefinitely to prevent application exit
 while 1:
-        pass
+    pass

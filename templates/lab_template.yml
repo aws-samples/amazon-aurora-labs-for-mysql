@@ -2,15 +2,6 @@
 ## Amazon Aurora Labs for MySQL
 ## Infrastructure template with an Aurora cluster for lab exercises
 ##
-## Changelog:
-## 2020-02-12 - Added support for Aurora ML labs
-## 2020-04-10 - Unified the 'with-cluster' and 'no-cluster' in a single template
-## 2020-04-10 - Added anonymized tracking to the labs
-## 2020-04-10 - Lambda support function empties the bucket (eg ML lab data on delete)
-## 2020-04-10 - Updated EC2 AMIs
-## 2020-04-30 - Switched to hardcoded AZs to support EventEngine
-## 2020-05-29 - Conditional naming and other changes to support EventEngine
-##
 ## Dependencies:
 ## none
 ##
@@ -777,7 +768,7 @@ Resources:
                 echo "$(date "+%F %T") * updated and upgraded packages" >> /debug.log
 
                 # install other supporting packages
-                apt-get -y install unzip
+                apt-get -y install unzip jq
                 echo "$(date "+%F %T") * installed supporting packages" >> /debug.log
 
                 # update SSM agent
@@ -809,6 +800,15 @@ Resources:
                 chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
                 echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
 
+                # install percona tools
+                wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+                dpkg -i percona-release_latest.generic_all.deb
+                percona-release disable all
+                percona-release enable pt
+                apt-get update
+                apt-get -y install percona-toolkit
+                echo "$(date "+%F %T") * installed percona-toolkit" >> /debug.log
+
                 # download demo databases
                 git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
                 chown -R ubuntu:ubuntu /home/ubuntu/samples
@@ -824,6 +824,7 @@ Resources:
                 curl -O https://[[website]]/scripts/aware_failover.py
                 curl -O https://[[website]]/scripts/das_reader.py
                 curl -O https://[[website]]/scripts/bank_deposit.py
+                curl -O https://[[website]]/scripts/weather_perf.py
                 curl -O https://[[website]]/support/sagemaker_policy.json
                 chown -R ubuntu:ubuntu /home/ubuntu/*.py
                 echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log
@@ -960,7 +961,7 @@ Resources:
       Parameters:
         innodb_stats_persistent_sample_pages: "256"
         slow_query_log: "1"
-        long_query_time: "10"
+        long_query_time: "1"
         log_output: FILE
       Tags:
         - Key: Name
@@ -974,6 +975,10 @@ Resources:
       Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "1"
+        log_output: FILE
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]

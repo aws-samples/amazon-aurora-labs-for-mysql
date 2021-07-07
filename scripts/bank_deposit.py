@@ -2,9 +2,6 @@
 Amazon Aurora Labs for MySQL
 This scripts will allow you to deposit money into an account to observe write forwarding consistency effects
 
-Changelog:
-2020-11-16 - Initial release
-
 Dependencies:
 none
 
