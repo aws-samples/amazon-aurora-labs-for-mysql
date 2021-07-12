@@ -285,9 +285,9 @@ For our DB cluster auroralab-mysql-cluster, slow query data is stored in the /aw
 Under *Log streams*, pick your current *writer* node (since that is where we ran our script against) to view the slow query logs and you should see like below
 <span class="image">![CWL](CWL_slow_query_select.png?raw=true)</span>
 
-*Note:* The default log retention period is *Never Expire* however this can be changed*. Please see* *Change log data retention in CloudWatch Logs* (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html)*.*
+*Note:* The default log retention period is *Never Expire* however this can be changed*. Please see* [Change log data retention in CloudWatch Logs] (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html).
 
-To increase the readability of these logs, we are going to use *Insights*. Click on the *insights* and select your log group in the drop down list. For slow queries, it will be in the format of /aws/rds/cluster/auroralab-mysql-cluster (https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-mysql-cluster;is-cluster=true;tab=logs-and-events)/slowquery. In the text field, enter the following insights query by replacing the <writer node>
+To increase the readability of these logs, we are going to use [Insights]((https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-mysql-cluster;is-cluster=true;tab=logs-and-events). Click on the *insights* and select your log group in the drop down list. For slow queries, it will be in the format of /aws/rds/cluster/auroralab-mysql-cluster/slowquery. In the text field, enter the following insights query by replacing the <writer node>
 
 ```shell
 filter @logStream = 'auroralab-mysql-node-1'
