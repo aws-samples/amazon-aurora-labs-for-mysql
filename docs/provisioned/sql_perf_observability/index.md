@@ -111,7 +111,9 @@ You can monitor DB instances using Amazon CloudWatch, which collects and process
 
 Although all the metrics are important to monitor, we can see that the base metrics like *CPU, DB connections, write latency,* *Read latency* etc are spiking up during this workload. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period to understand the overall workload and its impact on the DB.
 
-  <span class="image">![CW Metrics](db-cpu.png?raw=true)</span> <span class="image">![CW Metrics](latency.png?raw=true)</span>
+  <span class="image">![CW Metrics](db-cpu.png?raw=true)</span>
+
+  <span class="image">![CW Metrics](latency.png?raw=true)</span>
 
 Amazon Aurora also provides a range of dedicated [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
@@ -194,7 +196,6 @@ To understand the performance profile it’s important to have additional inform
 
 <span class="image">![P.I](P.I_expand_gear.png?raw=true)</span>
 
-
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent .
 
 <span class="image">![SQL troubleshooting](P.I_expand.png?raw=true)</span>
@@ -215,16 +216,17 @@ Lets’ view the slow query logs using the console . Since we ran the above scri
 <span class="image">![SQL troubleshooting](console_slow_view.png?raw=true)</span>
 
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*.
-[Image: Screenshot 2021-05-21 at 19.05.49.png]
+
+<span class="image">![SQL troubleshooting](console_opt_view.png?raw=true)</span>
 
 You should see slow queries in the console. The log file content will have the following
 
-*Query_time*: The statement execution time in seconds.
-*Lock_time*: The time to acquire locks in seconds.
-*Rows_sent*: The number of rows sent to the client.
-*Rows_examined*: The number of rows examined by the server layer (not counting any processing internal to storage engines).
+* *Query_time*: The statement execution time in seconds.
+* *Lock_time*: The time to acquire locks in seconds.
+* *Rows_sent*: The number of rows sent to the client.
+* *Rows_examined*: The number of rows examined by the server layer (not counting any processing internal to storage engines).
 
-To learn more about slow queries, please check the [official doc](https://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html). **
+To learn more about slow queries, please check the [official doc](https://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html).
 
 You can download the logs via *console* or *CLI* using [download-db-log-file-portion](https://docs.aws.amazon.com/cli/latest/reference/rds/download-db-log-file-portion.html). For now, let’s call this log as *slow_query_log1*.
 
@@ -238,7 +240,7 @@ We have already *enabled* export Cloudwatch logs option when we created the clus
 
 <span class="image">![CWL](CWL1.png?raw=true)</span>
 
-*Note:* To enable/disable these logs or add additional logs, you can click *Modify* at the *right top → Log exports → tick/untick prefered logs → continue → modify cluster.*
+*Note:* To enable/disable these logs or add additional logs, you can click *Modify* at the *right top → Log exports → tick/untick preferred logs → continue → modify cluster.*
 
 <span class="image">![CWL](CWL2.png?raw=true)</span>
 
@@ -287,7 +289,7 @@ The queries listed are the offending queries which takes longer than the *long_q
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
 
-### Percona pt-query-digest
+### Percona pt-query-digest [Optional]
 
 *One challenge is that it requires manual effort or some automation technique to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
