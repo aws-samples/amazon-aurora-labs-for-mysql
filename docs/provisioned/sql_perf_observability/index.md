@@ -1,6 +1,6 @@
 # Aurora MySQL SQL Performance Troubleshooting - Observability (WIP)
 
-In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics, P.I, slow query logs, CloudWatch logs and CloudWatch log insights,pt-query-digest ,EXPLAIN, PROFILE*  to troubleshoot/identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
+In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics, P.I, slow query logs, CloudWatch logs and CloudWatch log insights, pt-query-digest* to identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
 
 This lab contains the following tasks:
 
@@ -19,7 +19,7 @@ This lab requires the following prerequisites:
 * [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
-* [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
+* [Connect, Load Data](/provisioned/interact/) (You can ignore **Auto Scale** section for this lab)
 
 
 ## 1. Preparation of lab
@@ -31,7 +31,7 @@ Connect to the Aurora database just like you would to any other MySQL-based data
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
-Once connected to the database, use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
+Once connected to the database, please use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
 
 ```sql
 DROP TABLE IF EXISTS `weather`;
@@ -71,48 +71,28 @@ LOAD DATA FROM S3 's3-eu-west-1://auroralab-data-4cc625f0/weather-anomalies.csv'
 INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
 ```
 
-Data loading may take several minutes, you will receive a successful query message once it completes. When completed, exit the MySQL command line:
+Data loading may take several minutes, you will receive a successful query message once it completes.
 
-```shell
-quit;
-```
+### Verify the parameters of slow query logs
 
-### Setup Parameters to log slow queries
+In many cases the slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are **[slow_query_log](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_slow_query_log), [long_query_time](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_long_query_time) and [log_output](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_output)** .
 
-The slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are **slow_query_log, long_query_time and log_output** . MySQL enables you to log queries that exceed a predefined time limit controlled by **long_query_time**. This greatly simplifies the task of finding inefficient or time-consuming queries.Slow query log (slow_query_log) is **disabled** by default on RDS instances.
-
-Current setup should look like this when you run the query
+Please run the query below and output should look like
 
 ```shell
 $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@long_query_time,@@log_output;"
 ```
 
-<span class="image">![Slow parameters](setup_slow_param.png?raw=true)</span>
-
-
-Let’s modify **long_query_time**  to 1 second, **slow_query_log** to 1, **log_output** to FILE . To do so, open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring), select the DB instance in the cluster that has the *Writer* role and click on the configuration tab to view the associated DB *Parameter group*.
-
-<span class="image">![parameter group](param_group.png?raw=true)</span>
-
-??? tip  "You can't change values in a default parameter group.To learn more about how to work with custom parameter group please refer to our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Associating)".
-
-Click the *parameter group* associated, which would bring the parameter group page. For *Parameter group actions*, choose *Edit parameters*. Search for **long_query_time** under parameters and modify the long_query_time  from **10 to 1** and * Save changes*. Since long_query_time is a dynamic parameter, no reboot is required. Please wait for the parameter group to sync with DB instance before the slow queries start appearing in the slow query logs.*
-
-<span class="image">![long query](long_query.png?raw=true)</span>
-
-??? tip  " In production systems, you can change the values in multiple iterations eg. 10 to 5 and then 5 to 3 and so on".  
-
- Now run the command below replacing the [clusterEndpoint] placeholder with the value of the cluster endpoint created in the preceding steps.
-
-```shell
-mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@long_query_time,@@log_output;"
-```
-
-Before proceeding further, please ensure the output looks like this.
-
 <span class="image">![long query output](long_query_out.png?raw=true)</span>
 
-*Optional:* Please read about log_queries_not_using_indexes ,log_slow_admin_statements.
+??? tip  " In production systems, you can change the values for **long_query_time** in multiple iterations eg. 10 to 5 and then 5 to 3 and so on".  
+
+Before proceeding further, please ensure the output looks like above.When completed, exit the MySQL command line:
+
+```shell
+quit;
+```
+*Optional:* There are other parameters and you can read about **[log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements)**.
 
 ### Run the workload
 
@@ -142,7 +122,7 @@ In general
 
 <span class="image">![CW Metrics](DML_throughput.png?raw=true)</span> <span class="image">![CW Metrics](DML_latency.png?raw=true)</span>
 
-*Note:*To learn more about how to plan for Aurora monitoring and Performance guidelines please refer our doc (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/MonitoringOverview.html).
+*Note:*To learn more about how to plan for Aurora monitoring and Performance guidelines please refer our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/MonitoringOverview.html).
 
 DMLLatency metric reveals a spike at 22:57, when the metric reached 4442 milliseconds. In other words, 4.4 seconds is the average latency of all DML statements that finished during this 1-minute period. 4 seconds is significantly higher than the baseline latency observed before the spike, therefore it’s worth investigating.
 
