@@ -37,10 +37,9 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 
 ### EXPLAIN plan
 
-
 The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
 
-Lets go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below
+Let's go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below
 
 ```sql
 *EXPLAIN* query name.
@@ -248,7 +247,7 @@ Once executed, this should look like below. We can see that compared to earlier 
 
 We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
-## 3. Performance review
+## Performance review
 
 Now after adding the indexes, let’s *re-run* the script and compare and review the performance in whole for before and after. Before re-running the tests lets truncate the performance schema tables to have fresh counters. This would make our before vs after comparison much easier. Please run the commands below on the mysql terminal
 
