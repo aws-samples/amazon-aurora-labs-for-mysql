@@ -244,15 +244,6 @@ We have already *enabled* export Cloudwatch logs option when we created the clus
 
 <span class="image">![CWL](CWL2.png?raw=true)</span>
 
-You can also verify the status of CloudWatch export and the type of logs thats currently enabled for export by executing the *CLI* below on the session manager terminal.
-
-```shell
-aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster --query DBClusters[*].EnabledCloudwatchLogsExports
-```
-You should see the output like below. This sample output shows that currently export CloudWatch logs option is enabled for error logs and slow query logs.
-
-<span class="image">![CWL](CWL3.png?raw=true)</span>
-
 ### View exported logs in CloudWatch
 
 After enabling Aurora MySQL log events, you can monitor the events in Amazon CloudWatch Logs. A new log group is automatically created for the Aurora DB cluster under the following prefix, in which cluster-name represents the DB cluster name, and log_type represents the log type.
@@ -289,7 +280,7 @@ The queries listed are the offending queries which takes longer than the *long_q
  You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
 
-### Percona pt-query-digest [Optional]
+### [Optional exercise] Percona pt-query-digest
 
 *One challenge is that it requires manual effort or some automation technique to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
