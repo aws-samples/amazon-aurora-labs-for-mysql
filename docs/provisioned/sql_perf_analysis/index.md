@@ -337,7 +337,7 @@ _name='mylab' ORDER BY tmp_disk_tables desc limit 5;
 *Note:* To learn more about *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
 
 
-### 8.2 Understand the workload
+### Understand the workload
 
 #### Processlist
 To get an idea about workload you can run *show process-list* to see active transactions, idle/sleep transactions etc
