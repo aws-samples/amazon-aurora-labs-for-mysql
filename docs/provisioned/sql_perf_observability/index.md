@@ -178,14 +178,11 @@ Click Update graph and once done, the counter metrics should look like below. We
 
 Let's look at the DB wait events to understand the workload. We can see different wait events on the right hand side. Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents)
 
-
 <span class="image">![P.I](P.I_DB_Load_1.png?raw=true)</span>
 
 We can also change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ to understand the AAS of different queries during this time. We could also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption.
 
-
 <span class="image">![P.I](P.I_DB_Load_2.png?raw=true)</span>
-
 
 ##### Getting additional information from the session activity:
 
