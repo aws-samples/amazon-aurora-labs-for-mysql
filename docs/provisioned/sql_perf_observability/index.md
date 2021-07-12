@@ -200,7 +200,7 @@ To understand the performance profile it’s important to have additional inform
 
 Once saved, the session activity for Top SQL would look like below. You should be able to see *rows examined/s* vs *rows sent/s* and corresponding *avg. latency* in ms/call. It would be ideal to focus on the queries with large difference between rows examined and rows sent .
 
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+<span class="image">![SQL troubleshooting](P.I_expand.png?raw=true)</span>
 
 *Note:* To see the queries inside the stored procedure, please click and expand the + icon.
 
@@ -214,8 +214,7 @@ As you noticed we can see performance insights are very good to understand avera
 ### View and download slow query logs using the console
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
-
-<span class="image">![SQL troubleshooting](P.I_expand.png?raw=true)</span>
+<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
 
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*.
 [Image: Screenshot 2021-05-21 at 19.05.49.png]
