@@ -339,4 +339,4 @@ For the queries listed above in the previous section, this section contains indi
 
 <span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
-If you are interested in learning what to do with the captured slow query logs, please proceed to the next lab [Aurora MySQL SQL Performance Troubleshooting - Observability](/provisioned/sql_perf_analysis/)
+If you are interested in learning what to do with the captured slow query logs, please proceed to the next lab [Aurora MySQL SQL Performance Troubleshooting - Analysis](/provisioned/sql_perf_analysis/)
