@@ -262,7 +262,9 @@ After enabling Aurora MySQL log events, you can monitor the events in Amazon Clo
 For our DB cluster auroralab-mysql-cluster, slow query data is stored in the /aws/rds/cluster/auroralab-mysql-cluster/slowquery log group. Open the [Amazon Cloudwatch](https://console.aws.amazon.com/cloudwatch/home?p=clw&cp=bn&ad=c) console and select *Log groups* on the left hand side and search for auroralab-mysql-cluster/slowquery and it should see like below
 
 <span class="image">![CWL](CWL_slow_query_1.png?raw=true)</span>
-Under *Log streams*, pick your current *writer* node (since that is where we ran our script against) to view the slow query logs and you should see like below
+
+Under *Log streams*, pick your current *writer* node (since that is where we ran our script against) to view the slow query logs and you should see like below:
+
 <span class="image">![CWL](CWL_slow_query_select.png?raw=true)</span>
 
 *Note:* The default log retention period is *Never Expire* however this can be changed*. Please see* [Change log data retention in CloudWatch Logs] (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html).
