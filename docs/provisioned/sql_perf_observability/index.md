@@ -176,7 +176,7 @@ Click Update graph and once done, the counter metrics should look like below. We
 
 ##### Getting different perspective of DB Load:
 
-Let's look at the DB wait events to understand the workload. We can see different wait events on the right hand side. Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents)
+Let's look at the DB wait events to understand the workload. We can see different wait events on the right hand side. Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
 <span class="image">![P.I](P.I_DB_Load_1.png?raw=true)</span>
 
