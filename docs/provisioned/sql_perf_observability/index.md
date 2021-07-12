@@ -115,7 +115,7 @@ Although all the metrics are important to monitor, we can see that the base metr
 
 Amazon Aurora also provides a range of dedicated [CloudWatch metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) populated with various database status variables. Let’s take a look at *DML metrics (*using the search bar*)* for this period and see how to interpret it.
 
-In general
+In general,
 
 * Database activity variables responsible for tracking *throughput* are modified when the statement is received by the server.
 * Database activity variables responsible for tracking *latency* are modified after the statement completes. This is quite intuitive: statement latency (i.e. execution time) is not known until the statement finishes.
@@ -214,7 +214,8 @@ As you noticed we can see performance insights are very good to understand avera
 ### View and download slow query logs using the console
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+<span class="image">![SQL troubleshooting](P.I_expand.png?raw=true)</span>
 
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*.
 [Image: Screenshot 2021-05-21 at 19.05.49.png]
