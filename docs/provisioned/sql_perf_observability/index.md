@@ -214,7 +214,8 @@ As you noticed we can see performance insights are very good to understand avera
 ### View and download slow query logs using the console
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
-<span class="image">![SQL troubleshooting](xx.png?raw=true)</span>
+
+<span class="image">![SQL troubleshooting](console_slow_view.png?raw=true)</span>
 
 You can select the slow query log for the timeframe and *view*/*watch* it and it should look like below if opted to *view*.
 [Image: Screenshot 2021-05-21 at 19.05.49.png]
@@ -234,7 +235,7 @@ You can download the logs via *console* or *CLI* using [download-db-log-file-por
 
 ### Leveraging CloudWatch logs and Log insights to view and analyze slow queries
 
-Slow logs are great for troubleshooting but viewing/downloading individual logs could be time consuming. Also the logs could get rotated(if log_output= FILE) periodically. In addition to viewing and downloading DB instance logs from the console, you can *publish* logs to Amazon CloudWatch Logs . With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
+Slow logs are great for troubleshooting but viewing/downloading individual logs could be time consuming. Also the logs could get rotated(if log_output= FILE) periodically. In addition to viewing and downloading DB instance logs from the console, you can *publish* logs to Amazon CloudWatch Logs. With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
 
 We have already *enabled* export Cloudwatch logs option when we created the cluster. This can be verified by going to the RDS console, under cluster *configuration→ Published logs* like below. Please proceed to next step only if you see slow query  in it.
 
