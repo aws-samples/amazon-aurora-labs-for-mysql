@@ -63,7 +63,7 @@ DELIMITER ;
 Next, load an initial data set by importing data from an Amazon S3 bucket(fix the bucket):
 
 ```sql
-LOAD DATA FROM S3 's3-eu-west-1://auroralab-data-4cc625f0/weather-anomalies.csv'
+LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anomalies.csv'
 INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
 ```
 
