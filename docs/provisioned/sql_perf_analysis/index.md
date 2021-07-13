@@ -17,9 +17,7 @@ This lab requires the following prerequisites:
 
 ## 1. Analyze the queries using EXPLAIN and PROFILE
 
-In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*.
-
-So far we have *3* *slow_query_log files and for the purpose of the lab, let’s use slow_query_log3. *You can also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Once identified the slow query log file should contain the below queries.*
+In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*. So far we have *3 slow_query_log* files and for the purpose of the lab, let’s use *slow_query_log3*. *You can also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Once identified the slow query log file should contain the below queries.*
 
 For the purpose of the lab, lets call this as *slow_query_final.log*
 
@@ -396,8 +394,7 @@ SELECT schema_name, substr(digest_text, 1, 100) AS statement, count_star AS cnt,
 ####Syntax (top 5 queries for which Temporary tables spilled to disk)
 
 ```sql
-mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star AS cnt, sum_created_tmp_disk_tables AS tmp_disk_tables,sum_created_tmp_tables AS tmp_tables FROM performance_schema.events_statements_summary_by_digest WHERE sum_created_tmp_disk_tables > 0 OR sum_created_tmp_tables >0 and schema
-_name='mylab' ORDER BY tmp_disk_tables desc limit 5;
+mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star AS cnt, sum_created_tmp_disk_tables AS tmp_disk_tables,sum_created_tmp_tables AS tmp_tables FROM performance_schema.events_statements_summary_by_digest WHERE sum_created_tmp_disk_tables > 0 OR sum_created_tmp_tables >0 and schema_name='mylab' ORDER BY tmp_disk_tables desc limit 5;
 ```
 
 *Note:* To learn more about *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
