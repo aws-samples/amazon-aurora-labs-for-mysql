@@ -429,7 +429,11 @@ Output should look something like below
 
 <span class="image">![InnoDB Status](InnoDB_stat3.png?raw=true)</span>
 
+Some key aspects of InnoDB status to look out for area
 
+**History list length** --> Unpurged old row versions
+**INDIVIDUAL BUFFER POOL INFO** --> Contains information about Innodb buffer pool instances
+**ROW OPERATIONS** --> Would give a snapshot of whether the instance is read or write heavy
 
 #### Locking information
 
