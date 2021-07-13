@@ -1,6 +1,6 @@
 # Aurora MySQL SQL Performance Troubleshooting - Analysis (WIP)
 
-In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *EXPLAIN, PROFILE, performance_schema*  to troubleshoot/identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
+In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues* using different tools. Specifically we are going to look at how you can leverage *EXPLAIN, PROFILE, performance_schema*  to analyze the query. Also we are going to briefly shows how indexes can help in improving the performance of your query.
 
 This lab contains the following tasks:
 
@@ -88,6 +88,52 @@ the output should look like below.
 
 From this, we can see where this query is spending its resources. In this example, we can see it's spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
 
+===========
+### Query Profiling using Performance Schema
+
+The SHOW PROFILE and SHOW PROFILES statements are deprecated and the following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
+
+hint: You can learn more about how to performance schema at the bottom of this exercise
+
+Ensure that statement and stage instrumentation is enabled by updating the setup_instruments table. Some instruments may already be enabled by default.
+
+```SQL
+UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%statement/%';
+
+UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
+```
+
+Ensure that events_statements_* and events_stages_* consumers are enabled. Some consumers may already be enabled by default.
+
+```SQL
+UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_statements_%';
+
+UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_stages_%';
+```
+Please run the statement that you want to profile. For example:
+```SQL
+SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
+```
+
+Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
+
+```SQL
+SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%XXX%';
+```
+
+Query the events_stages_history_long table to retrieve the statement's stage events. Stages are linked to statements using event nesting. Each stage event record has a NESTING_EVENT_ID column that contains the EVENT_ID of the parent statement.
+
+```SQL
+SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=YY;
+```
+
+**Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
+
+```SQL
+mysql> truncate performance_schema.events_stages_history_long;
+mysql> truncate performance_schema.events_statements_history_long;
+```
+===========
 ### Index presence
 
 In order to do so, let’s check the *schema* in question to see if table have any indexes, so that we can use them in the queries to improve the read performance. The use of indexes to assist with large blocks of tables, data may have considerable impact on reducing MySQL query execution and, thus, overall CPU overhead. Non-indexed tables are nothing more than unordered lists; hence, the MySQL engine must search them from starting to end. This may have little impact when working with small tables, but may dramatically affect search time for larger tables.
