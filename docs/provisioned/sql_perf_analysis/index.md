@@ -421,13 +421,13 @@ SHOW ENGINE INNODB STATUS \G
 ```
 Output should look something like below
 
-<span class="image">![InnoDB Status](Innodb_stat1.png?raw=true)</span>
+<span class="image">![InnoDB Status](InnoDB_stat1.png?raw=true)</span>
 
 
-<span class="image">![InnoDB Status](Innodb_stat2.png?raw=true)</span>
+<span class="image">![InnoDB Status](InnoDB_stat2.png?raw=true)</span>
 
 
-<span class="image">![InnoDB Status](Innodb_stat3.png?raw=true)</span>
+<span class="image">![InnoDB Status](InnoDB_stat3.png?raw=true)</span>
 
 
 
