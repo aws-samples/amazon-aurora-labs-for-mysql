@@ -19,9 +19,7 @@ Install dependencies:
 
 ```
 brew install python3
-brew install mkdocs
 brew install node
-brew install jq
 pip3 install virtualenv
 virtualenv venv
 source venv/bin/activate
@@ -34,7 +32,7 @@ npm install -g grunt-cli
 Install project dependencies (from [project root] folder):
 
 ```
-npm install
+npm install --registry=https://registry.npmjs.org/
 ```
 
 ### Build and Deploy the Project
