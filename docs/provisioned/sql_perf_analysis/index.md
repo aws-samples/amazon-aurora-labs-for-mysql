@@ -88,7 +88,6 @@ the output should look like below.
 
 From this, we can see where this query is spending its resources. In this example, we can see it's spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
 
-===========
 ### Query Profiling using Performance Schema
 
 The SHOW PROFILE and SHOW PROFILES statements are deprecated and the following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
@@ -145,7 +144,7 @@ SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FRO
 mysql> truncate performance_schema.events_stages_history_long;
 mysql> truncate performance_schema.events_statements_history_long;
 ```
-===========
+
 ### Index presence
 
 In order to do so, let’s check the *schema* in question to see if table have any indexes, so that we can use them in the queries to improve the read performance. The use of indexes to assist with large blocks of tables, data may have considerable impact on reducing MySQL query execution and, thus, overall CPU overhead. Non-indexed tables are nothing more than unordered lists; hence, the MySQL engine must search them from starting to end. This may have little impact when working with small tables, but may dramatically affect search time for larger tables.
