@@ -291,6 +291,8 @@ By adding different indexes to the queries from the *slow_query_final.log,* we c
 
 While we are it, lets revisit the *PROFILING* to see if it has been changed after adding the index for [q5]. We already captured the profiling for [*Q4*] in the previous section . Let’s capture it again using the below query on the terminal.
 
+#### Option 1:PROFILE
+
 ```sql
 SET profiling = 1;
 SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
@@ -303,8 +305,13 @@ Once executed, this should look like below. We can see that compared to earlier 
 
 <span class="image">![Tune](profile_after_index.png?raw=true)</span>
 
+#### Option 2:Query Profiling using Performance Schema
 
-We can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
+
+<span class="image">![Tune](PI_prof_after_index.png?raw=true)</span>
+
+
+In both cases, we can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
 ## Performance review
 
