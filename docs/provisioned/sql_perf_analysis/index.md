@@ -102,6 +102,8 @@ UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' W
 
 UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
 ```
+<span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
+
 
 Ensure that events_statements_* and events_stages_* consumers are enabled. Some consumers may already be enabled by default.
 
@@ -110,22 +112,32 @@ UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%
 
 UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_stages_%';
 ```
+<span class="image">![profile_setup_consumers](PI_setup_consumers.png?raw=true)</span>
+
+
 Please run the statement that you want to profile. For example:
+
 ```SQL
 SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
 ```
+<span class="image">![profile_query](PI_prof_query.png?raw=true)</span>
+
 
 Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
 
 ```SQL
-SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%XXX%';
+SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%EAGLE MTN%';
 ```
+<span class="image">![profile_query_ID](PI_prof_query_ID.png?raw=true)</span>
+
 
 Query the events_stages_history_long table to retrieve the statement's stage events. Stages are linked to statements using event nesting. Each stage event record has a NESTING_EVENT_ID column that contains the EVENT_ID of the parent statement.
 
 ```SQL
-SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=YY;
+SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=EVENT_ID;
 ```
+<span class="image">![profile_query_result](PI_prof_result.png?raw=true)</span>
+
 
 **Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
 
