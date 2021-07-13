@@ -303,7 +303,7 @@ aws rds download-db-log-file-portion --db-instance-identifier [writerendpoint] \
 --starting-token 0 --output text --log-file-name slowquery/<slowlogname> > slow_log.txt
 ```
 
-*Step2:*Once downloaded, you can run the pt-query-digest like below using the slow query log file we just downloaded.Please ensure the log name is correct.
+*Step2:* Once downloaded, you can run the pt-query-digest like below using the slow query log file we just downloaded.Please ensure the log name is correct.
 
 ```shell
 $ pt-query-digest <slow_log_file.txt>
@@ -324,7 +324,7 @@ Item          The distilled query
 
 <span class="image">![PTQ](PTQ2.png?raw=true)</span>
 
-For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like concurrency(calculated as a function of the timespan and total Query_time), exec time, rows sent, rows examine etc. This also provides the number of occurrences of a query in the log.
+For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like concurrency(calculated as a function of the timespan and total Query_time), exec time, rows sent, rows examine etc. This also provides the number of occurrences of a query in the slow log. You can collect these slow logs in a file and call them as slow_query_log3.
 
 <span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
