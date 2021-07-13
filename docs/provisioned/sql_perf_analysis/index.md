@@ -429,11 +429,21 @@ Output should look something like below
 
 <span class="image">![InnoDB Status](InnoDB_stat3.png?raw=true)</span>
 
-Some key aspects of InnoDB status to look out for area
+The following [sections](https://mariadb.com/kb/en/show-engine-innodb-status/) are displayed
 
-**History list length** --> Unpurged old row versions
-**INDIVIDUAL BUFFER POOL INFO** --> Contains information about Innodb buffer pool instances
-**ROW OPERATIONS** --> Would give a snapshot of whether the instance is read or write heavy
+* **SEMAPHORES:** Threads waiting for a semaphore and stats on how the number of times threads have needed a spin or a wait on a mutex or rw-lock semaphore. If this number of threads is large, there may be I/O or contention issues. Reducing the size of the innodb_thread_concurrency system variable may help if contention is related to thread scheduling. Spin rounds per wait shows the number of spinlock rounds per OS wait for a mutex.
+
+* **LATEST FOREIGN KEY ERROR:** Only shown if there has been a foreign key constraint error, it displays the failed statement and information about the constraint and the related tables.
+
+* **LATEST DETECTED DEADLOCK:** Only shown if there has been a deadlock, it displays the transactions involved in the deadlock and the statements being executed, held and required locked and the transaction rolled back to.
+
+* **History list length:** Unpurged old row versions from undo logs.
+
+* **TRANSACTIONS:** The output of this section can help identify lock contention, as well as reasons for the deadlocks.
+
+* **BUFFER POOL AND MEMORY:** Information on buffer pool pages read and written, which allows you to see the number of data file I/O operations performed by your queries. See InnoDB Buffer Pool for more. Similar information is also available from the INFORMATION_SCHEMA.INNODB_BUFFER_POOL_STATS table.
+
+* **ROW OPERATIONS:** Information about the main thread, including the number and performance rate for each type of row operation. Would give a snapshot of whether the instance is read or write heavy.
 
 #### Locking information
 
