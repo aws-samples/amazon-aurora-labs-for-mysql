@@ -17,7 +17,7 @@ This lab requires the following prerequisites:
 
 ## 1. Analyze the queries using EXPLAIN and PROFILE
 
-In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*. So far we have *3 slow_query_log* files and for the purpose of the lab, let’s use *slow_query_log3*. *You can also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Once identified the slow query log file should contain the below queries.*
+In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*. So far we have *3 slow_query_log* files and for the purpose of the lab, let’s use *slow_query_log3*. *You may also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Once identified, the slow query log file should contain the below queries.
 
 For the purpose of the lab, lets call this as *slow_query_final.log*
 
@@ -419,6 +419,18 @@ To understand transactions running inside dbengine, you can run [SHOW ENGINE INN
 ```sql
 SHOW ENGINE INNODB STATUS \G
 ```
+Output should look something like below
+
+<span class="image">![InnoDB Status](Innodb_stat1.png?raw=true)</span>
+
+
+<span class="image">![InnoDB Status](Innodb_stat2.png?raw=true)</span>
+
+
+<span class="image">![InnoDB Status](Innodb_stat3.png?raw=true)</span>
+
+
+
 #### Locking information
 
 To understand locking transactions you can query [information_schema](https://dev.mysql.com/doc/refman/5.7/en/innodb-information-schema-examples.html) like below..
