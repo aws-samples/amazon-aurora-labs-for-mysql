@@ -8,11 +8,7 @@ This lab contains the following tasks:
 * *Monitor* using *CW* Metrics and Enhanced Monitoring(*EM*)
 * *Identify top* queries using performance insights(*P.I*)
 * *View* slow queries using  various options like *RDS console, CloudWatch logs, CloudWatch log insights, pt-query digest*
-* *Analyse* the slow queries using MySQL *Explain* plan, *profiling*
-* *Tune* the Queries
-* *Performance Review*
 
-*Optional:* Performance schema
 
 This lab requires the following prerequisites:
 
