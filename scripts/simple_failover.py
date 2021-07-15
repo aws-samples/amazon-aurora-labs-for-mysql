@@ -4,9 +4,6 @@ Simple Aurora DB cluster failover monitoring script, leveraging only the DNS end
 connects to the database using the cluster endpoint, approx. once a second and checks the role of
 the database engine. If it cannot connect or it connects to a reader instead, it counts the elapsed time.
 
-Changelog:
-2019-10-28 - Initial release
-
 Dependencies:
 none
 
