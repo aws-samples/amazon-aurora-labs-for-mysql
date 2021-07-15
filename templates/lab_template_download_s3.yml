@@ -1,0 +1,1480 @@
+---
+## Amazon Aurora Labs for MySQL
+## Infrastructure template with an Aurora cluster for lab exercises
+##
+## Changelog:
+## 2020-02-12 - Added support for Aurora ML labs
+## 2020-04-10 - Unified the 'with-cluster' and 'no-cluster' in a single template
+## 2020-04-10 - Added anonymized tracking to the labs
+## 2020-04-10 - Lambda support function empties the bucket (eg ML lab data on delete)
+## 2020-04-10 - Updated EC2 AMIs
+## 2020-04-30 - Switched to hardcoded AZs to support EventEngine
+## 2020-05-29 - Conditional naming and other changes to support EventEngine
+## 2021-06-29 - Added support for SQL Performance Troubleshooting Lab
+##
+## Dependencies:
+## none
+##
+## License:
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Amazon Aurora Labs for MySQL
+
+
+## Parameters
+Parameters:
+  deployCluster:
+    Default: "Yes"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Choose 'Yes' if you prefer to have the DB cluster created automatically (instead of creating it manually yourself).
+  deployML:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Aurora ML labs, choose 'Yes', to deploy the required resources.
+  deployGDB:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Aurora Global Database labs, choose 'Yes', to deploy the required resources.
+  agreeTracking:
+    Default: "Yes"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Help us improve our labs by agreeing to the collection of anonymous usage statistics for our labs.
+  isSecondary:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Please leave default value, reserved for internal use.
+  EEEventId:
+    Type: String
+    Description: Please leave blank, reserved for internal use.
+  EETeamId:
+    Type: String
+    Description: Please leave blank, reserved for internal use.
+  EEModuleId:
+    Type: String
+    Description: Please leave blank, reserved for internal use.
+  EEModuleVersion:
+    Type: String
+    Description: Please leave blank, reserved for internal use.
+
+
+## Metadata
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Lab Features"
+        Parameters:
+          - deployCluster
+          - deployGDB
+          - deployML
+      - Label:
+          default: "Help Us Improve Our Labs!"
+        Parameters:
+          - agreeTracking
+      - Label:
+          default: "Reserved for Internal Use (Do Not Change)"
+        Parameters:
+          - isSecondary
+          - EEEventId
+          - EETeamId
+          - EEModuleId
+          - EEModuleVersion
+    ParameterLabels:
+      deployCluster:
+        default: "Create DB Cluster Automatically?"
+      deployGDB:
+        default: "Enable Aurora Global Database Labs?"
+      deployML:
+        default: "Enable Aurora ML Labs?"
+      agreeTracking:
+        default: "Collect Usage Data?"
+      isSecondary:
+        default: "Secondary Region Only"
+      EEEventId:
+        default: "EventEngine Event"
+      EETeamId:
+        default: "EventEngine Team"
+      EEModuleId:
+        default: "EventEngine Module"
+      EEModuleVersion:
+        default: "EventEngine Version"
+
+
+## Conditions
+Conditions:
+  # are we running in EE? - used to hardcode resource name prefixes when deployed in EE among other things, use the stack name otherwise
+  condEventEngine: !Not [ !Equals [ !Ref EEEventId, "" ] ]
+  # EE doesn't allow us to customize parameters, so different EE modules launch different features
+  # the cluster is deployed only if parameter is yes, and the EE module doesn't match the 'base-only' module id
+  condDeployDBCluster: !And [ !Equals [ !Ref deployCluster, "Yes" ], !Not [ !Equals [ !Ref EEModuleId, "6ccc4506e8f04b81bc138bae806abe67" ] ] ]
+  # the ML resources are only deployed if parameter is yes, or EE module matches the 'all-features' module id
+  condDeployMLResources: !Or [ !Equals [ !Ref deployML, "Yes" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
+  # the GDB resources are only deployed if parameter is yes, or EE module matches the 'global-cluster' or 'all-features' module id
+  condDeployGDBResources: !Or [ !Equals [ !Ref deployGDB, "Yes" ], !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
+  # the bug fix for secondary region KMS is only deployed if parameter is yes
+  condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
+
+
+## Mappings
+Mappings:
+  RegionalSettings:
+    us-east-1:
+      clientAmi: ami-0885b1f6bd170450c
+      supersetAmi: ami-0947d2ba12ee1ff75
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: N. Virginia
+      az1: us-east-1a
+      az2: us-east-1b
+      az3: us-east-1c
+    us-east-2:
+      clientAmi: ami-0a91cd140a1fc148a
+      supersetAmi: ami-03657b56516ab7912
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Ohio
+      az1: us-east-2c
+      az2: us-east-2a
+      az3: us-east-2b
+    us-west-2:
+      clientAmi: ami-07dd19a7900a1f049
+      supersetAmi: ami-0528a5175983e7f28
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Oregon
+      az1: us-west-2b
+      az2: us-west-2c
+      az3: us-west-2d
+    ca-central-1:
+      clientAmi: ami-02e44367276fe7adc
+      supersetAmi: ami-0c2f25c1f66a1ff4d
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Montreal
+      az1: ca-central-1c
+      az2: ca-central-1a
+      az3: ca-central-1b
+    eu-central-1:
+      clientAmi: ami-0502e817a62226e03
+      supersetAmi: ami-00a205cb8e06c3c4e
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Frankfurt
+      az1: eu-central-1b
+      az2: eu-central-1a
+      az3: eu-central-1c
+    eu-west-1:
+      clientAmi: ami-0aef57767f5404a3c
+      supersetAmi: ami-0bb3fad3c0286ebd5
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Ireland
+      az1: eu-west-1a
+      az2: eu-west-1b
+      az3: eu-west-1c
+    eu-west-2:
+      clientAmi: ami-0ff4c8fb495a5a50d
+      supersetAmi: ami-0a669382ea0feb73a
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: London
+      az1: eu-west-2b
+      az2: eu-west-2a
+      az3: eu-west-2c
+    eu-west-3:
+      clientAmi: ami-0d3f551818b21ed81
+      supersetAmi: ami-0de12f76efe134f2f
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Paris
+      az1: eu-west-3c
+      az2: eu-west-3b
+      az3: eu-west-3a
+    ap-southeast-1:
+      clientAmi: ami-0c20b8b385217763f
+      supersetAmi: ami-015a6758451df3cb9
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Singapore
+      az1: ap-southeast-1c
+      az2: ap-southeast-1b
+      az3: ap-southeast-1a
+    ap-southeast-2:
+      clientAmi: ami-07fbdcfe29326c4fb
+      supersetAmi: ami-0f96495a064477ffb
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Sydney
+      az1: ap-southeast-2a
+      az2: ap-southeast-2b
+      az3: ap-southeast-2c
+    ap-south-1:
+      clientAmi: ami-0a4a70bd98c6d6441
+      supersetAmi: ami-0e306788ff2473ccb
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Mumbai
+      az1: ap-south-1a
+      az2: ap-south-1b
+      az3: ap-south-1c
+    ap-northeast-1:
+      clientAmi: ami-0f2dd5fc989207c82
+      supersetAmi: ami-0ce107ae7af2e92b5
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Tokyo
+      az1: ap-northeast-1d
+      az2: ap-northeast-1a
+      az3: ap-northeast-1c
+    ap-northeast-2:
+      clientAmi: ami-007b7745d0725de95
+      supersetAmi: ami-03b42693dc6a7dc35
+      clientType: m5.large
+      nodeType: db.r5.large
+      name: Seoul
+      az1: ap-northeast-2a
+      az2: ap-northeast-2b
+      az3: ap-northeast-2c
+  NetworkSettings:
+    global:
+      vpcCidr: 172.31.0.0/16
+      subPub1Cidr: 172.31.0.0/24
+      subPub2Cidr: 172.31.1.0/24
+      subPub3Cidr: 172.31.2.0/24
+      subPrv1Cidr: 172.31.10.0/24
+      subPrv2Cidr: 172.31.11.0/24
+      subPrv3Cidr: 172.31.12.0/24
+      sshSourceCidr: 0.0.0.0/0
+  ClusterSettings:
+    global:
+      dbSchema: mylab
+      dbDriver: mysql
+      dbVersion: 5.7.mysql_aurora.2.09.1
+      dbEngine: aurora-mysql
+      dbFamily: aurora-mysql5.7
+    scaling:
+      maxCapacity: 2
+      minCapacity: 1
+      cpuLoadTarget: 20
+    sysbench:
+      dbSchema: sbtpcc
+      runTime: '600'
+      numThreads: '4'
+      numTables: '8'
+      numWarehouses: '2'
+  MLSettings:
+    global:
+      notebookType: ml.m4.xlarge
+  GDBSettings:
+    superset:
+      username: "admin"
+      password: "AuroraTest123!"
+
+
+## Resources
+Resources:
+
+## The VPC
+  vpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-vpc", !Sub "${AWS::StackName}-vpc" ]
+
+## Create an IGW & attach it to the VPC
+  vpcIgw:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-igw", !Sub "${AWS::StackName}-igw" ]
+  attachIgwVpc:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId: !Ref vpc
+      InternetGatewayId: !Ref vpcIgw
+
+## Create a public subnet in each AZ
+  sub1Public:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub1Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-pub-sub-1", !Sub "${AWS::StackName}-pub-sub-1" ]
+  sub2Public:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub2Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-pub-sub-2", !Sub "${AWS::StackName}-pub-sub-2" ]
+  sub3Public:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPub3Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-pub-sub-3", !Sub "${AWS::StackName}-pub-sub-3" ]
+
+## Associate the public subnets with a public route table
+  rtbPublic:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-public-rtb", !Sub "${AWS::StackName}-public-rtb" ]
+  rteToIgw:
+    Type: "AWS::EC2::Route"
+    DependsOn: attachIgwVpc
+    Properties:
+      RouteTableId: !Ref rtbPublic
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref vpcIgw
+  srta1Public:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref sub1Public
+      RouteTableId: !Ref rtbPublic
+  srta2Public:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref sub2Public
+      RouteTableId: !Ref rtbPublic
+  srta3Public:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref sub3Public
+      RouteTableId: !Ref rtbPublic
+
+## Create a private subnet in each AZ
+  sub1Private:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv1Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-prv-sub-1", !Sub "${AWS::StackName}-prv-sub-1" ]
+  sub2Private:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv2Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-prv-sub-2", !Sub "${AWS::StackName}-prv-sub-2" ]
+  sub3Private:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref vpc
+      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv3Cidr ]
+      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-prv-sub-3", !Sub "${AWS::StackName}-prv-sub-3" ]
+
+## Create a NAT Gateway & EIP
+  natEip:
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: vpc
+  vpcNgw:
+    Type: "AWS::EC2::NatGateway"
+    DependsOn: attachIgwVpc
+    Properties:
+      AllocationId: !GetAtt natEip.AllocationId
+      SubnetId: !Ref sub2Public
+
+## Associate the private subnets with a NATed route table
+  rtbNat:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-nat-rtb", !Sub "${AWS::StackName}-nat-rtb" ]
+  rteToNgw:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref rtbNat
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref vpcNgw
+  srta1Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub1Private
+      RouteTableId: !Ref rtbNat
+  srta2Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub2Private
+      RouteTableId: !Ref rtbNat
+  srta3Ngw:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref sub3Private
+      RouteTableId: !Ref rtbNat
+
+## Create VPC S3 endpoint
+  s3Enpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcId: !Ref vpc
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      RouteTableIds:
+        - !Ref rtbPublic
+        - !Ref rtbNat
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Principal: "*"
+            Effect: Allow
+            Action: "s3:*"
+            Resource:
+              - "arn:aws:s3:::*"
+              - "arn:aws:s3:::*/*"
+
+## Create S3 bucket that will host lab resources (incl ML training data), if the ML lab condition allows it.
+  bucketLabData:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - !If [ condEventEngine, "auroralab", !Ref "AWS::StackName" ]
+          - data
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref 'AWS::StackId'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !If [ condEventEngine, "auroralab", !Ref "AWS::StackName" ]
+              - data
+              - !Select
+                - 0
+                - !Split
+                  - "-"
+                  - !Select
+                    - 2
+                    - !Split
+                      - "/"
+                      - !Ref 'AWS::StackId'
+
+## Create DB subnet group
+  dbSubnets:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupName: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
+      DBSubnetGroupDescription: "Aurora Lab subnets allowed for deploying DB instances"
+      SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
+
+## Create client security group
+  clientSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: !If [ condEventEngine, "auroralab-workstation-sg", !Sub "${AWS::StackName}-workstation-sg" ]
+      GroupDescription: "Aurora lab workstation security group (firewall)"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-workstation-sg", !Sub "${AWS::StackName}-workstation-sg" ]
+
+## Create Apache Superset security group
+  supersetSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Condition: condDeployGDBResources
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: !If [ condEventEngine, "auroralab-superset-sg", !Sub "${AWS::StackName}-superset-sg" ]
+      GroupDescription: "Aurora Lab Apache Superset security group (firewall)"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-superset-sg", !Sub "${AWS::StackName}-superset-sg" ]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: Allows Default Webport (80) access
+
+## Create DB security group
+  dbClusterSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: !Ref vpc
+      GroupName: !If [ condEventEngine, "auroralab-database-sg", !Sub "${AWS::StackName}-database-sg" ]
+      GroupDescription: "Aurora lab database security group (firewall)"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-database-sg", !Sub "${AWS::StackName}-database-sg" ]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref clientSecGroup
+          Description: "Allows MySQL access from the workstation security group"
+  ruleDbClusterSecGroupIngressSelf:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref dbClusterSecGroup
+      IpProtocol: -1
+      Description: "Allows all inbound access from sources with the same security group"
+      SourceSecurityGroupId: !Ref dbClusterSecGroup
+  ruledbClusterSecGroupIngressSuperset:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Condition: condDeployGDBResources
+    Properties:
+      GroupId: !Ref dbClusterSecGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      Description: "Allows MySQL access from Superset Instance"
+      SourceSecurityGroupId: !Ref supersetSecGroup
+
+## Create NACL to simulate regional failure
+  naclDenyAllAccess:
+    Type: "AWS::EC2::NetworkAcl"
+    Condition: condDeployGDBResources
+    Properties:
+      VpcId: !Ref vpc
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-denyall-nacl", !Sub "${AWS::StackName}-denyall-nacl" ]
+  naclEntryDenyAllEgress:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Condition: condDeployGDBResources
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      NetworkAclId: !Ref naclDenyAllAccess
+      Protocol: -1
+      RuleAction: deny
+      RuleNumber: 100
+  naclEntryDenyAllIngress:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Condition: condDeployGDBResources
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      NetworkAclId: !Ref naclDenyAllAccess
+      Protocol: -1
+      RuleAction: deny
+      RuleNumber: 100
+
+## Create a random generated password and store it as a secret for the DB cluster
+  secretClusterMasterUser:
+    Type: "AWS::SecretsManager::Secret"
+    Condition: condDeployDBCluster
+    Properties:
+      Description: !If [ condEventEngine, "Master user credentials for DB cluster 'auroralab-mysql-cluster'", !Sub "Master user credentials for DB cluster '${AWS::StackName}-mysql-cluster'" ]
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "masteruser"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 10
+        ExcludeCharacters: '"@/\$`&:{}()[]'
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]
+
+## Create enhanced monitoring role
+  roleEnhancedMonitoring:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-monitor-${AWS::Region}", !Sub "${AWS::StackName}-monitor-${AWS::Region}" ]
+      Description: "Allows your Aurora DB cluster to deliver Enhanced Monitoring metrics."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "monitoring.rds.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-monitor-${AWS::Region}", !Sub "${AWS::StackName}-monitor-${AWS::Region}" ]
+
+## Create external integration role
+  roleServiceIntegration:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
+      Description: "Allows your Aurora DB cluster to integrate with other AWS services, such as Amazon S3 for import/export."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "rds.amazonaws.com"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:ListBucket"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:AbortMultipartUpload"
+                  - "s3:DeleteObject"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:PutObject"
+                Resource:
+                  - "arn:aws:s3:::*/*"
+                  - "arn:aws:s3:::*"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
+
+## Create role for client host
+  roleClientHost:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-wkstation-${AWS::Region}", !Sub "${AWS::StackName}-wkstation-${AWS::Region}" ]
+      Description: "Permits user interaction with AWS APIs from the EC2-based workstation."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+                - "ssm.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+        - "arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "rds:*"
+                  - "s3:*"
+                  - "ssm:*"
+                  - "kinesis:*"
+                  - "kms:*"
+                  - "sns:*"
+                  - "secretsmanager:*"
+                  - "rds-db:connect"
+                  - "iam:AttachRolePolicy"
+                  - "iam:DetachRolePolicy"
+                  - "iam:PutRolePolicy"
+                  - "iam:DeleteRolePolicy"
+                  - "iam:GetRolePolicy"
+                  - "iam:CreatePolicy"
+                  - "iam:DeletePolicy"
+                  - "iam:CreateRole"
+                  - "iam:DeleteRole"
+                  - "iam:ListPolicies"
+                  - "iam:ListRoles"
+                  - "iam:PassRole"
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-wkstation-${AWS::Region}", !Sub "${AWS::StackName}-wkstation-${AWS::Region}" ]
+  profileClientHost:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: /
+      Roles:
+        - Ref: roleClientHost
+
+## Create the workstation host
+  clientHost:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      SubnetId: !Ref sub1Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]
+      SecurityGroupIds: [ !Ref clientSecGroup ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-workstation", !Sub "${AWS::StackName}-mysql-workstation" ]
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            DeleteOnTermination: true
+            Iops: 7500
+            VolumeSize: 150
+            VolumeType: io1
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientAmi ]
+      IamInstanceProfile: !Ref profileClientHost
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - !Sub |
+                #!/bin/bash -xe
+
+                # start bootstrap
+                echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
+
+                # update & upgrade packages
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
+                echo "$(date "+%F %T") * updated and upgraded packages" >> /debug.log
+
+                # install other supporting packages
+                apt-get -y install unzip
+                echo "$(date "+%F %T") * installed supporting packages" >> /debug.log
+
+                # update SSM agent
+                snap remove amazon-ssm-agent
+                wget https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/debian_amd64/amazon-ssm-agent.deb
+                DEBIAN_FRONTEND=noninteractive dpkg -i amazon-ssm-agent.deb
+                echo "$(date "+%F %T") * update ssm-agent to latest" >> /debug.log
+
+                # install jq
+                apt-get -y install jq
+                echo "$(date "+%F %T") * installed jq package" >> /debug.log
+
+                # install mysql client tools
+                apt-get -y install mysql-client
+                mysql --version >> /debug.log
+                echo "$(date "+%F %T") * installed mysql-client package" >> /debug.log
+
+                # install sysbench
+                curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | sudo bash
+                apt-get update
+                apt-get -y install sysbench
+                sysbench --version >> /debug.log
+                echo "$(date "+%F %T") * installed sysbench package" >> /debug.log
+
+                # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
+                git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
+                cd /home/ubuntu/sysbench-tpcc
+                git checkout 288b7687877a2b52772949f13c507713db182d25
+                chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
+                echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
+
+                # install percona query digest
+                sudo apt-get -y install percona-toolkit
+                pt-query-digest --version >> /debug.log 
+                echo "$(date "+%F %T") * installed perconca toolkit" >> /debug.log
+
+                # download demo databases
+                git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
+                chown -R ubuntu:ubuntu /home/ubuntu/samples
+                echo "$(date "+%F %T") * cloned test databases repo" >> /debug.log
+
+                # install python pip and aws cli
+                apt-get -y install python3-pip
+                cd /home/ubuntu
+                curl -O https://awsauroralabsmy.com/support/client-requirements.txt
+                pip3 install -r client-requirements.txt
+                curl -O https://awsauroralabsmy.com/scripts/reader_loadtest.py
+                curl -O https://awsauroralabsmy.com/scripts/simple_failover.py
+                curl -O https://awsauroralabsmy.com/scripts/aware_failover.py
+                curl -O https://awsauroralabsmy.com/scripts/das_reader.py
+                curl -O https://awsauroralabsmy.com/scripts/bank_deposit.py
+                #curl -O https://awsauroralabsmy.com/scripts/weather_perf.py
+                curl -O https://awsauroralabsmy.com/support/sagemaker_policy.json
+                chown -R ubuntu:ubuntu /home/ubuntu/*.py
+                echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log
+
+                # configure AWS CLI
+                mkdir /home/ubuntu/.aws
+                touch /home/ubuntu/.aws/config
+                echo "[default]" >> /home/ubuntu/.aws/config
+                echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
+                chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
+                echo "$(date "+%F %T") * configured aws cli" >> /debug.log
+
+                # set environment variables
+                export ANALYTICSURI="https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
+                export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ubuntu/.bashrc
+                export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
+                export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
+              - Fn::Join:
+                  - ""
+                  - - 'export STACKUUID="'
+                    - !Select
+                      - 2
+                      - !Split
+                        - "/"
+                        - !Ref 'AWS::StackId'
+                    - '" && echo "export STACKUUID=\"$STACKUUID\"" >> /home/ubuntu/.bashrc'
+              - !Sub |
+                export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
+                export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
+                echo "$(date "+%F %T") * environemnt vars initialized" >> /debug.log
+              - Fn::If:
+                  - condDeployDBCluster
+                  - !Sub |
+                    # set DB cluster user and password as env variables
+                    export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
+                    export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
+                    export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
+                    echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
+                    echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+                    echo "$(date "+%F %T") * db credentials initialized" >> /debug.log
+                  - ""
+              - !Sub |
+                # reboot
+                echo "$(date "+%F %T") * bootstrap complete, rebooting" >> /debug.log
+                shutdown -r now
+
+## Create the Apache Superset host
+  supersetHost:
+    Type: "AWS::EC2::Instance"
+    Condition: condDeployGDBResources
+    Properties:
+      SubnetId: !Ref sub2Public
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]
+      SecurityGroupIds: [ !Ref supersetSecGroup ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-superset-host", !Sub "${AWS::StackName}-superset-host" ]
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: 80
+            VolumeType: gp2
+      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetAmi ]
+      IamInstanceProfile: !Ref profileClientHost
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - !Sub |
+                #!/bin/bash
+                cd /tmp
+
+                # start bootstrap
+                echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
+
+                # update SSM & upgrade packages
+                echo "$(date "+%F %T") * updating SSM agent and python packages" >> /debug.log
+                sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+                sudo systemctl start amazon-ssm-agent
+                source ~/.bashrc
+                sudo yum update -y >> /debug.log
+                echo "$(date "+%F %T") * updated SSM agent" >> /debug.log
+
+                # install dependencies for superset
+                sudo amazon-linux-extras install postgresql10 vim epel
+                sudo yum install gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq -y >> /debug.log
+                echo "$(date "+%F %T") * installed python and MySQL/pgSQL dependencies" >> /debug.log
+
+                # path management
+                export PATH=/usr/local/bin:$PATH
+                export PYTHONPATH=/usr/local/bin:$PYTHONPATH
+                alias python=python37
+                alias pip=pip3
+                echo "$(date "+%F %T") * updated paths" >> /debug.log
+
+                # downgrade/force installation packages to last good known versions for superset and dependencies
+                # desired path: wget https://awsauroralabsmy.com/support/superset-requirements.txt
+                wget https://awsauroralabsmy.com/support/superset-requirements.txt
+                sudo pip3 install -r superset-requirements.txt >> /debug.log
+                echo "$(date "+%F %T") * force installed superset to frozen application packages list" >> /debug.log
+
+                # create an admin user
+              - Fn::Join:
+                  - ""
+                  - - 'export ADMINUSER="'
+                    - !FindInMap [ GDBSettings, superset, username ]
+                    - '"'
+              - Fn::Join:
+                  - ""
+                  - - 'export ADMINPASS="'
+                    - !FindInMap [ GDBSettings, superset, password ]
+                    - '"'
+              - !Sub |
+                superset fab create-admin --username "$ADMINUSER" --password "$ADMINPASS" --firstname "Superset" --lastname "Administrator" --email "admin@example.com"
+                echo "$(date "+%F %T") * created a Superset admin user (from secret)" >> /debug.log
+
+                # initialize the superset database
+                superset db upgrade
+                superset load_examples
+                superset init
+                echo "$(date "+%F %T") * Superset initialization completed" >> /debug.log
+
+                # start web server with gunicorn; forcing on port 80 (default 8088)
+                echo "$(date "+%F %T") * serving web traffic with gunicorn" >> /debug.log
+                nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
+
+## Create parameter groups for cluster nodes
+  pgNodeParams:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: !If [ condEventEngine, "auroralab-mysql-node-params", !Sub "${AWS::StackName}-mysql-node-params" ]
+      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
+      Parameters:
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "10"
+        log_output: FILE
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-node-params", !Sub "${AWS::StackName}-mysql-node-params" ]
+
+## Create cluster parameter group
+  cpgClusterParams:
+    Type: "AWS::RDS::DBClusterParameterGroup"
+    Properties:
+      Description: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
+      Family: !FindInMap [ ClusterSettings, global, dbFamily ]
+      Parameters:
+        aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
+
+## Create Aurora cluster
+  dbCluster:
+    Type: "AWS::RDS::DBCluster"
+    Condition: condDeployDBCluster
+    Properties:
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
+      DBSubnetGroupName: !Ref dbSubnets
+      DBClusterParameterGroupName: !Ref cpgClusterParams
+      DBClusterIdentifier: !If [ condEventEngine, "auroralab-mysql-cluster", !Sub "${AWS::StackName}-mysql-cluster" ]
+      BackupRetentionPeriod: 1
+      MasterUsername: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:username}}" ]]
+      MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}" ]]
+      DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
+      StorageEncrypted: true
+      VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
+      EnableCloudwatchLogsExports: [ error, slowquery ]
+      BacktrackWindow: 86400
+      EnableIAMDatabaseAuthentication: true
+      AssociatedRoles:
+        - RoleArn: !GetAtt roleServiceIntegration.Arn
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-cluster", !Sub "${AWS::StackName}-mysql-cluster" ]
+
+## Deploy cluster node #1 (may or may not be writer depending which one initializes first)
+  dbNode1:
+    Type: "AWS::RDS::DBInstance"
+    Condition: condDeployDBCluster
+    Properties:
+      DBClusterIdentifier: !Ref dbCluster
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
+
+## Deploy cluster node #2 (may or may not be writer depending which one initializes first)
+  dbNode2:
+    Type: "AWS::RDS::DBInstance"
+    Condition: condDeployDBCluster
+    Properties:
+      DBClusterIdentifier: !Ref dbCluster
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
+      CopyTagsToSnapshot: true
+      DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
+      DBParameterGroupName: !Ref pgNodeParams
+      Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
+      MonitoringInterval: 1
+      MonitoringRoleArn: !GetAtt roleEnhancedMonitoring.Arn
+      PubliclyAccessible: false
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
+
+## Role to overcome current limitations in CFN ScalableTarget implemetation
+## This role is *NOT* actively used by any resource and service, but must be present
+  roleScalableTarget:
+    Type: "AWS::IAM::Role"
+    Condition: condDeployDBCluster
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-scaling-${AWS::Region}", !Sub "${AWS::StackName}-scaling-${AWS::Region}" ]
+      Description: "Role to integrate the Aurora DB cluster with Application AutoScaling for read replica auto scaling."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "rds.application-autoscaling.amazonaws.com"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-scaling-${AWS::Region}", !Sub "${AWS::StackName}-scaling-${AWS::Region}" ]
+
+## Register the scalable target
+## Bug fix: when the stack name contains uppercase letters,
+## the DB cluster identifier is actually lowercased, but the resource ID
+## still contains uppercase, so you get a mismatch on the scalable target ResourceId
+  dbScalableTarget:
+    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
+    Condition: condDeployDBCluster
+    DependsOn: [ dbNode1, dbNode2 ]
+    Properties:
+      ServiceNamespace: rds
+      ScalableDimension: "rds:cluster:ReadReplicaCount"
+      ResourceId: !GetAtt resLabSupport.DBClusterScalableTarget
+      MaxCapacity: !FindInMap [ ClusterSettings, scaling, maxCapacity ]
+      MinCapacity: !FindInMap [ ClusterSettings, scaling, minCapacity ]
+      RoleARN: !GetAtt roleScalableTarget.Arn
+
+## Add scaling policy
+  dbScalingPolicy:
+    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
+    Condition: condDeployDBCluster
+    Properties:
+      PolicyName: !If [ condEventEngine, "auroralab-autoscale-readers", !Sub "${AWS::StackName}-autoscale-readers" ]
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref dbScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: RDSReaderAverageCPUUtilization
+        ScaleInCooldown: 180
+        ScaleOutCooldown: 180
+        TargetValue: !FindInMap [ ClusterSettings, scaling, cpuLoadTarget ]
+
+## Create sysbench prep SSM document
+  ssmDocSysbenchTest:
+    Type: "AWS::SSM::Document"
+    Properties:
+      DocumentType: Command
+      Name: !If [ condEventEngine, "auroralab-sysbench-test", !Sub "${AWS::StackName}-sysbench-test" ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-sysbench-test", !Sub "${AWS::StackName}-sysbench-test" ]
+      Content:
+        schemaVersion: '2.2'
+        description: "SysBench Percona TPCC-LIKE Preparation"
+        parameters:
+          clusterEndpoint:
+            type: String
+            description: "Aurora Cluster Endpoint"
+            default: !If [ condDeployDBCluster, !GetAtt dbCluster.Endpoint.Address, "" ]
+          dbUser:
+            type: String
+            description: "DB User"
+            default: !If [ condDeployDBCluster, !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:username}}" ] ], "" ]
+          dbPassword:
+            type: String
+            description: "DB Password"
+            default: !If [ condDeployDBCluster, !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}" ] ], "" ]
+          dbSchema:
+            type: String
+            description: "DB Schema"
+            default: !FindInMap [ ClusterSettings, sysbench, dbSchema ]
+          dbDriver:
+            type: String
+            description: "DB Driver"
+            default: !FindInMap [ ClusterSettings, global, dbDriver ]
+            allowedValues: [ mysql, pgsql ]
+          runTime:
+            type: String
+            description: "Test Runtime"
+            default: !FindInMap [ ClusterSettings, sysbench, runTime ]
+          numThreads:
+            type: String
+            description: Threads
+            default: !FindInMap [ ClusterSettings, sysbench, numThreads ]
+          numTables:
+            type: String
+            description: Tables
+            default: !FindInMap [ ClusterSettings, sysbench, numTables ]
+          numScale:
+            type: String
+            description: Scale
+            default: !FindInMap [ ClusterSettings, sysbench, numWarehouses ]
+        mainSteps:
+        - action: aws:runShellScript
+          name: SysBenchTpccPrepare
+          inputs:
+            runCommand:
+            - 'echo "DROP SCHEMA IF EXISTS {{ dbSchema }}; CREATE SCHEMA {{ dbSchema }};" | mysql -h{{ clusterEndpoint }} -u{{ dbUser }} -p"{{ dbPassword }}" && cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} prepare'
+        - action: aws:runShellScript
+          name: SysBenchTpccRun
+          inputs:
+            runCommand:
+            - 'cd /home/ubuntu/sysbench-tpcc && ./tpcc.lua --mysql-host={{ clusterEndpoint }} --mysql-user={{ dbUser }} --mysql-password="{{ dbPassword }}" --mysql-db={{ dbSchema }} --mysql-ignore-errors=all --threads={{ numThreads }} --tables={{ numTables }} --scale={{ numScale }} --time={{ runTime }} --db-driver={{ dbDriver }} run'
+
+## Create a role for the notebook.
+  roleMLNotebook:
+    Type: "AWS::IAM::Role"
+    Condition: condDeployMLResources
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Sub "${AWS::StackName}-ml-${AWS::Region}" ]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "sagemaker.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:ListBucket"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:DeleteObject"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:PutObject"
+                Resource:
+                  - "arn:aws:s3:::*/*"
+                  - "arn:aws:s3:::*"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Sub "${AWS::StackName}-ml-${AWS::Region}" ]
+
+## Create a Sagemaker Lifecycle hook, which will clone the github repo and get the Jupyter notebook and other resources needed to build the model.
+## using nohup, so the script keeps running after 5 minutes. The onstart event fails, if script doesn't finish in 5 minutes.
+  smMLNotebookHook:
+    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
+    Condition: condDeployMLResources
+    Properties:
+      NotebookInstanceLifecycleConfigName: !If [ condEventEngine, "auroralab-notebook-hook", !Sub "${AWS::StackName}-notebook-hook" ]
+      OnCreate:
+        - Content:
+            Fn::Base64: !Sub |
+              #!/bin/bash
+
+              set -e
+              sudo -u ec2-user -i <<EOF
+              unset SUDO_UID
+              python3 -m pip install sagemaker boto3 sagemaker_containers
+              cd /home/ec2-user/SageMaker/
+              wget https://awsauroralabsmy.com/support/notebook_churn.py
+              wget https://awsauroralabsmy.com/support/sample_churn_data.zip
+              sed -i "s%mlbucketplaceholder%${bucketLabData}%" notebook_churn.py
+              sudo mkdir -p /opt/ml/code/
+              cd /home/ec2-user/SageMaker/
+              unzip -o sample_churn_data.zip
+              nohup ipython notebook_churn.py>nohup.out &
+
+## Create the Sagemake Jupyter book if the lab condition allows it.
+  smMLNotebook:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Condition: condDeployMLResources
+    Properties:
+      InstanceType: !FindInMap [ MLSettings, global, notebookType ]
+      RootAccess: Enabled
+      RoleArn: !GetAtt roleMLNotebook.Arn
+      NotebookInstanceName: !If [ condEventEngine, "auroralab-notebook", !Sub "${AWS::StackName}-notebook" ]
+      LifecycleConfigName: !GetAtt smMLNotebookHook.NotebookInstanceLifecycleConfigName
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-notebook", !Sub "${AWS::StackName}-notebook" ]
+
+## Create role for use with the lab support function
+  roleLabSupport:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Sub "${AWS::StackName}-support-${AWS::Region}" ]
+      Description: "Role to permit the Lambda support function to interact with relevant AWS APIs."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "s3:ListBucket"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:DeleteObject"
+                  - "s3:DeleteObjects"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:PutObject"
+                  - "s3:ListObjects"
+                  - "s3:ListObjectsV2"
+                  - "s3:ListObjectVersions"
+                Resource:
+                  - !Sub "arn:aws:s3:::${bucketLabData}/*"
+                  - !Sub "arn:aws:s3:::${bucketLabData}"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Sub "${AWS::StackName}-support-${AWS::Region}" ]
+
+## Create Lambda function to implement support operations
+  funcLabSupport:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !If [ condEventEngine, "auroralab-support", !Sub "${AWS::StackName}-support" ]
+      Description: "Custom Resource to provide support operations for the Aurora MySQL labs."
+      Handler: "index.handler"
+      Role: !GetAtt roleLabSupport.Arn
+      Runtime: "python3.7"
+      Timeout: 600
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-support", !Sub "${AWS::StackName}-support" ]
+      Environment:
+        Variables:
+          REGION: !Ref "AWS::Region"
+          ANALYTICSURI: "https://e6oqcsgjei.execute-api.us-east-1.amazonaws.com/v1/track"
+      Code:
+        ZipFile: |
+          # Dependencies
+          from os import environ
+          import cfnresponse
+          import boto3
+          import urllib3
+          import json
+          import datetime
+
+          print("[INFO]", "Initialize function")
+          session = boto3.session.Session(region_name=environ["REGION"])
+          s3 = boto3.resource('s3')
+          http = urllib3.PoolManager()
+
+          # Lambda handler function / main function
+          def handler(event, context):
+            print("[INFO]", "Invocation start")
+
+            # init response
+            resource_props = event["ResourceProperties"]
+            response_status = cfnresponse.FAILED
+            response_data = {}
+
+            # try/catch
+            try:
+              # lowercase names, set response as success
+              response_data["DBClusterId"] = resource_props["Cluster"].lower()
+              response_data["DBClusterScalableTarget"] = "cluster:%s" % response_data["DBClusterId"]
+              response_status = cfnresponse.SUCCESS
+              print("[INFO]", "ScalableTarget computed:", response_data["DBClusterScalableTarget"])
+
+              # only send analytics if agreed
+              if event["ResourceProperties"]["AgreeTracking"] == 'Yes':
+                # try/catch
+                try:
+                  # track analytics
+                  payload = {
+                    'stack_uuid': resource_props["StackUUID"] if ("StackUUID" in resource_props and resource_props["StackUUID"]) else None,
+                    'stack_name': resource_props["StackName"] if ("StackName" in resource_props and resource_props["StackName"]) else None,
+                    'stack_region': resource_props["StackRegion"] if ("StackRegion" in resource_props and resource_props["StackRegion"]) else None,
+                    'deployed_cluster': resource_props["DeployedCluster"] if ("DeployedCluster" in resource_props and resource_props["DeployedCluster"]) else None,
+                    'deployed_ml': resource_props["DeployedML"] if ("DeployedML" in resource_props and resource_props["DeployedML"]) else None,
+                    'deployed_gdb': resource_props["DeployedGDB"] if ("DeployedGDB" in resource_props and resource_props["DeployedGDB"]) else None,
+                    'is_secondary': resource_props["IsSecondary"] if ("IsSecondary" in resource_props and resource_props["IsSecondary"]) else None,
+                    'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                    'event_scope': 'Stack',
+                    'event_action': event["RequestType"] if "RequestType" in event else None,
+                    'event_message': "Stack-level operation",
+                    'ee_event_id': resource_props["EEEventId"] if ("EEEventId" in resource_props and resource_props["EEEventId"]) else None,
+                    'ee_team_id': resource_props["EETeamId"] if ("EETeamId" in resource_props and resource_props["EETeamId"]) else None,
+                    'ee_module_id': resource_props["EEModuleId"] if ("EEModuleId" in resource_props and resource_props["EEModuleId"]) else None,
+                    'ee_module_version': resource_props["EEModuleVersion"] if ("EEModuleVersion" in resource_props and resource_props["EEModuleVersion"]) else None
+                  }
+                  r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+                  print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
+                except Exception as e:
+                  # errors in tracker interaction should not prevent operation of the function in critical path
+                  print("[ERROR]", e)
+              else:
+                print("[INFO]", "Opted out of analytics")
+
+              # cleanup bucket
+              if event["RequestType"] == 'Delete':
+                # delete all objects out of the bucket
+                bucket = s3.Bucket(resource_props["DataBucket"])
+                bucket.objects.delete()
+                print("[INFO]", "Bucket cleaned up for:", resource_props["DataBucket"])
+
+            except Exception as e:
+              print("[ERROR]", e)
+
+            # try/catch
+            try:
+              # send response to CloudFormation
+              cfnresponse.send(event, context, response_status, response_data)
+            except Exception as e:
+              print("[ERROR]", e)
+              response_status = cfnresponse.FAILED
+            print("[INFO]", "Invocation end")
+            return response_status
+
+## Custom resource to assign cluster IAM role
+  resLabSupport:
+    Type: "Custom::resLabSupport"
+    Properties:
+      ServiceToken: !GetAtt funcLabSupport.Arn
+      DataBucket: !Ref bucketLabData
+      StackRegion: !Ref "AWS::Region"
+      StackName: !Ref "AWS::StackName"
+      StackUUID: !Select
+        - 2
+        - !Split
+          - "/"
+          - !Ref "AWS::StackId"
+      AgreeTracking: !Ref agreeTracking
+      DeployedCluster: !If [ condDeployDBCluster, "Yes", "No" ]
+      DeployedML: !If [ condDeployMLResources, "Yes", "No" ]
+      DeployedGDB: !If [ condDeployGDBResources, "Yes", "No" ]
+      IsSecondary: !Ref isSecondary
+      Cluster: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
+      EEEventId: !Ref EEEventId
+      EETeamId: !Ref EETeamId
+      EEModuleId: !Ref EEModuleId
+      EEModuleVersion: !Ref EEModuleVersion
+
+## Bug mitigation, RDS default KMS key in secondary region doesn't get created
+## until the first DB instance gets created. GDB Add region fails if it doesn't
+## exist
+  dbIgnoreBugFix:
+    Type: "AWS::RDS::DBInstance"
+    Condition: condIsSecondary
+    Properties:
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-ignore-me", !Sub "${AWS::StackName}-ignore-me" ]
+      CopyTagsToSnapshot: true
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      EngineVersion: '5.7.28'
+      PubliclyAccessible: false
+      MasterUsername: ignoreme
+      MasterUserPassword: qqn6e3wQ8I9qGN5aBN9R
+      DBSubnetGroupName: !Ref dbSubnets
+      BackupRetentionPeriod: 0
+      StorageEncrypted: true
+      VPCSecurityGroups: [ !Ref dbClusterSecGroup ]
+      AllocatedStorage: 20
+      StorageType: gp2
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-ignore-me", !Sub "${AWS::StackName}-ignore-me" ]
+
+
+## Outputs
+Outputs:
+  vpcId:
+    Description: "Aurora Lab VPC"
+    Value: !Ref vpc
+  ec2Instance:
+    Description: "EC2 Workstation Instance ID"
+    Value: !Ref clientHost
+  clusterName:
+    Description: "Aurora Cluster Name"
+    Value: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
+  clusterEndpoint:
+    Description: "Aurora Cluster Endpoint"
+    Value: !If [ condDeployDBCluster, !GetAtt dbCluster.Endpoint.Address, "" ]
+  readerEndpoint:
+    Description: "Aurora Reader Endpoint"
+    Value: !If [ condDeployDBCluster, !GetAtt dbCluster.ReadEndpoint.Address, "" ]
+  loadTestRunDoc:
+    Description: "Load Test Execution Command Document"
+    Value: !Ref ssmDocSysbenchTest
+  dbSubnetGroup:
+    Description: "Database Subnet Group"
+    Value: !Ref dbSubnets
+  dbSecurityGroup:
+    Description: "Database Security Group"
+    Value: !Ref dbClusterSecGroup
+  secretArn:
+    Description: "Database Credentials Secret ARN"
+    Value: !If [ condDeployDBCluster, !Ref secretClusterMasterUser, "" ]
+  s3BucketName:
+    Description: "S3 Bucket Name for SageMaker training data"
+    Value: !Ref bucketLabData
+  notebookName:
+    Description: "Jupytr Notebook Name"
+    Value: !If [ condDeployMLResources, !Ref smMLNotebook, "" ]
+  supersetURL:
+    Description: "Apache Superset URL"
+    Value: !If [ condDeployGDBResources, !Sub "http://${supersetHost.PublicDnsName}/", "" ]
+  supersetUsername:
+    Description: "Apache Superset Username"
+    Value: !If [ condDeployGDBResources, !FindInMap [ GDBSettings, superset, username ], "" ]
+  supersetPassword:
+    Description: "Apache Superset Password"
+    Value: !If [ condDeployGDBResources, !FindInMap [ GDBSettings, superset, password ], "" ]
