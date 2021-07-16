@@ -1,32 +1,36 @@
-# Aurora MySQL SQL Performance Troubleshooting - Observability (WIP)
+# Observe and Identify SQL Performance Issues
 
-In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues using* different tools. Specifically we are going to look at how you can leverage *CW metrics, EM metrics, P.I, slow query logs, CloudWatch logs and CloudWatch log insights, pt-query-digest* to identify bottlenecks. Also we are going to briefly shows how indexes can help in improving the performance of your query.
+This lab will demonstrate how to troubleshoot SQL performance related issues using different tools. More specifically, you will learn how to leverage amazon CloudWatch Metrics, Amazon RDS Enhanced Monitoring metrics, Amazon RDS Perfromance Insights, the MySQL slow query logs, Amazon CloudWatch Log Insights and the pt-query-digest tool to identify perfomance issues. This part of the lab focuses on observability, walking you through the tools and systems available that can aid in performance investigations. The next part of the lab (Part 2: Analysis) will demonstrate how to analyze and take actions on performance issues.
 
 This lab contains the following tasks:
 
-* *Setup* the environment to capture slow queries
-* *Monitor* using *CW* Metrics and Enhanced Monitoring(*EM*)
-* *Identify top* queries using performance insights(*P.I*)
-* *View* slow queries using  various options like *RDS console, CloudWatch logs, CloudWatch log insights, pt-query digest*
-
+1. Prepare the initial dataset
+2. Verify the slow query log is configured correctly
+3. Run a sample workload
+4. Monitor database performance using Amazon CloudWatch Metrics
+5. Monitor database performance using Amazon RDS Enhanced Monitoring
+6. Dive deeper with Performance Insights
+7. Download slow query logs
+8. Leverage Amazon CloudWatch Logs and Log Insights to view and analyze slow queries
+9. Optional: Process slow query logs with Percona's pt-query-digest
+10. Summary
 
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
-* [Connect, Load Data](/provisioned/interact/) (You can ignore **Auto Scale** section for this lab)
+* [Connect, Load Data](/provisioned/interact/) (connectivity and data loading sections only)
 
 
-## 1. Preparation of lab
-
-### Connect to the DB cluster
+## 1. Prepare the initial dataset
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect.If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the [clusterEndpoint] placeholder with the cluster endpoint of your DB cluster.
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
+
 Once connected to the database, please use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
 
 ```sql
@@ -58,8 +62,6 @@ END$$
 DELIMITER ;
 ```
 
-### Load an initial data set from S3
-
 Next, load an initial data set by importing data from an Amazon S3 bucket(fix the bucket):
 
 ```sql
@@ -69,7 +71,7 @@ INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY EN
 
 Data loading may take several minutes, you will receive a successful query message once it completes.
 
-### Verify the parameters of slow query logs
+## 2. Verify the slow query log is configured correctly
 
 In many cases the slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are **[slow_query_log](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_slow_query_log), [long_query_time](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_long_query_time) and [log_output](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_output)** .
 
@@ -90,7 +92,7 @@ quit;
 ```
 *Optional:* There are other parameters and you can read about **[log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements)**.
 
-### Run the workload
+## 3. Run a sample workload
 
 On the [session manager terminal](https://awsauroralabsmy.com/prereqs/connect/), please run the following to generate workload.
 
@@ -99,9 +101,7 @@ python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 This script will take about **4~5** minutes to complete.
 
-## 2. Monitor DB performance states using *CloudWatch* Metrics, Enhanced Monitoring(*EM*) and Performance Insights(P.I)
-
-### CloudWatch Metrics
+## 4. Monitor database performance using Amazon CloudWatch Metrics
 
 You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick cloudwatch metrics from Monitoring.
 
@@ -127,7 +127,6 @@ DMLLatency metric reveals a spike at 22:57, when the metric reached 4442 millise
 A useful piece of information readily available from DMLThroughput metric . At 22.57 DML throughput is 0.907 which is roughly 54 operations. This could be the reason for the DML latency we noticed before.
 
 ```shell
-
 .907 Operations
      ---------- X 60s= 54.42 ~ 54 operations
         s
@@ -135,12 +134,11 @@ A useful piece of information readily available from DMLThroughput metric . At 2
 
 **Optional:** Once the performance baseline is understood you can setup alarms against CW metrics when it exceeds the baseline for corrective actions.
 
-### Enhanced Monitoring
+## 5. Monitor database performance using Amazon RDS Enhanced Monitoring
 
 You must have noticed that the CW metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS/host level metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, [Enhanced Monitoring(EM)](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.CloudWatchLogs.html) should help.
 
 If you have Enhanced Monitoring option enabled for the database instance, you can view the metrics by selecting the **node(writer)** -> **Monitoring** -> select **Enhanced Monitoring** option from the Monitoring **dropdown** list. For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
-
 
 <span class="image">![EM](EM.png?raw=true)</span>
 
@@ -148,9 +146,7 @@ From the above, we could see when the workload kicked in, there is a sharp *spik
 
 **Note:** You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage).
 
-### Doing more with Performance Insights
-
-#### Identify *top* SQL queries using performance insights dashboard.
+## 6. Dive deeper with Performance Insights
 
 Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so that you can analyze and troubleshoot your database performance. To view the current performance insights dashboard, please go to the [RDS console](https://console.aws.amazon.com/rds/) and in the navigation pane, click performance insights and choose the writer node. You should see the console like below.  
 
@@ -158,7 +154,7 @@ Amazon RDS Performance Insights monitors your Amazon RDS DB instance load so tha
 
 The dashboard is divided into 3 sections(Counter Metrics, Database Load and Top SQL activity), allowing you to drill down from high level performance indicator metrics down to individual *queries*, *wait events*, *latency* etc. You can learn more about this in the [previous lab](https://awsauroralabsmy.com/provisioned/perf-insights/).
 
-##### Adding additional counters:
+**Add additional counters:**
 
 Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running etc and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CW metrics.
 
@@ -172,7 +168,7 @@ Click Update graph and once done, the counter metrics should look like below. We
 
 <span class="image">![Performance Insights](counter_before_index.png?raw=true)</span>
 
-##### Getting different perspective of DB Load:
+**Get a different perspective of DB Load:**
 
 Let's look at the DB wait events to understand the workload. We can see different wait events on the right hand side. Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
@@ -182,7 +178,7 @@ We can also change the view of *DB Load section* from “Slice by wait“ to ”
 
 <span class="image">![P.I](P.I_DB_Load_2.png?raw=true)</span>
 
-##### Getting additional information from the session activity:
+**Review additional information from the session activity:**
 
 Now let’s modify the *Session activity* part. The default interface for Top SQL contains AAS and SQL statements should look like this. Please go to the preferences section(gear icon at the right hand bottom) and add additional columns components.
 
@@ -202,10 +198,7 @@ You can note down the top SQL queries but please keep in mind not all TOP SQL qu
 
 As you noticed we can see performance insights are very good to understand average activity sessions however if you would like to get individual query stats/execution time then we should seek slow query logs.
 
-
-## 3. View *slow* queries
-
-### View and download slow query logs using the console
+## 7. Download slow query logs
 
 Lets’ view the slow query logs using the console . Since we ran the above script using the cluster endpoint(which points to the writer node by default), we should check the writer node logs. You can open the Amazon [RDS service console](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring) and click the cluster and select the writer node. Once selected, under *Logs & Events* scroll down to the *Logs* section. You should see like below.
 
@@ -228,7 +221,7 @@ You can download the logs via *console* or *CLI* using [download-db-log-file-por
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
-### Leveraging CloudWatch logs and Log insights to view and analyze slow queries
+## 8. Leverage Amazon CloudWatch Logs and Log Insights to view and analyze slow queries
 
 Slow logs are great for troubleshooting but viewing/downloading individual logs could be time consuming. Also the logs could get rotated(if log_output= FILE) periodically. In addition to viewing and downloading DB instance logs from the console, you can *publish* logs to Amazon CloudWatch Logs. With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
 
@@ -240,11 +233,13 @@ We have already *enabled* export Cloudwatch logs option when we created the clus
 
 <span class="image">![CWL](CWL2.png?raw=true)</span>
 
-### View exported logs in CloudWatch
+**View exported logs in CloudWatch**
 
 After enabling Aurora MySQL log events, you can monitor the events in Amazon CloudWatch Logs. A new log group is automatically created for the Aurora DB cluster under the following prefix, in which cluster-name represents the DB cluster name, and log_type represents the log type.
 
-/aws/rds/cluster/cluster-name/log_type
+```shell
+/aws/rds/cluster/[cluster-name]/[log_type]
+```
 
 For our DB cluster auroralab-mysql-cluster, slow query data is stored in the /aws/rds/cluster/auroralab-mysql-cluster/slowquery log group. Open the [Amazon Cloudwatch](https://console.aws.amazon.com/cloudwatch/home?p=clw&cp=bn&ad=c) console and select *Log groups* on the left hand side and search for auroralab-mysql-cluster/slowquery and it should see like below
 
@@ -273,10 +268,9 @@ The queries listed are the offending queries which takes longer than the *long_q
 
 <span class="image">![CWL](CWL_slow_query_expand.png?raw=true)</span>
 
- You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
+You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
 
-
-### [Optional exercise] Percona pt-query-digest
+## 9. Optional: Process slow query logs with Percona's pt-query-digest
 
 *One challenge is that it requires manual effort or some automation technique to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
@@ -288,15 +282,13 @@ In short, this tool summaries the top queries based on the input log file ranked
 
 *Step1:* First you need to download the *slow query logs* on the client. You can either do this over the *console* or *CLI*
 
-#### Download using console
+**Download using console**
 
 <span class="image">![PTQ](view_slow_logs.png?raw=true)</span>
 
 *Note:* Log gets rotated hourly so please ensure the logs are downloaded for the workload period.
 
-#### Download using cli
-
-*CLI example*
+**Download using cli**
 
 ```shell
 aws rds download-db-log-file-portion --db-instance-identifier [writerendpoint] \
@@ -328,11 +320,11 @@ For the queries listed above in the previous section, this section contains indi
 
 <span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
-#### Summary
+## 10. Summary
 
 In this exercise
 
 * We have used various RDS monitoring tools to understand the database workload.
 * We have slow query logs captured using RDS console, AWS CLI, CloudWatchLogs and Percona pt-query-digest.
 
-If you are interested in learning what to do with the captured slow query logs, please proceed to the next lab [Aurora MySQL SQL Performance Troubleshooting - Analysis](/provisioned/sql_perf_analysis/).
+If you are interested in learning what to do with the captured slow query logs, please proceed to the next lab: [Analyze SQL Query Performance](/provisioned/perf-analysis/).

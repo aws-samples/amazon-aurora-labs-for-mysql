@@ -1,27 +1,31 @@
-# Aurora MySQL SQL Performance Troubleshooting - Analysis (WIP)
+# Analyze SQL Query Performance
 
-In this lab, we are going to demonstrate *how to troubleshoot SQL performance related issues* using different tools. Specifically we are going to look at how you can leverage *EXPLAIN, PROFILE, performance_schema*  to analyze the query. Also we are going to briefly shows how indexes can help in improving the performance of your query.
+This lab will demonstrate how to troubleshoot SQL performance related issues using different tools. More specifically, you will learn how to leverage SQL execution plans, MySQL profiles and the MySQL Performance Schema to analyze queries and determine the cause of performance issues. You will also learn how indexes can help in improving the performance of your queries.
 
 This lab contains the following tasks:
 
-* *Analyse* the slow queries using MySQL *Explain* plan, *profiling*
-* *Tune* the Queries
-* *Performance Review*
-
-*Optional:* Performance Schema
+1. Analyze queries using MySQL's EXPLAIN
+2. Profile a query in Aurora MySQL
+3. Review available indexes
+4. Tune a query
+5. Review performance
+6. Optional: Diagnose issues using the MySQL Performance Schema
+7. Optional: Understand the workload using the process list
+8. Optional: Diagnose issues with the InnoDB Monitor
+9. Optional: Monitor locks using the Information Schema
 
 This lab requires the following prerequisites:
 
-* [Aurora MySQL SQL Performance Troubleshooting - Observability](/provisioned/sql_perf_observability/)
+* [Observe and Identify SQL Performance Issues](/provisioned/pref-observability/)
 
 
-## 1. Analyze the queries using EXPLAIN and PROFILE
+## 1. Analyze queries using MySQL's EXPLAIN
 
 In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*. So far we have *3 slow_query_log* files and for the purpose of the lab, let’s use *slow_query_log3*. *You may also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Once identified, the slow query log file should contain the below queries.
 
 For the purpose of the lab, lets call this as *slow_query_final.log*
 
-```SQL
+```sql
 [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
 [Q2] CALL insert_temp ;
     INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
@@ -33,15 +37,14 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 
 *Optional:* You can also go ahead and run the above queries individually on the terminal and see the individual response time.
 
-### EXPLAIN plan
+The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
 
-The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
-
-Let's go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below
+Let's go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below:
 
 ```sql
-*EXPLAIN* query name.
+EXPLAIN [query statement]
 ```
+
 Below is an explain plan for the [*Q5*]
 
 ```sql
@@ -52,7 +55,7 @@ EXPLAIN SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE ma
 
 The explain plan has multiple fields and the most common ones to look at it are
 
-* It was again a SELECT against the same table “weather”  using filesort.If an index cannot be used to satisfy an ORDER BY clause, MySQL performs a filesort operation that reads table rows and sorts them. A filesort constitutes an extra sorting phase in query execution.
+* It was again a SELECT against the same table “weather”  using filesort. If an index cannot be used to satisfy an ORDER BY clause, MySQL performs a filesort operation that reads table rows and sorts them. A filesort constitutes an extra sorting phase in query execution.
 * Fields “possible_keys” and “key” indicate that the table does not contain indexes that could be used during query execution.
 * The “type” field proves that database would need to perform a full table scan to run the query i.e. would need to consider ALL rows.
 * The “rows” field shows the number of rows to be scanned which is around 3M.
@@ -65,89 +68,88 @@ In this example, we see that the estimation of rows to be examined is very high 
 
 Our earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. Let’s take a look at where this query is spending its time. In order to indentify that we can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
 
-### PROFILING
+## 2. Profile a query in Aurora MySQL 
 
-#### Option 1:PROFILE
+=== "Using the Performance Schema"
+    The following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
 
-The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
+    hint: You can learn more about how to performance schema at the bottom of this exercise
 
-In order to perform profiling for the *[Q5]*, please run the below.
+    Ensure that statement and stage instrumentation is enabled by updating the setup_instruments table. Some instruments may already be enabled by default.
 
-```shell
-SET profiling = 1;
-SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-SHOW PROFILES;
-SHOW PROFILE FOR QUERY 1;
-SET profiling = 0;
-```
+    ```SQL
+    UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%statement/%';
 
-the output should look like below.
-
-<span class="image">![PROFILE](profile_before_index.png?raw=true)</span>
+    UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
+    ```
+    <span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
 
 
-From this, we can see where this query is spending its resources. In this example, we can see it's spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
+    Ensure that events_statements_* and events_stages_* consumers are enabled. Some consumers may already be enabled by default.
 
-#### Option 2:Query Profiling using Performance Schema
+    ```SQL
+    UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_statements_%';
 
-The SHOW PROFILE and SHOW PROFILES statements are deprecated and the following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
-
-hint: You can learn more about how to performance schema at the bottom of this exercise
-
-Ensure that statement and stage instrumentation is enabled by updating the setup_instruments table. Some instruments may already be enabled by default.
-
-```SQL
-UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%statement/%';
-
-UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
-```
-<span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
+    UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_stages_%';
+    ```
+    <span class="image">![profile_setup_consumers](PI_setup_consumers.png?raw=true)</span>
 
 
-Ensure that events_statements_* and events_stages_* consumers are enabled. Some consumers may already be enabled by default.
+    Please run the statement that you want to profile. For example:
 
-```SQL
-UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_statements_%';
-
-UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_stages_%';
-```
-<span class="image">![profile_setup_consumers](PI_setup_consumers.png?raw=true)</span>
+    ```SQL
+    SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
+    ```
+    <span class="image">![profile_query](PI_prof_query.png?raw=true)</span>
 
 
-Please run the statement that you want to profile. For example:
+    Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
 
-```SQL
-SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-```
-<span class="image">![profile_query](PI_prof_query.png?raw=true)</span>
-
-
-Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
-
-```SQL
-SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%EAGLE MTN%';
-```
-<span class="image">![profile_query_ID](PI_prof_query_ID.png?raw=true)</span>
+    ```SQL
+    SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%EAGLE MTN%';
+    ```
+    <span class="image">![profile_query_ID](PI_prof_query_ID.png?raw=true)</span>
 
 
-Query the events_stages_history_long table to retrieve the statement's stage events. Stages are linked to statements using event nesting. Each stage event record has a NESTING_EVENT_ID column that contains the EVENT_ID of the parent statement.
+    Query the events_stages_history_long table to retrieve the statement's stage events. Stages are linked to statements using event nesting. Each stage event record has a NESTING_EVENT_ID column that contains the EVENT_ID of the parent statement.
 
-```SQL
-SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=EVENT_ID;
-```
-<span class="image">![profile_query_result](PI_prof_result.png?raw=true)</span>
+    ```SQL
+    SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=EVENT_ID;
+    ```
+    <span class="image">![profile_query_result](PI_prof_result.png?raw=true)</span>
 
 
-**Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
+    **Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
 
-```SQL
-mysql> truncate performance_schema.events_stages_history_long;
-mysql> truncate performance_schema.events_statements_history_long;
-```
+    ```SQL
+    mysql> truncate performance_schema.events_stages_history_long;
+    mysql> truncate performance_schema.events_statements_history_long;
+    ```
 
-### Index presence
+=== "Using SHOW PROFILE (Deprecated)"
+    The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
 
-In order to do so, let’s check the *schema* in question to see if table have any indexes, so that we can use them in the queries to improve the read performance. The use of indexes to assist with large blocks of tables, data may have considerable impact on reducing MySQL query execution and, thus, overall CPU overhead. Non-indexed tables are nothing more than unordered lists; hence, the MySQL engine must search them from starting to end. This may have little impact when working with small tables, but may dramatically affect search time for larger tables.
+    In order to perform profiling for the *[Q5]*, please run the below.
+
+    ```shell
+    SET profiling = 1;
+    SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
+    SHOW PROFILES;
+    SHOW PROFILE FOR QUERY 1;
+    SET profiling = 0;
+    ```
+
+    the output should look like below.
+
+    <span class="image">![PROFILE](profile_before_index.png?raw=true)</span>
+
+
+    From this, we can see where this query is spending its resources. In this example, we can see it's spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
+
+
+## 3. Review available indexes
+
+Let’s check the *schema* in question to see if table have any indexes, so that we can use them in the queries to improve the read performance. The use of indexes to assist with large blocks of tables, data may have considerable impact on reducing MySQL query execution and, thus, overall CPU overhead. Non-indexed tables are nothing more than unordered lists; hence, the MySQL engine must search them from starting to end. This may have little impact when working with small tables, but may dramatically affect search time for larger tables.
 
 Presence of index can be done by running one of the methods below:
 
@@ -195,15 +197,14 @@ We can see that *mylab.weather* table does not have any primary keys.
 [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
 ```
 
-## 2. Tune
+## 4. Tune a query
 
-In real world, based on the type of wait events, schemas, resource utilisation the tuning approach varies.There are many ways you can take appropriate corrective actions like tune the server parameters, tune a query by re-writing it, tune the database schemas or even tune the code(App,DB).
+In real world, based on the type of wait events, schemas, resource utilisation the tuning approach varies. There are many ways you can take appropriate corrective actions like tune the server parameters, tune a query by re-writing it, tune the database schemas or even tune the code(App,DB).
 
 *Disclaimer: Since this is a lab environment, we have used our liberty to add indexes on the schema for tuning exercise as this does not requires us to touch the app or to rewrite the query.** However in real world, each use case differs and therefore its essential to fully understand the columns and its purpose and how your business logic is going to use it before adding indexes. always test the changes on test/staging environment before making it into production environment.*
 
 In this section, we are going to take the queries from the  *slow_query_final.log *and we are going to take advantage of explain plan to understand the bottleneck and how to fix them. We will also compare the *plans* before and after fixing queries.
 
-### Index
 *[Q1] CALL update_temp ;*
 
 ```sql
@@ -230,7 +231,7 @@ ALTER TABLE mylab.weather ADD index idx_id (id);
 
 After adding the index, lets check the explain plan. We can see that now the query is using our newly created id *idx_id* and the number of rows examined has been drastically reduced from *3M* to *1K*.
 
-  <span class="image">![Tune](explain_after_simple.png?raw=true)</span>
+<span class="image">![Tune](explain_after_simple.png?raw=true)</span>
 
 
 Using the same logic, let’s add index to the field *serialid* for ** which we found inside the stored procedure *[Q2] .* Before that lets capture the explain plan and once index is added, lets capture the explain plan again.
@@ -259,7 +260,7 @@ While we are at it, lets check the Explain plan for [Q3] before and after to see
 
 <span class="image">![Tune](explain_after_index_1.png?raw=true)</span>
 
-### Composite Index
+***Composite Index***
 
 In [*Q4*], we can see *station_name* and *type* is used for filtering the results. As you know with MySQL we can use multiple-column indexes for queries that test all the columns in the index, or queries that test just the first column, the first two columns, the first three columns, and so on. composite indexes (that is, indexes on multiple columns) and keep in mind MySQL allows you to create composite index up to 16 columns.
 
@@ -285,11 +286,11 @@ EXPLAIN SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE M
 
 By adding different indexes to the queries from the *slow_query_final.log,* we can see that *[Q1][Q2][Q3][Q4]* got ** benefited*.*
 
-### Re-visit PROFILE
+**Re-visit PROFILE**
 
 While we are it, lets revisit the *PROFILING* to see if it has been changed after adding the index for [q5]. We already captured the profiling for [*Q4*] in the previous section . Let’s capture it again using the below query on the terminal.
 
-#### Option 1:PROFILE
+***Option 1:PROFILE***
 
 ```sql
 SET profiling = 1;
@@ -303,7 +304,7 @@ Once executed, this should look like below. We can see that compared to earlier 
 
 <span class="image">![Tune](profile_after_index.png?raw=true)</span>
 
-#### Option 2:Query Profiling using Performance Schema
+**Option 2:Query Profiling using Performance Schema**
 
 
 <span class="image">![Tune](PI_prof_after_index.png?raw=true)</span>
@@ -311,7 +312,7 @@ Once executed, this should look like below. We can see that compared to earlier 
 
 In both cases, we can see that the query which was spending time on *sending data* is not seen anymore after adding the index.
 
-## Performance review
+## 5. Review performance
 
 Now after adding the indexes, let’s *re-run* the script and compare and review the performance in whole for before and after. Before re-running the tests lets truncate the performance schema tables to have fresh counters. This would make our before vs after comparison much easier. Please run the commands below on the mysql terminal
 
@@ -346,7 +347,6 @@ We can also see from the top SQL, the queries which appeared before adding index
 <span class="image">![Perf Review](P.I_review_top_after_index.png?raw=true)</span>
 
 We have used :
-
 * RDS monitoring tools like CW metrics, EM monitoring and OS Processlist to understand the workload pattern
 * RDS performance monitoring tools like Performance Insights and its counters to understand the workload
 * RDS MySQL logs and AWS tools like CW logs and insights to identify the slow query logs and understand the pattern of  queries.
@@ -354,9 +354,7 @@ We have used :
 * Fine tune by adding indexes to improve the performance without rewriting the query or rewriting the app.
 
 
-## 4. Optional:
-
-### Performance Schema
+## 6. Optional: Diagnose issues using the MySQL Performance Schema
 
 The Performance Schema(*P_S*) is an advanced MySQL diagnostic tool for monitoring MySQL Server. Due to certain CPU and memory overhead, Performance schema is *disabled* by default. However when performance insights is enabled, performance schema is automatically enabled by default.
 
@@ -368,30 +366,32 @@ Let’s use [events_statements_summary_global_by_event_name](https://dev.mysql.c
 
 *Note:* Performance Schema tables are kept in memory and their contents will be lost in the event of server reboot.
 
-#### Syntax (top 5, wait events)
+**Syntax (top 5, wait events)**
 
 ```sql
 select event_name as wait_event, count_star as all_occurrences, CONCAT(ROUND(sum_timer_wait / 1000000000000, 2), ' s') as total_wait_time, CONCAT(ROUND(avg_timer_wait / 1000000000000, 2), ' s') as avg_wait_time from performance_schema.events_waits_summary_global_by_event_name where count_star > 0 and event_name <> 'idle' order by sum_timer_wait desc limit 5;
 ```
 
-#### Syntax (top 5 statements, order by total execution time)
+**Syntax (top 5 statements, order by total execution time)**
 
 ```sql
 select replace(event_name, 'statement/sql/', '') as statement, count_star as all_occurrences, CONCAT(ROUND(sum_timer_wait / 1000000000000, 2), ' s') as total_latency, CONCAT(ROUND(avg_timer_wait / 1000000000000, 2), ' s') as avg_latency, CONCAT(ROUND(sum_lock_time / 1000000000000, 2), ' s') as total_lock_time, sum_rows_affected as sum_rows_changed, sum_rows_sent as sum_rows_selected, sum_rows_examined as sum_rows_scanned, sum_created_tmp_tables, sum_created_tmp_disk_tables, if(sum_created_tmp_tables = 0, 0, concat(truncate(sum_created_tmp_disk_tables/sum_created_tmp_tables*100, 0))) as tmp_disk_tables_percent, sum_select_scan, sum_no_index_used, sum_no_good_index_used from performance_schema.events_statements_summary_global_by_event_name where event_name like 'statement/sql/%' and count_star > 0 order by sum_timer_wait desc limit 5;
 ```
-#### Syntax (top 5 queries, order by total execution time):
+
+**Syntax (top 5 queries, order by total execution time)**
 
 ```sql
 select digest_text as normalized_query, count_star as all_occurr, CONCAT(ROUND(sum_timer_wait / 1000000000000, 3), ' s') as total_t, CONCAT(ROUND(min_timer_wait / 1000000000000, 3), 's') as min_t, CONCAT(ROUND(max_timer_wait / 1000000000000, 3), ' s') as max_t, CONCAT(ROUND(avg_timer_wait / 1000000000000, 3), ' s') as avg_t, CONCAT(ROUND(sum_lock_time / 1000000000000, 3), ' s') as total_lock_t, sum_rows_affected as sum_rows_changed, sum_rows_sent as sum_rows_selected, sum_rows_examined as sum_rows_scanned, sum_created_tmp_tables, sum_created_tmp_tables, sum_select_scan, sum_no_index_used from performance_schema.events_statements_summary_by_digest where schema_name iS NOT NULL order by sum_timer_wait desc limit 5 ;
 ```
 
-#### Syntax (top 5 queries performing Full table scan)
+**Syntax (top 5 queries performing Full table scan)**
+
 ```sql
 SELECT schema_name, substr(digest_text, 1, 100) AS statement, count_star AS cnt, sum_select_scan AS full_table_scan FROM performance_schema.events_statements_summary_by_digest WHERE sum_select_scan > 0 and schema_name iS NOT NULL ORDER BY sum_select_scan desc limit 5;
 ```
 *Note:* Before every load, to get fresh counters you can consider truncating the performance schema tables that you want to query.
 
-####Syntax (top 5 queries for which Temporary tables spilled to disk)
+**Syntax (top 5 queries for which Temporary tables spilled to disk)**
 
 ```sql
 mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star AS cnt, sum_created_tmp_disk_tables AS tmp_disk_tables,sum_created_tmp_tables AS tmp_tables FROM performance_schema.events_statements_summary_by_digest WHERE sum_created_tmp_disk_tables > 0 OR sum_created_tmp_tables >0 and schema_name='mylab' ORDER BY tmp_disk_tables desc limit 5;
@@ -399,17 +399,16 @@ mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star A
 
 *Note:* To learn more about *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
 
+## 7. Optional: Understand the workload using the process list
 
-### Understand the workload
-
-#### Processlist
 To get an idea about workload you can run *show process-list* to see active transactions, idle/sleep transactions etc
 
 ```sql
 SHOW PROCESSLIST:
 ```
 
-#### Innodb Status
+## 8. Optional: Diagnose issues with the InnoDB Monitor
+
 To understand transactions running inside dbengine, you can run [SHOW ENGINE INNODB STATUS](https://dev.mysql.com/doc/refman/5.7/en/show-engine.html) on the writer note. Please note this query works only on the writer and not on the reader. This command exposes outputs from various InnoDB monitors and can be instrumental in understanding the internal state of InnoDB engine. Information returned by the command includes but is not limited to:
 
 * Details of most recently detected deadlocks and foreign key errors,
@@ -419,10 +418,10 @@ To understand transactions running inside dbengine, you can run [SHOW ENGINE INN
 ```sql
 SHOW ENGINE INNODB STATUS \G
 ```
+
 Output should look something like below
 
 <span class="image">![InnoDB Status](InnoDB_stat1.png?raw=true)</span>
-
 
 <span class="image">![InnoDB Status](InnoDB_stat2.png?raw=true)</span>
 
@@ -445,7 +444,7 @@ The following [sections](https://mariadb.com/kb/en/show-engine-innodb-status/) a
 
 * **ROW OPERATIONS:** Information about the main thread, including the number and performance rate for each type of row operation. Would give a snapshot of whether the instance is read or write heavy.
 
-#### Locking information
+## 9. Optional: Monitor locks using the Information Schema
 
 To understand locking transactions you can query [information_schema](https://dev.mysql.com/doc/refman/5.7/en/innodb-information-schema-examples.html) like below..
 
