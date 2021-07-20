@@ -21,9 +21,9 @@ This lab requires the following prerequisites:
 
 ## 1. Analyze queries using MySQL's EXPLAIN
 
-In this section, we are going to use the slow queries we captured in the previous sections and use them to investigate with the help of *EXPLAIN* and *PROFILE*. So far we have *3 slow_query_log* files and for the purpose of the lab, let’s use *slow_query_log3*. *You may also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Once identified, the slow query log file should contain the below queries.
+In this section, you will learn how to investigate the slow queries (captured in the previous sections) with the help of *EXPLAIN* and *PROFILE*. So far you should have *3 slow_query_log* files and for the purpose of the lab, please use *slow_query_log3*. *You may also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Regardless once identified, the slow query log file should contain the below queries.
 
-For the purpose of the lab, lets call this as *slow_query_final.log*
+For the purpose of the lab, call this as *slow_query_final.log*.
 
 ```sql
 [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
@@ -37,9 +37,9 @@ For the purpose of the lab, lets call this as *slow_query_final.log*
 
 *Optional:* You can also go ahead and run the above queries individually on the terminal and see the individual response time.
 
-The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. With the help of [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html), you can see where you should add indexes to tables so that the statement executes faster by using indexes to find rows.
+The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. Your goals are to recognize the aspects of the [EXPLAIN]((https://dev.mysql.com/doc/refman/5.7/en/explain.html) plan that indicate a query is optimized well, and to learn the SQL syntax and indexing techniques to improve the plan if you see some inefficient operations.
 
-Let's go ahead capture the explain plan for those queries listed above . You can use run the explain plan for a query like below:
+Go ahead and capture the EXPLAIN plan for the above slow queries using syntax
 
 ```sql
 EXPLAIN [query statement]
@@ -60,91 +60,89 @@ The explain plan has multiple fields and the most common ones to look at it are
 * The “type” field proves that database would need to perform a full table scan to run the query i.e. would need to consider ALL rows.
 * The “rows” field shows the number of rows to be scanned which is around 3M.
 
-In this example, we see that the estimation of rows to be examined is very high and we can also see the absence of key for this.
+In this example, you see that the estimation of **rows to be scanned** is very high and you can also notice the absence of key for this.
 
 *To learn more about EXPLAIN plan outputs you can refer to [link](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)*.*
 
 *Hint:* you can also use [explain format=json](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)* if you are interested in understanding how subqueries are materialized.
 
-Our earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. Let’s take a look at where this query is spending its time. In order to indentify that we can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
+Earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. To investigate where this query is spending its time you can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
 
-## 2. Profile a query in Aurora MySQL 
+## 2. Profile a query in Aurora MySQL
 
-=== "Using the Performance Schema"
-    The following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
+== **Using the Performance Schema**
 
-    hint: You can learn more about how to performance schema at the bottom of this exercise
+The following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
 
-    Ensure that statement and stage instrumentation is enabled by updating the setup_instruments table. Some instruments may already be enabled by default.
+hint: You can learn more about how to performance schema at the bottom of this exercise
 
-    ```SQL
+Ensure that statement and stage instrumentation is enabled by updating the setup_instruments table. Some instruments may already be enabled by default.
+
+```SQL
     UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%statement/%';
 
     UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
-    ```
-    <span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
+```
+<span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
 
 
-    Ensure that events_statements_* and events_stages_* consumers are enabled. Some consumers may already be enabled by default.
+Ensure that events_statements_* and events_stages_* consumers are enabled. Some consumers may already be enabled by default.
 
-    ```SQL
+```SQL
     UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_statements_%';
 
     UPDATE performance_schema.setup_consumers SET ENABLED = 'YES' WHERE NAME LIKE '%events_stages_%';
-    ```
-    <span class="image">![profile_setup_consumers](PI_setup_consumers.png?raw=true)</span>
+```
+<span class="image">![profile_setup_consumers](PI_setup_consumers.png?raw=true)</span>
 
+Please run the statement that you want to profile. For example:
 
-    Please run the statement that you want to profile. For example:
-
-    ```SQL
+```SQL
     SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-    ```
-    <span class="image">![profile_query](PI_prof_query.png?raw=true)</span>
+```
+<span class="image">![profile_query](PI_prof_query.png?raw=true)</span>
 
 
-    Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
+Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
 
-    ```SQL
+```SQL
     SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%EAGLE MTN%';
-    ```
-    <span class="image">![profile_query_ID](PI_prof_query_ID.png?raw=true)</span>
+```
+<span class="image">![profile_query_ID](PI_prof_query_ID.png?raw=true)</span>
 
+Query the events_stages_history_long table to retrieve the statement's stage events. Stages are linked to statements using event nesting. Each stage event record has a NESTING_EVENT_ID column that contains the EVENT_ID of the parent statement.
 
-    Query the events_stages_history_long table to retrieve the statement's stage events. Stages are linked to statements using event nesting. Each stage event record has a NESTING_EVENT_ID column that contains the EVENT_ID of the parent statement.
-
-    ```SQL
+```SQL
     SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=EVENT_ID;
-    ```
-    <span class="image">![profile_query_result](PI_prof_result.png?raw=true)</span>
+```
+<span class="image">![profile_query_result](PI_prof_result.png?raw=true)</span>
 
+**Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
 
-    **Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
-
-    ```SQL
+```SQL
     mysql> truncate performance_schema.events_stages_history_long;
     mysql> truncate performance_schema.events_statements_history_long;
-    ```
+```
 
-=== "Using SHOW PROFILE (Deprecated)"
-    The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
+=== **Using SHOW PROFILE (Deprecated)**
 
-    In order to perform profiling for the *[Q5]*, please run the below.
+The SHOW [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html) and [SHOW PROFILES](https://dev.mysql.com/doc/refman/5.7/en/show-profiles.html) commands display profiling information that indicates resource usage for statements executed during the course of the current session. Even though this can be obtained using performance schema this is widely used due to ease of use.
 
-    ```shell
+In order to perform profiling for the *[Q5]*, please run the below.
+
+```shell
     SET profiling = 1;
     SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
     SHOW PROFILES;
     SHOW PROFILE FOR QUERY 1;
     SET profiling = 0;
-    ```
+```
 
-    the output should look like below.
+the output should look like below.
 
-    <span class="image">![PROFILE](profile_before_index.png?raw=true)</span>
+<span class="image">![PROFILE](profile_before_index.png?raw=true)</span>
 
-
-    From this, we can see where this query is spending its resources. In this example, we can see it's spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
+From this, we can see where this query is spending its resources. In this example, we can see it's spending time on “*sending data*”. This means, the thread is reading and processing rows for a SELECT (https://dev.mysql.com/doc/refman/5.7/en/select.html) statement, and sending data to the client. Because operations occurring during this state tend to perform large amounts of disk access (reads), it is often the longest-running state over the lifetime of a given query.”Lets’ find out why it’s doing large amount of disk reads.
 
 
 ## 3. Review available indexes
