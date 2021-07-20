@@ -337,20 +337,13 @@ From the counter metrics, you can notice, earlier the number of rows scanned is 
 
 <span class="image">![Perf Review](P.I_review_counter_after_index.png?raw=true)</span>
 
-Earlier there were sessions exceeding **max vCPUs** however now the execution was rather quick and there is no bottleneck on the CPU. This also means our solution worked *without scaling up* the instance.
+Earlier there were sessions exceeding **max vCPUs** however now the execution was rather quick and there is no bottleneck on the CPU. This also means the solution worked *without scaling up* the instance.
 
 <span class="image">![Perf Review](P.I_review_DBload_after_index.png?raw=true)</span>
 
-We can also see from the top SQL, the queries which appeared before adding indexes are not appearing anymore. This indicates that indexes helps those queries in consuming less resources and therefore they do not appear as top SQL queries.
+From the top SQL, the queries which appeared before adding indexes are not appearing anymore. This indicates that indexes helps those queries in consuming less resources and therefore they do not appear as top SQL queries.
 
 <span class="image">![Perf Review](P.I_review_top_after_index.png?raw=true)</span>
-
-We have used :
-* RDS monitoring tools like CW metrics, EM monitoring and OS Processlist to understand the workload pattern
-* RDS performance monitoring tools like Performance Insights and its counters to understand the workload
-* RDS MySQL logs and AWS tools like CW logs and insights to identify the slow query logs and understand the pattern of  queries.
-* MySQL processlist, innodb status, locking info,Explain plan and profile to analyze the slow queries we captured above
-* Fine tune by adding indexes to improve the performance without rewriting the query or rewriting the app.
 
 
 ## 6. Optional: Diagnose issues using the MySQL Performance Schema
@@ -455,3 +448,11 @@ SELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_quer
 
 
 With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
+
+**Summary:**
+
+You have used
+
+* MySQL  Explain plan and profile to analyze the slow queries captured above.
+* Fine tune by adding indexes to improve the performance without rewriting the query or rewriting the app.
+* Optional: MySQL processlist, innodb status, locking info to understand the engine activity.
