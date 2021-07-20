@@ -323,9 +323,10 @@ For the queries listed above in the previous section, this section contains indi
 
 ## 10. Summary
 
-In this exercise you have learnt
+In this exercise you have use
 
-* how to use various RDS monitoring tools to understand the database workload.
-* how to capture slow query logs using RDS console, AWS CLI, CloudWatchLogs and Percona pt-query-digest.
+*  RDS monitoring tools like CloudWatch Metrics, Enhanced Monitoring to understand the database workload.
+*  RDS performance monitoring tools like Performance Insights and its counters to understand the workload.
+*  MySQL slow query logs using RDS console, AWS CLI, CloudWatch logs, log insights and Percona pt-query-digest to understand the pattern of  queries.
 
 If you are interested in learning what to do with the captured slow query logs, please proceed to the next lab: [Analyze SQL Query Performance](/provisioned/perf-analysis/).
