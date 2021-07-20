@@ -62,7 +62,7 @@ END$$
 DELIMITER ;
 ```
 
-Next, load an initial data set by importing data from an Amazon S3 bucket(fix the bucket):
+Next, load an initial data set by importing data from an Amazon S3 bucket:
 
 ```sql
 LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anomalies.csv'
@@ -85,12 +85,12 @@ $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@
 
 ??? tip  " In production systems, you can change the values for **long_query_time** in multiple iterations eg. 10 to 5 and then 5 to 3 and so on".  
 
-Before proceeding further, please ensure the output looks like above.When completed, exit the MySQL command line:
+Before proceeding further, please ensure the output looks like above. When completed, exit the MySQL command line:
 
 ```shell
 quit;
 ```
-*Optional:* There are other parameters and you can read about **[log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements)**.
+*Optional:* There are other useful parameters like **[log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements)**.
 
 ## 3. Run a sample workload
 
@@ -103,7 +103,7 @@ This script will take about **4~5** minutes to complete.
 
 ## 4. Monitor database performance using Amazon CloudWatch Metrics
 
-You can monitor DB instances using Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick CloudWatch metrics from Monitoring.
+To monitor DB instances you can use Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick CloudWatch metrics from Monitoring.
 
 Although all the metrics are important to monitor, the base metrics like *CPU, DB connections, write latency,* *Read latency* etc are spiking up during this workload. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period to understand the overall workload and its impact on the database.
 
@@ -226,7 +226,7 @@ You can download the logs via *console* or *CLI* using [download-db-log-file-por
 Slow logs are great for troubleshooting but viewing/downloading individual logs could be time consuming. Also the logs could get rotated(if log_output= FILE) periodically. In addition to viewing and downloading DB instance logs from the console, you can *publish* logs to Amazon CloudWatch Logs. With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
 
 If the DB cluster was created automatically, you can see that the export CloudWatch logs option is already enabled.
-This can be verified by going to the RDS console, under cluster *configuration→ Published logs* like below. Please proceed to next step only if you see slow query in it.However if you are creating it manually please make sure you enable this option by using RDS console before proceeding further.
+This can be verified by going to the RDS console, under cluster *configuration→ Published logs* like below. Please proceed to next step only if you see slow query in it.However if you are creating the cluster manually please make sure you enable this option by modifying the database instance using RDS console before proceeding further.
 
 <span class="image">![CloudWatchL](CWL1.png?raw=true)</span>
 
@@ -265,15 +265,15 @@ This query parses the slow query logs and captures the individual fields like *T
 
 <span class="image">![CloudWatchL](CWL_slow_query.png?raw=true)</span>
 
-The queries listed are the offending queries which takes longer than the *long_query_time*. We could see around 100+ entries in the last 30 minutes.You can select any query to expand to find more information about it.
+The queries listed are the offending queries which takes longer than the *long_query_time*. You can see there are around 100+ entries in the last 30 minutes.You can select any query to expand to find more information about it.
 
 <span class="image">![CloudWatchL](CWL_slow_query_expand.png?raw=true)</span>
 
-You can also export the results to *csv* for easier analysis.For now let’s call it as *slow_query_log2*.
+You can also export the results to *csv* for easier analysis.For now call it as *slow_query_log2*.
 
 ## 9. Optional: Process slow query logs with Percona's pt-query-digest
 
-*One challenge is that it requires manual effort or some automation technique to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
+*One challenge is that it requires manual or some automation effort to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
 Disclaimer: Percona pt-query-digest is a third party software licensed under GNU so please use [official documentation](https://www.percona.com/doc/percona-toolkit/2.0/pt-query-digest.html) for reference.
 
@@ -323,9 +323,9 @@ For the queries listed above in the previous section, this section contains indi
 
 ## 10. Summary
 
-In this exercise
+In this exercise you have learnt
 
-* you have have used various RDS monitoring tools to understand the database workload.
-* You have slow query logs captured using RDS console, AWS CLI, CloudWatchLogs and Percona pt-query-digest.
+* how to use various RDS monitoring tools to understand the database workload.
+* how to capture slow query logs using RDS console, AWS CLI, CloudWatchLogs and Percona pt-query-digest.
 
 If you are interested in learning what to do with the captured slow query logs, please proceed to the next lab: [Analyze SQL Query Performance](/provisioned/perf-analysis/).
