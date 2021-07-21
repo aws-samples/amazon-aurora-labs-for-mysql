@@ -18,24 +18,26 @@ This lab requires the following prerequisites:
 
 * [Observe and Identify SQL Performance Issues](/provisioned/pref-observability/)
 
-
 ## 1. Analyze queries using MySQL's EXPLAIN
 
 In this section, you will learn how to investigate the slow queries (captured in the previous sections) with the help of *EXPLAIN* and *PROFILE*. So far you should have *3 slow_query_log* files and for the purpose of the lab, please use *slow_query_log3*. *You may also use *slow_query_log1* or *slow_query_log2* but you need to identify the *unique* queries across the logs*. Regardless once identified, the slow query log file should contain the below queries.
 
 For the purpose of the lab, call this as *slow_query_final.log*.
 
-```sql
-[Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
-[Q2] CALL insert_temp ;
+??? tip "slow_query_final.log"
+
+    ```shell
+    [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
+    [Q2] CALL insert_temp ;
     INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
     DELETE from mylab.weather  where serialid=key_value;
-[Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
-[Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-[Q5] SELECT sql_no_cache station_name, count(type) type_of_weather FROM weather WHERE type = 'Strong Cold';
-```
+    [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
+    [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
+    ```
 
-*Optional:* You can also go ahead and run the above queries individually on the terminal and see the individual response time.
+
+!!! tip "Finding response time"
+  You can also go ahead and run the above queries individually on the terminal and see the individual response time.
 
 The [EXPLAIN](https://dev.mysql.com/doc/refman/5.7/en/explain.html) statement provides information about how MySQL executes statements. EXPLAIN works with [SELECT](https://dev.mysql.com/doc/refman/5.7/en/select.html), [DELETE](https://dev.mysql.com/doc/refman/5.7/en/delete.html), [INSERT](https://dev.mysql.com/doc/refman/5.7/en/insert.html), [REPLACE](https://dev.mysql.com/doc/refman/8.0/en/replace.html), and [UPDATE](https://dev.mysql.com/doc/refman/8.0/en/update.html) statements. Your goals are to recognize the aspects of the [EXPLAIN]((https://dev.mysql.com/doc/refman/5.7/en/explain.html) plan that indicate a query is optimized well, and to learn the SQL syntax and indexing techniques to improve the plan if you see some inefficient operations.
 
@@ -64,7 +66,8 @@ In this example, its evident that the estimation of **rows to be scanned** is ve
 
 *To learn more about EXPLAIN plan outputs you can refer to [link](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)*.*
 
-*Hint:* you can also use [explain format=json](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)* if you are interested in understanding how subqueries are materialized.
+!!! tip "EXPLAIN as json"
+  You can also use [explain format=json](https://dev.mysql.com/doc/refman/5.7/en/explain-output.html)* if you are interested in understanding how subqueries are materialized.
 
 Earlier investigations says that query[5] is slow and P.I also suggested this query was one of the top consumers of resources. To investigate where this query is spending its time you can make use of [PROFILE](https://dev.mysql.com/doc/refman/5.7/en/show-profile.html).
 
@@ -74,7 +77,8 @@ Earlier investigations says that query[5] is slow and P.I also suggested this qu
 
 The following example demonstrates how to use [Performance Schema](https://dev.mysql.com/doc/refman/5.7/en/performance-schema.html) statement events and stage events to retrieve data comparable to profiling information provided by SHOW PROFILES and SHOW PROFILE statement.
 
-hint: You can learn more about how to performance schema at the bottom of this exercise.
+!!! tip "performance_schema exercise"
+  You can learn more about how to performance schema at the bottom of this exercise.
 
 Ensure that **statement** and **stage instrumentation** is enabled by updating the **setup_instruments** table. Some instruments may already be enabled by default.
 
@@ -102,7 +106,6 @@ SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and 
 ```
 <span class="image">![profile_query](PI_prof_query.png?raw=true)</span>
 
-
 Identify the EVENT_ID of the statement by querying the events_statements_history_long table. This step is similar to running SHOW PROFILES to identify the Query_ID. The following query produces output similar to SHOW PROFILES:
 
 ```SQL
@@ -117,12 +120,12 @@ SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FRO
 ```
 <span class="image">![profile_query_result](PI_prof_result.png?raw=true)</span>
 
-**Note:** The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
-
-```SQL
-mysql> truncate performance_schema.events_stages_history_long;
-mysql> truncate performance_schema.events_statements_history_long;
-```
+??? tip "More control over performance_schema"
+  The setup_actors table can be used to limit the collection of historical events by host, user, or account to reduce runtime overhead and the amount of data collected in history tables. If you want fresh counters you can truncate and start the collection again like below:
+  ```SQL
+  mysql> truncate performance_schema.events_stages_history_long;
+  mysql> truncate performance_schema.events_statements_history_long;
+  ```
 
 **Using SHOW PROFILE (Deprecated)**
 
@@ -187,21 +190,23 @@ Empty set (0.01 sec)
 ```
 You can see that *mylab.weather* table does not have any primary keys.
 
+??? tip "Slow query logs"
 
-```shell
-[Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
-[Q2] CALL insert_temp ;
+    ```shell
+    [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
+    [Q2] CALL insert_temp ;
     INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
     DELETE from mylab.weather  where serialid=key_value;
-[Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
-[Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-```
+    [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
+    [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
+    ```
 
 ## 4. Tune a query
 
 In real world, based on the type of wait events, schemas, resource utilisation the tuning approach varies. There are many ways to take appropriate corrective actions like tune the server parameters, tune a query by re-writing it, tune the database schemas or even tune the code(App,DB).
 
-*Disclaimer: Since this is a lab environment, we have used our liberty to add indexes on the schema for tuning exercise as this does not require any modification to the app or query.However in real world, each use case differs and therefore its essential to fully understand the columns and its purpose and how your business logic is going to use it before adding indexes. Always test the changes on test/staging environment before making it into production environment.*
+??? tip "Disclaimer"
+  Since this is a lab environment, we have used our liberty to add indexes on the schema for tuning exercise as this does not require any modification to the app or query.However in real world, each use case differs and therefore its essential to fully understand the columns and its purpose and how your business logic is going to use it before adding indexes. Always test the changes on test/staging environment before making it into production environment.
 
 In this section, we'll take the queries from the  *slow_query_final.log* and use EXPLAIN plan to understand the bottleneck and how to fix them. We will also compare the **execution plans** before and after fixing queries.
 
@@ -287,7 +292,7 @@ By adding different indexes to the queries from the *slow_query_final.log,* you 
 
 **Re-visit PROFILE**
 
-While we are it, lets revisit the *PROFILING* to see if it has been changed after adding the index for [q5]. We already captured the profiling for [*Q4*] in the previous section . Let’s capture it again using the below query on the terminal.
+You can revisit the *PROFILING* to see if it has been changed after adding the index for [q5]. We already captured the profiling for [*Q4*] in the previous section . Let’s capture it again using the below query on the terminal.
 
  *Query Profiling using Performance Schema*
 
@@ -306,7 +311,6 @@ SET profiling = 0;
 Once executed, this should look like below.
 
 <span class="image">![Tune](profile_after_index.png?raw=true)</span>
-
 
 In both cases, the query which was spending time on *sending data* is not seen anymore.Compared to earlier snapshot, the query is spending less time on “sending data“, which indicates the disk reads are much faster since it has to scan very few rows because of index.
 
@@ -354,9 +358,10 @@ As a background, performance insights uses performance schema and other global c
 
 *P_S* feature works by counting and timing server events and gathers in memory and expose them through a collection of tables in the performance schema database.
 
-Let’s use [events_statements_summary_global_by_event_name](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html) and [events_statements_summary_by_digest](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html)  table to capture top queries, events etc
+Let’s use [events_statements_summary_global_by_event_name](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html) and [events_statements_summary_by_digest](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html)  table to capture top queries, events etc.
 
-*Note:* Performance Schema tables are kept in memory and their contents will be lost in the event of server reboot.
+!!! tip "Note"
+  Performance Schema tables are kept in memory and their contents will be lost in the event of server reboot.
 
 **Syntax (top 5, wait events)**
 
@@ -381,7 +386,8 @@ select digest_text as normalized_query, count_star as all_occurr, CONCAT(ROUND(s
 ```sql
 SELECT schema_name, substr(digest_text, 1, 100) AS statement, count_star AS cnt, sum_select_scan AS full_table_scan FROM performance_schema.events_statements_summary_by_digest WHERE sum_select_scan > 0 and schema_name iS NOT NULL ORDER BY sum_select_scan desc limit 5;
 ```
-*Note:* Before every load, to get fresh counters you can consider truncating the performance schema tables that you want to query.
+!!! tip "Fresh counters"
+  Before every load, to get fresh counters you can consider truncating the performance_schema tables that you want to query.
 
 **Syntax (top 5 queries for which Temporary tables spilled to disk)**
 
@@ -389,7 +395,7 @@ SELECT schema_name, substr(digest_text, 1, 100) AS statement, count_star AS cnt,
 mysql> SELECT schema_name, substr(digest_text, 1, 100) AS statement,count_star AS cnt, sum_created_tmp_disk_tables AS tmp_disk_tables,sum_created_tmp_tables AS tmp_tables FROM performance_schema.events_statements_summary_by_digest WHERE sum_created_tmp_disk_tables > 0 OR sum_created_tmp_tables >0 and schema_name='mylab' ORDER BY tmp_disk_tables desc limit 5;
 ```
 
-*Note:* To learn more about *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation).
+!!! tip "To learn more about *Statement Digest aggregation rules* please refer [official doc](https://dev.mysql.com/doc/refman/5.7/en/performance-schema-statement-summary-tables.html#statement-summary-tables-aggregation)."
 
 ## 7. Optional: Understand the workload using the process list
 
@@ -416,7 +422,6 @@ Output should look something like below
 <span class="image">![InnoDB Status](InnoDB_stat1.png?raw=true)</span>
 
 <span class="image">![InnoDB Status](InnoDB_stat2.png?raw=true)</span>
-
 
 <span class="image">![InnoDB Status](InnoDB_stat3.png?raw=true)</span>
 
@@ -445,7 +450,6 @@ SELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_quer
 ```
 
 <span class="image">![Optional](opt1.png?raw=true)</span>
-
 
 With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter innodb_print_all_deadlocks to have all deadlocks in InnoDB recorded in mysqld error log.
 
