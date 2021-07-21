@@ -83,14 +83,16 @@ $ mysql -h [cluster endpoint]-u$DBUSER -p"$DBPASS" -e"select @@slow_query_log,@@
 
 <span class="image">![long query output](long_query_out.png?raw=true)</span>
 
-??? tip  " In production systems, you can change the values for **long_query_time** in multiple iterations eg. 10 to 5 and then 5 to 3 and so on".  
+??? tip  "For production environment"
+  In production systems, you can change the values for **long_query_time** in multiple iterations eg. 10 to 5 and then 5 to 3 and so on.
 
 Before proceeding further, please ensure the output looks like above. When completed, exit the MySQL command line:
 
 ```shell
 quit;
 ```
-*Optional:* There are other useful parameters like **[log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements)**.
+!!! tip "Other useful parameters related to slow_log"
+  There are other useful parameters like [log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements).
 
 ## 3. Run a sample workload
 
@@ -120,7 +122,7 @@ In general,
 
 <span class="image">![CloudWatch Metrics](DML_throughput.png?raw=true)</span> <span class="image">![CloudWatch Metrics](DML_latency.png?raw=true)</span>
 
-*Note:*To learn more about how to plan for Aurora monitoring and Performance guidelines please refer our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/MonitoringOverview.html).
+To learn more about how to plan for Aurora monitoring and Performance guidelines please refer our [doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/MonitoringOverview.html).
 
 DMLLatency metric reveals a spike at 22:57, when the metric reached 4442 milliseconds. In other words, 4.4 seconds is the average latency of all DML statements that finished during this 1-minute period. 4 seconds is significantly higher than the baseline latency observed before the spike, therefore it’s worth investigating.
 
@@ -132,7 +134,7 @@ A useful piece of information readily available from DMLThroughput metric . At 2
         s
 ```
 
-**Optional:** Once the performance baseline is understood you can setup alarms against CloudWatch metrics when it exceeds the baseline for corrective actions.
+!!! tip "Once the performance baseline is understood you can setup alarms against CloudWatch metrics when it exceeds the baseline for corrective actions."
 
 ## 5. Monitor database performance using Amazon RDS Enhanced Monitoring
 
@@ -144,7 +146,7 @@ If you have Enhanced Monitoring option enabled for the database instance, you ca
 
 From the above, you can see when the workload kicked in, there is a sharp *spike* in CPU driven by *User* and *drop* in Free memory. You can also see the *Load average* of the DB instance increased during this period.
 
-**Note:** You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage).
+!!! tip "You will see additional counters showing metrics captured at the guest OS level as well as local storage (not Aurora storage)."
 
 ## 6. Dive deeper with Performance Insights
 
@@ -192,7 +194,8 @@ Once saved, the session activity for Top SQL would look like below. You should b
 
 <span class="image">![SQL troubleshooting](P.I_expand.png?raw=true)</span>
 
-*Note:* To see the queries inside the stored procedure, please click and expand the + icon.
+!!! tip "What's inside stored procedure"
+  To see the queries inside the stored procedure, please click and expand the + icon.
 
 You can note down the top SQL queries but please keep in mind not all TOP SQL queries are slow queries it only means that these queries are consuming the load at given point of time.
 
@@ -250,7 +253,8 @@ Under *Log streams*, pick your current *writer* node (since that is where the sc
 
 <span class="image">![CloudWatchL](CWL_slow_query_select.png?raw=true)</span>
 
-*Note:* The default log retention period is *Never Expire* however this can be changed*. Please see* [Change log data retention in CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html).
+!!! tip "Log retention"
+  The default log retention period is *Never Expire* however this can be changed*. Please see* [Change log data retention in CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html).
 
 To increase the readability of these logs, you are going to use [Insights](https://eu-west-1.console.aws.amazon.com/rds/home?region=eu-west-1#database:id=auroralab-mysql-cluster;is-cluster=true;tab=logs-and-events). Click on the *insights* and select your log group in the drop down list. For slow queries, it will be in the format of /aws/rds/cluster/auroralab-mysql-cluster/slowquery. In the text field, enter the following insights query by replacing the <writer node>
 
@@ -275,7 +279,8 @@ You can also export the results to *csv* for easier analysis.For now call it as 
 
 *One challenge is that it requires manual or some automation effort to find unique patterns/queries from the slow queries logs and it could be challenging with thousands of logs. In order to find the unique queries, there are several third party tools and one of them is percona’s pt-query-digest which is helpful to solve this problem.*
 
-Disclaimer: Percona pt-query-digest is a third party software licensed under GNU so please use [official documentation](https://www.percona.com/doc/percona-toolkit/2.0/pt-query-digest.html) for reference.
+??? tip "Disclaimer:"
+  Percona pt-query-digest is a third party software licensed under GNU so please use [official documentation](https://www.percona.com/doc/percona-toolkit/2.0/pt-query-digest.html) for reference.
 
 *pt-query-digest * is a open source tool from percona which analyzes MySQL queries from slow, general, and binary log files. You can learn more about this tool and download it from [here](https://www.percona.com/doc/percona-toolkit/LATEST/installation.html).
 
