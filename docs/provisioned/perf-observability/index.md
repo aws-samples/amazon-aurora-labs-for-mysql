@@ -92,7 +92,7 @@ Before proceeding further, please ensure the output looks like above. When compl
 quit;
 ```
 !!! tip "Other useful parameters related to slow_log"
-  There are other useful parameters like [log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements).
+    There are other useful parameters like [log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements).
 
 ## 3. Run a sample workload
 
@@ -174,11 +174,11 @@ Click Update graph and once done, the counter metrics should look like below. Yo
 
 Let's look at the DB wait events to understand the workload. You can see different wait events on the right hand side. Amazon Aurora MySQL specific *wait events* are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
-<span class="image">![P.I](P.I_DB_Load_1.png?raw=true)</span>
+<span class="image">![Performance_schema_Load](P.I_DB_Load_1.png?raw=true)</span>
 
 You can also change the view of *DB Load section* from “Slice by wait“ to ”Slice by SQL“ to understand the AAS of different queries during this time. You can also see the the max number of available *vCPUs* is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption.
 
-<span class="image">![P.I](P.I_DB_Load_2.png?raw=true)</span>
+<span class="image">![Performance_schema_Load2](P.I_DB_Load_2.png?raw=true)</span>
 
 **Review additional information from the session activity:**
 
