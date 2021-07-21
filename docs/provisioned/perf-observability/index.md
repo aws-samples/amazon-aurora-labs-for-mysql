@@ -282,7 +282,7 @@ You can also export the results to *csv* for easier analysis.For now call it as 
 ??? tip "Disclaimer:"
   Percona pt-query-digest is a third party software licensed under GNU so please use [official documentation](https://www.percona.com/doc/percona-toolkit/2.0/pt-query-digest.html) for reference.
 
-*pt-query-digest * is a open source tool from percona which analyzes MySQL queries from slow, general, and binary log files. You can learn more about this tool and download it from [here](https://www.percona.com/doc/percona-toolkit/LATEST/installation.html).
+**pt-query-digest** is a open source tool from percona which analyzes MySQL queries from slow, general, and binary log files. You can learn more about this tool and download it from [here](https://www.percona.com/doc/percona-toolkit/LATEST/installation.html).
 
 In short, this tool summaries the top queries based on the input log file ranked by response time. This is a two step process.
 
