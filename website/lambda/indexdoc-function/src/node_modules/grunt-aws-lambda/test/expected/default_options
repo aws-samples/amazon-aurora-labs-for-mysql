@@ -1,0 +1,11 @@
+Running "lambda_invoke:default_options" (lambda_invoke) task
+
+value1 = value1
+value2 = value2
+value3 = value3
+
+Success!  Message:
+------------------
+Hello World
+
+Done, without errors.
