@@ -67,14 +67,11 @@ LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anom
 INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
 ```
 
-Data loading may take several minutes, you will receive a successful query message once it completes.
+Data loading may take several minutes, you will receive a successful query message once it completes. Please proceed to next lab without exiting the mysql terminal.
 
 ## 2. Verify the slow query log is configured correctly
 
 In many cases the slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are **[slow_query_log](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_slow_query_log), [long_query_time](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_long_query_time) and [log_output](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_output)** .
-
-!!! error "Lab change"
-    I changed the instruction below, because according to the lab flow, you were still connected to the mysql client after the previous command, so using the old command would have resulted in an error because you were not on the linux shell.
 
 While still connected to the database, run the query below:
 
@@ -103,11 +100,11 @@ Next, please run the following command to generate a workload, replacing the ==[
 ```shell
 python3 weather_perf.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
-This script will take about **4~5** minutes to complete.
+This script will take about **4~5** minutes to complete but you do not need to wait to proceed further.
 
 ## 4. Monitor database performance using Amazon CloudWatch Metrics
 
-To monitor DB instances you can use Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. Open the [Amazon RDS service console](https://console.aws.amazon.com/rds/home) and click on [Databases](https://console.aws.amazon.com/rds/home#databases:) from left navigation pane. From list of databases click on auroralab-mysql-node-1 under *DB identifier*. On the database details view, click on the *Monitoring* tab and pick CloudWatch metrics from Monitoring.
+To monitor DB instances you can use Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. While the script is running, open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring" target="_blank">Amazon RDS service console</a> at the DB cluster details in a new tab, if not already open.Find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance CloudWatch metrics.
 
 Although all the metrics are important to monitor, the base metrics like *CPU, DB connections, write latency,* *Read latency* etc are spiking up during this workload. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period to understand the overall workload and its impact on the database.
 
@@ -142,7 +139,7 @@ A useful piece of information readily available from DMLThroughput metric . At 2
 
 ## 5. Monitor database performance using Amazon RDS Enhanced Monitoring
 
-You must have noticed that the CloudWatch metrics didn’t start populating right away as it takes 60 seconds interval period to capture data points. However to monitor and understand OS/host level metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, [Enhanced Monitoring (EM)](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.CloudWatchLogs.html) should help.
+You must have noticed that the CloudWatch metrics didn’t start populating right away as it takes 60 seconds interval period to populate data points. However to monitor and understand OS/host level metrics eg. if the CPU is consumed by user or system, free/active memory for as granular as 1 second interval, [Enhanced Monitoring (EM)](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.CloudWatchLogs.html) should help.
 
 If you have Enhanced Monitoring option enabled for the database instance, you can view the metrics by selecting the **node(writer)** -> **Monitoring** -> select **Enhanced Monitoring** option from the Monitoring **dropdown** list. For more information about enabling and using the Enhanced Monitoring feature, please refer to the [Enhanced Monitoring doc](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_Monitoring.OS.html).
 
@@ -163,7 +160,7 @@ The dashboard is divided into 3 sections(Counter Metrics, Database Load and Top 
 
 **Add additional counters:**
 
-Let’s start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running etc and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CloudWatch metrics.
+You can start by adding counters in the *Counter Metrics* under Manage Metrics. This collects metrics from *DB* like innodb_rows_read, threads_running etc and *OS* metrics like cpuUtilization total, user etc which adds valuable information on top of CloudWatch metrics.
 
 <span class="image">![Performance Insights](counter_manage.png?raw=true)</span>
 
@@ -236,7 +233,7 @@ Slow logs are great for troubleshooting, but viewing or downloading individual l
 
 
 !!! error "Lab issue"
-    We have students enable log publication even if they create the cluster manually in the Create DB Cluster lab. Might be worth removing the "if the cluster was created automatically... if not..." part and just say that the clsuter should already have log publication enabled, but they can verify that by checking the console.
+    We have students enable log publication even if they create the cluster manually in the Create DB Cluster lab. Might be worth removing the "if the cluster was created automatically... if not..." part and just say that the cluster should already have log publication enabled, but they can verify that by checking the console.
 
 If the DB cluster was created automatically, you can see that the export CloudWatch logs option is already enabled.
 This can be verified by going to the RDS console, under cluster **Configuration** → **Published logs** like below. Please proceed to next step only if you see slow query in it. However if you are creating the cluster manually please make sure you enable this option by modifying the database instance using RDS console before proceeding further.
@@ -280,7 +277,7 @@ This query parses the slow query logs and captures the individual fields like `T
 
 <span class="image">![CloudWatchL](CWL_slow_query.png?raw=true)</span>
 
-Only the sueries that take longer than the parameter value of `long_query_time` (see above) will be listed. You can see there are around 100+ entries in the last 30 minutes. You can select any query to expand to find more information about it.
+Only the queries that take longer than the parameter value of `long_query_time` (see above) will be listed. You can see there are around 100+ entries in the last 30 minutes. You can select any query to expand to find more information about it.
 
 <span class="image">![CloudWatchL](CWL_slow_query_expand.png?raw=true)</span>
 
@@ -322,7 +319,8 @@ $ pt-query-digest <slow_log_file.txt>
 ```shell
 Column        Meaning
 ============  ==========================================================
-Rank          The query's rank within the entire set of queries analyzedQuery ID      The query's fingerprint
+Rank          The query's rank within the entire set of queries analyzed
+Query ID      The query's fingerprint
 Response time The total response time, and percentage of overall total
 Calls         The number of times this query was executed
 R/Call        The mean response time per execution
@@ -338,7 +336,7 @@ For the queries listed above in the previous section, this section contains indi
 
 ## 10. Summary
 
-In this exercise you have use
+In this exercise you have used
 
 *  RDS monitoring tools like CloudWatch Metrics, Enhanced Monitoring to understand the database workload.
 *  RDS performance monitoring tools like Performance Insights and its counters to understand the workload.
