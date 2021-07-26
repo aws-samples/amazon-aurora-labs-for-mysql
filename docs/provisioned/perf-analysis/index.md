@@ -453,7 +453,7 @@ SELECT r.trx_id waiting_trx_id, r.trx_mysql_thread_id waiting_thread, r.trx_quer
 
 With Aurora blocking transactions can be monitored through BlockedTransactions and deadlocks through [Deadlocks CW metrics](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.Monitoring.Metrics.html) which might be helpful. You can enable the parameter `innodb_print_all_deadlocks` to have all deadlocks in InnoDB recorded in mysqld error log.
 
-**Summary:**
+***Summary:***
 
 You have used
 
