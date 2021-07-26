@@ -26,7 +26,7 @@ This lab requires the following prerequisites:
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect. If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
 ```shell
-mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+  mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Once connected to the database, please use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
@@ -63,8 +63,7 @@ DELIMITER ;
 Next, load an initial data set by importing data from an Amazon S3 bucket:
 
 ```sql
-LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anomalies.csv'
-INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
+  LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anomalies.csv' INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
 ```
 
 Data loading may take several minutes, you will receive a successful query message once it completes. Please proceed to next lab without exiting the mysql terminal.
@@ -98,7 +97,7 @@ quit;
 Next, please run the following command to generate a workload, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
 ```shell
-python3 weather_perf.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
+  python3 weather_perf.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 This script will take about **4~5** minutes to complete but you do not need to wait to proceed further.
 
@@ -145,7 +144,7 @@ If you have Enhanced Monitoring option enabled for the database instance, you ca
 
 <span class="image">![EM](EM.png?raw=true)</span>
 
-From the above, you can see when the workload kicked in, there is a sharp *spike* in CPU driven by *User* and *drop* in Free memory. You can also see the *Load average* of the DB instance increased during this period.
+From the above, you can see when the workload kicked in, there is a sharp `spike` in CPU driven by `User` and `drop` in Free memory. You can also see the `Load average` of the DB instance increased during this period.
 
 !!! tip "Additional metrics available"
     You will see additional counters showing metrics captured at the guest OS level as well as local, temporary storage (not the Aurora storage volume).
@@ -222,7 +221,11 @@ You should see slow queries in the console. The log file content will have the f
 
 To learn more about slow queries, please check the [MySQL documentation](https://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html).
 
-You can download the logs via the AWS Management Console or the AWS CLI using the [download-db-log-file-portion](https://docs.aws.amazon.com/cli/latest/reference/rds/download-db-log-file-portion.html) API call. For now, we'll call this log as `slow_query_log1`.
+You can download the logs via the AWS Management Console or the AWS CLI using the [download-db-log-file-portion](https://docs.aws.amazon.com/cli/latest/reference/rds/download-db-log-file-portion.html) API call.
+
+<span class="image">![PTQ](view_slow_logs.png?raw=true)</span>
+
+ For now, we'll call this log as `slow_query_log1`.
 
 !!! note "Log rotation"
     Log gets rotated hourly so please ensure the logs are downloaded for the correct workload period.
@@ -311,7 +314,7 @@ First, you need to download the **slow query logs** from the database instance. 
 Once downloaded, you can run the pt-query-digest like below using the slow query log file you have just downloaded. Please ensure the log file name is correct, based on the file you .
 
 ```shell
-$ pt-query-digest <slow_log_file.txt>
+  pt-query-digest <slow_log_file.txt>
 ```
 
 (1) This is a highly summarized view of the unique events in the detailed query report that follows. It contains the following columns and basically ranks the top slow running queries and rank them for readability:
@@ -330,7 +333,7 @@ Item          The distilled query
 
 <span class="image">![PTQ](PTQ2.png?raw=true)</span>
 
-For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like `concurrency` (calculated as a function of the timespan and total `Query_time`), `exec time`, `rows sent`, `rows examine` etc. This also provides the number of occurrences of a query in the slow log. You can collect these slow logs in a file and call them as `slow_query_log3`.
+For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like `concurrency` calculated as a function of the timespan and total `Query_time`, `exec time`, `rows sent`, `rows examine` etc. This also provides the number of occurrences of a query in the slow log. You can collect these slow logs in a file and call them as `slow_query_log3`.
 
 <span class="image">![PTQ](PTQ3.png?raw=true)</span>
 
