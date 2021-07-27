@@ -79,10 +79,11 @@ Earlier investigations says that query[5] is slow and P.I also suggested this qu
 
     Ensure that `statement` and `stage instrumentation` is enabled by updating the `setup_instruments` table. Some instruments may already be enabled by default.
 
+        ```sql
         UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%statement/%';
 
         UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
-
+        ```
     <span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
 
     Ensure that `events_statements_` and `events_stages_` consumers are enabled. Some consumers may already be enabled by default.
