@@ -25,8 +25,8 @@ virtualenv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
 
-npm install -g npm
-npm install -g grunt-cli
+npm install -g npm --registry=https://registry.npmjs.org/
+npm install -g grunt-cli --registry=https://registry.npmjs.org/
 ```
 
 Install project dependencies (from [project root] folder):
