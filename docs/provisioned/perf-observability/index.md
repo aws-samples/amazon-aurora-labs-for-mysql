@@ -175,11 +175,11 @@ Click **Update graph** and once done, the counter metrics should look like below
 
 Let's look at the DB wait events to understand the workload. You can see different wait events on the right hand side. Amazon Aurora MySQL specific **wait events** are documented in the [Amazon Aurora MySQL Reference guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents).
 
-<span class="image">![Performance_schema_Load](P.I_DB_Load_1.png?raw=true)</span>
+<span class="image">![Performance_schema_Load](P.I_DBload1.png?raw=true)</span>
 
 You can also change the view of **DB Load** section from `Slice by wait` to `Slice by SQL` to understand the AAS of different queries during this time. You can also see the the max number of available **vCPUs** is 2 but the current sessions exceeds the max vCPU and this in many cases would be driving factor for CPU/memory consumption.
 
-<span class="image">![Performance_schema_Load2](P.I_DB_Load_2.png?raw=true)</span>
+<span class="image">![Performance_schema_Load2](P.I_DBload2.png?raw=true)</span>
 
 **Review additional information from the session activity:**
 
@@ -246,7 +246,7 @@ This can be verified by going to the RDS console, under cluster **Configuration*
 !!! note "Enabling log export"
     To enable/disable these logs or add additional logs, you can click **Modify** on the top right of the panel → **Log exports** → check/uncheck preferred logs → **Continue** → **Modify cluster**.
 
-<span class="image">![CloudWatchL](CwL2.png?raw=true)</span>
+<span class="image">![CloudWatchL](CWL2.png?raw=true)</span>
 
 **View exported logs in CloudWatch**
 
@@ -339,7 +339,7 @@ For the queries listed above in the previous section, this section contains indi
 
 ## 10. Summary
 
-In this exercise you have used
+In this exercise you have used:
 
 *  RDS monitoring tools like CloudWatch Metrics, Enhanced Monitoring to understand the database workload.
 *  RDS performance monitoring tools like Performance Insights and its counters to understand the workload.
