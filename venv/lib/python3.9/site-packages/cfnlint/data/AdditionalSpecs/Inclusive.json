@@ -1,0 +1,59 @@
+{
+  "PropertyTypes": {
+    "AWS::CloudFront::Distribution.CustomErrorResponse": {
+      "ResponseCode": [
+        "ResponsePagePath"
+      ]
+    },
+    "AWS::CloudFront::Distribution.ViewerCertificate": {
+      "AcmCertificateArn": [
+        "SslSupportMethod"
+      ],
+      "IamCertificateId": [
+        "SslSupportMethod"
+      ]
+    }
+  },
+  "ResourceTypes": {
+    "AWS::ApplicationAutoScaling::ScalingPolicy": {
+      "ResourceId": [
+        "ScalableDimension",
+        "ServiceNamespace"
+      ],
+      "ScalableDimension": [
+        "ResourceId",
+        "ServiceNamespace"
+      ],
+      "ServiceNamespace": [
+        "ResourceId",
+        "ScalableDimension"
+      ]
+    },
+    "AWS::RDS::DBCluster": {
+      "MasterUsername": [
+        "MasterUserPassword"
+      ],
+      "MasterUserPassword": [
+        "MasterUsername"
+      ]
+    },
+    "AWS::RDS::DBInstance": {
+      "MasterUsername": [
+        "MasterUserPassword"
+      ],
+      "MasterUserPassword": [
+        "MasterUsername"
+      ]
+    },
+    "AWS::OpsWorks::Stack": {
+      "VpcId": [
+        "DefaultSubnetId"
+      ]
+    },
+    "AWS::EC2::SecurityGroup": {
+      "SecurityGroupEgress": [
+        "VpcId"
+      ]
+    }
+  }
+}

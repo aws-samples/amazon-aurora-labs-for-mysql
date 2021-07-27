@@ -30,6 +30,8 @@ The following labs are currently available, click on the relevant tab to see the
     R5 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
     R6 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
     R7 | [**Set up Database Activity Streams**](/provisioned/das/) | Recommended | Monitor your database activity by using Database Activity Streams.
+    R8 | [**Observe and Identify SQL Performance Issues**](/provisioned/perf-observability/) | Recommended | Leverage Amazon Aurora MySQL ecosystem tools to detect performance issues.
+    R9 | [**Analyze SQL Query Performance**](/provisioned/perf-analysis/) | Recommended | Troubleshoot SQL query performance using Amazon Aurora MySQL ecosystem tools.
 
 
 === "Serverless"
@@ -87,5 +89,7 @@ You do not need any special software on the computer you are using for these lab
 * [mysql-client](https://dev.mysql.com/doc/refman/5.6/en/programs-client.html) package. MySQL open source software is provided under the GPL License.
 * [sysbench](https://github.com/akopytov/sysbench) available using the GPL License.
 * [test_db](https://github.com/datacharmer/test_db) available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
+* [weather_data](https://query.data.world/s/jc734imun7wfihq6q5qeo45xvv5ezw) available using the Creative Commons Attribution-ShareAlike 4.0 International.
 * [Percona's sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Percona Toolkit](https://www.percona.com/doc/percona-toolkit/LATEST/index.html) available using the Apache License 2.0.
 * [Apache Superset](https://superset.apache.org/index.html) available using the Apache License 2.0.

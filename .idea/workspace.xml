@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b7b47353-1a21-4ab2-8220-e6fa8f31a7b9" name="Default Changelist" comment="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;docs/provisioned/SQL-perf-tuning/index.md">
+      <change afterPath="$PROJECT_DIR$/.idea/codestream.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/CW_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/InnoDB_stat1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/InnoDB_stat2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/InnoDB_stat3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_DB.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_DB_load_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_DB_load_2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_expand.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_review_DBload_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_review_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_review_counter_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/P.I_review_top_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/PI_prof_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/PI_prof_query.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/PI_prof_query_ID.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/PI_prof_result.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/PI_setup_consumers.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/PI_setup_instruments.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/Screenshot 2021-05-21 at 19.05.49.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/alter.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/console_slow_view.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_after_index_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_after_simple.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_before_After.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_before_index_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_before_simple.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_composite_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/explain_composite_before_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/index.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/opt1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/perf4.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/profile_after_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-analysis/profile_before_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/1-create.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/2-slow_query.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL4.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL5.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL6.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL7.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL8.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL_slow_query.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL_slow_query_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL_slow_query_expand.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/CWL_slow_query_select.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/DML_latency.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/DML_throughput.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/EM.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/EX1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_DB.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_DBload1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_DBload2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_Top_SQL_doing_more.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_counter.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_counter_split.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_doing_more.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_expand.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_expand_gear.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_expand_gear1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_expand_gear2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_load.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_manage.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/P.I_os.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/PF1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/PTQ1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/PTQ2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/PTQ3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T4.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T5.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T6.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T7.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T8.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/T9.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/console_opt_view.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/console_slow_view.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/counter_before_index.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/counter_manage.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/db-cpu.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/index.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/latency.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/long_query.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/long_query_out.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/opt1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/param_group.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/perf3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/perf5.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/perf6.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/perf7.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/session_manage.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/setup_slow_param.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/provisioned/perf-observability/view_slow_logs.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/prereqs/environment/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/prereqs/environment/index.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-clone/1-describe-cluster.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-clone/1-describe-instance.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-clone/2-checksum-clone.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-clone/3-checksum-clone-changed.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-clone/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-connect/1-connect-session.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-connect/1-session-manager.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-connect/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/2-create-stack-confirm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/2-stack-outputs.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/2-stack-status.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-actions.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-add-number.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-create.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-listing.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-multi-widget.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-single-widget.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-dash-source.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/cw-widget-setup.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-action-add.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-action-remove.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-add-region.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-primary-metrics.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-promoted.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-remove-global.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-cluster-secondary-endpoints.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-global-action-delete.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-instance-action-delete.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-gdb/rds-instance-delete-confirm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-create-database.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-engine-options.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-serverless-advconfig.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-serverless-arn.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-serverless-capacity.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-serverless-selection.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/1-serverless-settings.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/2-arn-secret.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/2-config-secret.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/2-create-secret.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/2-list-secrets.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/2-name-secret.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/2-rotate-secret.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-create/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-dash.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-policies-selected.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-policies.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-policy-json.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-policy-review.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-policy-success.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-role-review.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/1-iam-trust.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/2-lambda-basic.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/2-lambda-code.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/2-lambda-create.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/2-lambda-listing.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/2-lambda-save.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/3-lambda-event.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/3-lambda-results.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/3-lambda-test.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ams-srvless-data-api/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/secret-credentials.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/secret-details.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/secret-list.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/ssm-listing.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/ssm-select.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-connect/ssm-terminal.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/1-das-55.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-admins.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-configure.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-home.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-labels.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-listing.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-review.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/kms-users.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/rds-cluster-config-pane.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/rds-cluster-configuring.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/rds-cluster-detail-action.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/rds-cluster-detail-stop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/rds-das-confirm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-das/rds-das-stop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-dashboard.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-db-reboot-confirm.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-db-reboot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-param-groups-change-off.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-param-groups-change.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-param-groups-detail.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-param-groups-list-node.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-param-groups-list.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/apg-qpm/rds-param-groups-preview.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/cfn-stack-list.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/cfn-stack-outputs.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ee-dashboard.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ee-login.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ee-open-console.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/ee-outputs.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/win/index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/aware_failover.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/aware_failover.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/bank_deposit.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/bank_deposit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/das_reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/das_reader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/reader_loadtest.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/reader_loadtest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/simple_failover.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simple_failover.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/aurora_consolidated.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/lab_apg_base.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/lab_secondary.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/lab_template.yml" beforeDir="false" afterPath="$PROJECT_DIR$/templates/lab_template.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="ProjectId" id="1uZWgewHegGzeEmkHrmDcz6uV2W" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="com.google.cloudcode.ide_session_index" value="20210722_0000" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b7b47353-1a21-4ab2-8220-e6fa8f31a7b9" name="Default Changelist" comment="" />
+      <created>1624873708866</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1624873708866</updated>
+      <workItem from="1624873711286" duration="643000" />
+      <workItem from="1624882643130" duration="104000" />
+      <workItem from="1624886522405" duration="772000" />
+      <workItem from="1626913253676" duration="564000" />
+    </task>
+    <task id="LOCAL-00001" summary="using pycharm to update">
+      <created>1624873760719</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1624873760719</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;docs/provisioned/SQL-perf-tuning/index.md">
+      <created>1624873870913</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1624873870913</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;docs/provisioned/SQL-perf-tuning/index.md">
+      <created>1624873894916</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1624873894916</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;docs/provisioned/SQL-perf-tuning/index.md">
+      <created>1624873994573</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1624873994573</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="using pycharm to update" />
+    <MESSAGE value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;docs/provisioned/SQL-perf-tuning/index.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;docs/provisioned/SQL-perf-tuning/index.md" />
+  </component>
+</project>

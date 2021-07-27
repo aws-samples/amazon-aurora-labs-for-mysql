@@ -1,0 +1,145 @@
+/*
+Amazon Aurora Labs for MySQL
+Custom stylesheet
+
+Dependencies:
+none
+
+License:
+This sample code is made available under the MIT-0 license. See the LICENSE file.
+*/
+
+body {
+  color: #161e2d;
+}
+
+.md-header {
+  background-color: #232f3e;
+  border-bottom: 1px solid #161e2d;
+}
+
+.md-tabs {
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+  color: #161e2d;
+}
+
+.md-tabs__link {
+  font-size: .8rem;
+}
+
+.md-tabs__item {
+  margin-right: 15px;
+}
+
+.md-footer-nav {
+  background-color: #ffcc83;
+  color: #161e2d;
+}
+
+.md-footer-nav__direction {
+  color: #161e2d;
+}
+
+.md-footer-meta {
+  background-color: #232f3e;
+  border-top: 1px solid #161e2d;
+}
+
+.md-header-nav__source {
+    margin-left: 0;
+}
+
+.md-nav__link {
+  color: #232f3e;
+}
+
+.md-nav__link--active {
+  color: #ff9900;
+}
+
+.show {
+    display: block;
+}
+
+.image > img {
+    display: block;
+    margin: 0 auto;
+    padding: 0;
+    border: 2px solid #ffcc83;
+}
+
+.aurora {
+  margin: 0 auto;
+  width: 200px;
+}
+.architecture {
+  margin: 0 auto;
+  width: 550px;
+}
+
+/*
+@media only screen and (max-width: 76.1875em) {
+
+    html .md-nav--primary .md-nav__title--site {
+        background-color: #232f3e !important;
+        border-bottom: 1px solid #1b2532 !important;
+    }
+
+    .md-nav__source {
+        background-color: #1f4e79 !important;
+    }
+
+    html .md-nav--primary .md-nav__title {
+        background-color: #232f3e !important;
+        border-bottom: 1px solid #1b2532 !important;
+        color: #ffffff;
+    }
+
+    html .md-nav--primary .md-nav__title::before {
+        color: #ffffff;
+    }
+
+}
+
+.md-dropdown-content {
+    display: none;
+    width: 100%;
+    background-color: #f1f1f1;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    overflow: auto;
+}
+
+.md-dropdown-content a {
+    color: black;
+    padding: 0px 10px;
+    text-decoration: none;
+    display: block;
+    line-height: 3rem;
+    font-weight: bold;
+    font-size: 1.3rem;
+  }
+
+.md-dropdown-content a:hover {
+    color: #f8991d;
+}
+
+.md-content__icon {
+    display: none;
+}
+
+.md-typeset table:not([class]) th {
+    min-width: 15rem;
+    background-color: #6c6c6c !important;
+    font-size: medium;
+}
+
+.md-typeset table:not([class]) td {
+    vertical-align: middle;
+}
+
+.table {
+    font-size: medium;
+}
+*/

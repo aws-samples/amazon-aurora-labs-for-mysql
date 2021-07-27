@@ -128,8 +128,7 @@ def thread_func(endpoint, username, password, schema, max_id, iterations):
                 sql_command = "SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > %d and id = '%s' ORDER BY max_temp DESC;" % (temp_value,stationid)
                 # run query
             with conn.cursor() as cursor:
-            #print(sql_command)
-                print("executing %s...count %d .." %(sql_command,count))
+                print("executing %s... .." %sql_command)
                 cursor.execute(sql_command)
                 cursor.close()
                 # run query

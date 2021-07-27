@@ -198,6 +198,9 @@ temp/
 #!.vscode/launch.json
 #!.vscode/extensions.json
 
+# Idea
+.idea/*
+
 # Ignore all local history of files
 .history
 
