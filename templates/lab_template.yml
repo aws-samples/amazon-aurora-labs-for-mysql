@@ -845,20 +845,6 @@ Resources:
                   yum install -y unzip jq
                   echo "$(date "+%F %T") * installed supporting packages" >> /bootstrap.log
 
-## Associate the SSM document with the Cloud9 instance
-  ssmAssocBootstrapActions: 
-    Type: AWS::SSM::Association
-    Properties:
-      Name: !Ref ssmDocClientBootstrap
-      OutputLocation: 
-        S3Location:
-          OutputS3BucketName: !Ref bucketLabData
-          OutputS3KeyPrefix: logs/bootstrap
-      Targets:
-        - Key: tag:BootstrapGroup
-          Values:
-          - !Sub "bootstrap-${AWS::StackName}"
-
 ## Create the workstation host
   clientHost:
     Type: "AWS::EC2::Instance"
@@ -1381,8 +1367,14 @@ Resources:
                   - ec2:AssociateIamInstanceProfile
                   - ec2:ModifyInstanceAttribute
                   - ec2:ReplaceIamInstanceProfileAssociation
+                  - ec2:DescribeIamInstanceProfileAssociations
+                  - ec2:DisassociateIamInstanceProfile
+                  - ec2:ModifyInstanceAttribute
+                  - ec2:ReplaceIamInstanceProfileAssociation
                   - iam:ListInstanceProfiles
                   - iam:PassRole
+                  - ssm:DescribeInstanceInformation
+                  - ssm:SendCommand
                 Resource: "*"
       Tags:
         - Key: Name
@@ -1415,11 +1407,14 @@ Resources:
           import urllib3
           import json
           import datetime
+          import time
 
           print("[INFO]", "Initialize function")
           session = boto3.session.Session(region_name=environ["REGION"])
-          s3 = boto3.resource('s3')
-          ec2 = boto3.client('ec2')
+          s3 = session.resource('s3')
+          ide = session.resource('ec2')
+          ec2 = session.client('ec2')
+          ssm = session.client('ssm')
           http = urllib3.PoolManager()
 
           # Lambda handler function / main function
@@ -1427,14 +1422,14 @@ Resources:
             print("[INFO]", "Invocation start")
 
             # init response
-            resource_props = event["ResourceProperties"]
+            props = event["ResourceProperties"]
             response_status = cfnresponse.FAILED
             response_data = {}
 
             # try/catch
             try:
               # lowercase names, set response as success
-              response_data["DBClusterId"] = resource_props["Cluster"].lower()
+              response_data["DBClusterId"] = props["Cluster"].lower()
               response_data["DBClusterScalableTarget"] = "cluster:%s" % response_data["DBClusterId"]
               response_status = cfnresponse.SUCCESS
               print("[INFO]", "ScalableTarget computed:", response_data["DBClusterScalableTarget"])
@@ -1445,21 +1440,21 @@ Resources:
                 try:
                   # track analytics
                   payload = {
-                    'stack_uuid': resource_props["StackUUID"] if ("StackUUID" in resource_props and resource_props["StackUUID"]) else None,
-                    'stack_name': resource_props["StackName"] if ("StackName" in resource_props and resource_props["StackName"]) else None,
-                    'stack_region': resource_props["StackRegion"] if ("StackRegion" in resource_props and resource_props["StackRegion"]) else None,
-                    'deployed_cluster': resource_props["DeployedCluster"] if ("DeployedCluster" in resource_props and resource_props["DeployedCluster"]) else None,
-                    'deployed_ml': resource_props["DeployedML"] if ("DeployedML" in resource_props and resource_props["DeployedML"]) else None,
-                    'deployed_gdb': resource_props["DeployedGDB"] if ("DeployedGDB" in resource_props and resource_props["DeployedGDB"]) else None,
-                    'is_secondary': resource_props["IsSecondary"] if ("IsSecondary" in resource_props and resource_props["IsSecondary"]) else None,
+                    'stack_uuid': props["StackUUID"] if ("StackUUID" in props) else None,
+                    'stack_name': props["StackName"] if ("StackName" in props) else None,
+                    'stack_region': props["StackRegion"] if ("StackRegion" in props) else None,
+                    'deployed_cluster': props["DeployedCluster"] if ("DeployedCluster" in props) else None,
+                    'deployed_ml': props["DeployedML"] if ("DeployedML" in props) else None,
+                    'deployed_gdb': props["DeployedGDB"] if ("DeployedGDB" in props) else None,
+                    'is_secondary': props["IsSecondary"] if ("IsSecondary" in props) else None,
                     'event_timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
                     'event_scope': 'Stack',
                     'event_action': event["RequestType"] if "RequestType" in event else None,
                     'event_message': "Stack-level operation",
-                    'ee_event_id': resource_props["EEEventId"] if ("EEEventId" in resource_props and resource_props["EEEventId"]) else None,
-                    'ee_team_id': resource_props["EETeamId"] if ("EETeamId" in resource_props and resource_props["EETeamId"]) else None,
-                    'ee_module_id': resource_props["EEModuleId"] if ("EEModuleId" in resource_props and resource_props["EEModuleId"]) else None,
-                    'ee_module_version': resource_props["EEModuleVersion"] if ("EEModuleVersion" in resource_props and resource_props["EEModuleVersion"]) else None
+                    'ee_event_id': props["EEEventId"] if ("EEEventId" in props) else None,
+                    'ee_team_id': props["EETeamId"] if ("EETeamId" in props) else None,
+                    'ee_module_id': props["EEModuleId"] if ("EEModuleId" in props) else None,
+                    'ee_module_version': props["EEModuleVersion"] if ("EEModuleVersion" in props) else None
                   }
                   r = http.request('POST', environ["ANALYTICSURI"], body=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
                   print("[INFO]", "Event tracking for UUID:", payload["stack_uuid"])
@@ -1472,10 +1467,9 @@ Resources:
               # on stack creation
               if event["RequestType"] == 'Create':
                 # wait until Cloud9 instance is available
-                print("[INFO]", "Instance filter to use", resource_props['IDEEnvTagName'])
-                result = ec2.describe_instances(Filters=[{'Name': 'tag:Name','Values': [resource_props['IDEEnvTagName']]}])
-                print(result)
-                if ('Reservations' in result and result['Reservations'] and len(result['Reservations']) > 0):
+                print("[INFO]", "Instance filter to use:", props['IDEEnvTagName'])
+                result = ec2.describe_instances(Filters=[{'Name': 'tag:Name','Values': [props['IDEEnvTagName']]}])
+                if ('Reservations' in result and len(result['Reservations']) > 0):
                   c9 = result['Reservations'][0]['Instances'][0]
                   print("[INFO]", "Found IDE instance", c9['InstanceId'])
                   while c9['State']['Name'] != 'running':
@@ -1484,26 +1478,51 @@ Resources:
 
                   # swap the profiles
                   prof = {
-                    'Arn': resource_props['IDEProfileArn'],
-                    'Name': resource_props['IDEProfileName']
+                    'Arn': props['IDEProfileArn'],
+                    'Name': props['IDEProfileName']
                   }
 
                   # find iam instance profile association
                   result = ec2.describe_iam_instance_profile_associations(
                     Filters=[{'Name': 'instance-id', 'Values': [c9['InstanceId']]}]
                   )
-                  if ('IamInstanceProfileAssociations' in result and result['IamInstanceProfileAssociations'] and len(result['IamInstanceProfileAssociations']) > 0):
+                  if ('IamInstanceProfileAssociations' in result and len(result['IamInstanceProfileAssociations']) > 0):
                     assoc = result['IamInstanceProfileAssociations'][0]
+                    print("[INFO]", "Replacing IAM profile association:", assoc['AssociationId'])
                     response = ec2.replace_iam_instance_profile_association(IamInstanceProfile=prof, AssociationId=assoc['AssociationId'])
                   else:
+                    print("[INFO]", "Associating new IAM profile")
                     response = ec2.associate_iam_instance_profile(IamInstanceProfile=prof, InstanceId=c9['InstanceId'])
+
+                  # attach workstation security group
+                  attached_sgs = [sg['GroupId'] for sg in ide.Instance(c9['InstanceId']).security_groups]
+                  attached_sgs.append(props["IDESecGroupId"])
+                  response = ide.Instance(c9['InstanceId']).modify_attribute(Groups=attached_sgs)
+                  print("[INFO]", "Attached SGs:", attached_sgs)
+
+                  # wait for ssm registration
+                  status = 'Offline'
+                  tries = 0
+                  while status != 'Online' and tries < 50:
+                    response = ssm.describe_instance_information(Filters=[{'Key': 'InstanceIds', 'Values': [c9['InstanceId']]}])
+                    if ('InstanceInformationList' in response and len(response['InstanceInformationList']) > 0):
+                      status = response['InstanceInformationList'][0]['PingStatus']
+                    tries += 1
+                    time.sleep(10)
+                  
+                  # run ssm bootstrap
+                  if status == 'Online':
+                    response = ssm.send_command(InstanceIds=[c9['InstanceId']],DocumentName=props["IDEBoostrapDoc"])
+                    print("[INFO]", "Started IDE bootstrap:", response)
+                  else:
+                    print("[ERROR]", "Timeout exceeded waiting for SSM registration")
 
               # on stack deletion
               if event["RequestType"] == 'Delete':
                 # delete all objects out of the bucket
-                bucket = s3.Bucket(resource_props["DataBucket"])
+                bucket = s3.Bucket(props["DataBucket"])
                 bucket.objects.delete()
-                print("[INFO]", "Bucket cleaned up for:", resource_props["DataBucket"])
+                print("[INFO]", "Bucket cleaned up for:", props["DataBucket"])
 
             except Exception as e:
               print("[ERROR]", e)
@@ -1544,6 +1563,20 @@ Resources:
       IDEProfileArn: !GetAtt profileClientIDE.Arn
       IDEProfileName: !Ref profileClientIDE
       IDEEnvTagName: !If [ condEventEngine, "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Sub "aws-cloud9-${AWS::StackName}-client-ide-${c9ClientIDE}" ]
+      IDESecGroupId: !Ref clientSecGroup
+      IDEBoostrapDoc: !Ref ssmDocClientBootstrap
+
+## Wait condition to signal bootstrap completion
+#  bootstrapWaitHandle:
+#    Type: "AWS::CloudFormation::WaitConditionHandle",
+#    Properties:
+#  bootstrapWaitCondition:
+#    Type: "AWS::CloudFormation::WaitCondition"
+#    DependsOn: [ resLabSupport ]
+#    Properties: 
+#      Count: 1
+#      Handle: !Ref bootstrapWaitHandle
+#      Timeout: 1800
 
 ## Bug mitigation, RDS default KMS key in secondary region doesn't get created
 ## until the first DB instance gets created. GDB Add region fails if it doesn't
