@@ -746,6 +746,119 @@ Resources:
       Roles:
         - Ref: roleClientHost
 
+## Create role for client host
+  roleClientIDE:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
+      Description: "Permits user interaction with AWS APIs from the CLoud9 IDE."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+                - "ssm.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+        - "arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess"
+        - "arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "rds:*"
+                  - "s3:*"
+                  - "ssm:*"
+                  - "kinesis:*"
+                  - "kms:*"
+                  - "sns:*"
+                  - "secretsmanager:*"
+                  - "rds-db:connect"
+                  - "iam:AttachRolePolicy"
+                  - "iam:DetachRolePolicy"
+                  - "iam:PutRolePolicy"
+                  - "iam:DeleteRolePolicy"
+                  - "iam:GetRolePolicy"
+                  - "iam:CreatePolicy"
+                  - "iam:DeletePolicy"
+                  - "iam:CreateRole"
+                  - "iam:DeleteRole"
+                  - "iam:ListPolicies"
+                  - "iam:ListRoles"
+                  - "iam:PassRole"
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
+  profileClientIDE:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: /
+      Roles:
+        - Ref: roleClientIDE
+
+## Create a Cloud9 IDE host
+  c9ClientIDE:
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties: 
+      AutomaticStopTimeMinutes: 120
+      ConnectionType: CONNECT_SSM
+      Description: "Cloud9 IDE to interact with the Aurora DB resources"
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetType ]
+      ImageId: resolve:ssm:/aws/service/cloud9/amis/amazonlinux-2-x86_64
+      Name: !If [ condEventEngine, "auroralab-client-ide", !Sub "${AWS::StackName}-client-ide" ]
+      SubnetId: !Ref sub1Private
+      Tags:
+        - Key: BootstrapGroup
+          Value: !Sub "bootstrap-${AWS::StackName}"
+
+## Create a Cloud9 host SSM bootstrap document
+  ssmDocClientBootstrap: 
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Name: !If [ condEventEngine, "auroralab-bootstrap-client", !Sub "${AWS::StackName}-bootstrap-client" ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-bootstrap-client", !Sub "${AWS::StackName}-bootstrap-client" ]
+      Content:
+        schemaVersion: '2.2'
+        description: "Bootstrap Cloud9 Client IDE Instance"
+        mainSteps:
+        - action: aws:runShellScript
+          name: BootstrapTools
+          inputs:
+            runCommand:
+              Fn::Join:
+              - "\n"
+              - - !Sub |
+                  #!/bin/bash -xe
+                  echo "$(date "+%F %T") * running as $(whoami)" >> /bootstrap.log
+                  yum install -y unzip jq
+                  echo "$(date "+%F %T") * installed supporting packages" >> /bootstrap.log
+
+## Associate the SSM document with the Cloud9 instance
+  ssmAssocBootstrapActions: 
+    Type: AWS::SSM::Association
+    Properties:
+      Name: !Ref ssmDocClientBootstrap
+      OutputLocation: 
+        S3Location:
+          OutputS3BucketName: !Ref bucketLabData
+          OutputS3KeyPrefix: logs/bootstrap
+      Targets:
+        - Key: tag:BootstrapGroup
+          Values:
+          - !Sub "bootstrap-${AWS::StackName}"
+
 ## Create the workstation host
   clientHost:
     Type: "AWS::EC2::Instance"
@@ -1258,6 +1371,19 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:s3:::${bucketLabData}/*"
                   - !Sub "arn:aws:s3:::${bucketLabData}"
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStacks
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                  - ec2:DescribeInstances
+                  - ec2:AssociateIamInstanceProfile
+                  - ec2:ModifyInstanceAttribute
+                  - ec2:ReplaceIamInstanceProfileAssociation
+                  - iam:ListInstanceProfiles
+                  - iam:PassRole
+                Resource: "*"
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Sub "${AWS::StackName}-support-${AWS::Region}" ]
@@ -1265,6 +1391,7 @@ Resources:
 ## Create Lambda function to implement support operations
   funcLabSupport:
     Type: "AWS::Lambda::Function"
+    DependsOn: [ c9ClientIDE, bucketLabData ]
     Properties:
       FunctionName: !If [ condEventEngine, "auroralab-support", !Sub "${AWS::StackName}-support" ]
       Description: "Custom Resource to provide support operations for the Aurora MySQL labs."
@@ -1292,6 +1419,7 @@ Resources:
           print("[INFO]", "Initialize function")
           session = boto3.session.Session(region_name=environ["REGION"])
           s3 = boto3.resource('s3')
+          ec2 = boto3.client('ec2')
           http = urllib3.PoolManager()
 
           # Lambda handler function / main function
@@ -1341,7 +1469,36 @@ Resources:
               else:
                 print("[INFO]", "Opted out of analytics")
 
-              # cleanup bucket
+              # on stack creation
+              if event["RequestType"] == 'Create':
+                # wait until Cloud9 instance is available
+                print("[INFO]", "Instance filter to use", resource_props['IDEEnvTagName'])
+                result = ec2.describe_instances(Filters=[{'Name': 'tag:Name','Values': [resource_props['IDEEnvTagName']]}])
+                print(result)
+                if ('Reservations' in result and result['Reservations'] and len(result['Reservations']) > 0):
+                  c9 = result['Reservations'][0]['Instances'][0]
+                  print("[INFO]", "Found IDE instance", c9['InstanceId'])
+                  while c9['State']['Name'] != 'running':
+                    time.sleep(5)
+                    c9 = ec2.describe_instances(InstanceIds=[c9['InstanceId']])['Reservations'][0]['Instances'][0]
+
+                  # swap the profiles
+                  prof = {
+                    'Arn': resource_props['IDEProfileArn'],
+                    'Name': resource_props['IDEProfileName']
+                  }
+
+                  # find iam instance profile association
+                  result = ec2.describe_iam_instance_profile_associations(
+                    Filters=[{'Name': 'instance-id', 'Values': [c9['InstanceId']]}]
+                  )
+                  if ('IamInstanceProfileAssociations' in result and result['IamInstanceProfileAssociations'] and len(result['IamInstanceProfileAssociations']) > 0):
+                    assoc = result['IamInstanceProfileAssociations'][0]
+                    response = ec2.replace_iam_instance_profile_association(IamInstanceProfile=prof, AssociationId=assoc['AssociationId'])
+                  else:
+                    response = ec2.associate_iam_instance_profile(IamInstanceProfile=prof, InstanceId=c9['InstanceId'])
+
+              # on stack deletion
               if event["RequestType"] == 'Delete':
                 # delete all objects out of the bucket
                 bucket = s3.Bucket(resource_props["DataBucket"])
@@ -1384,6 +1541,9 @@ Resources:
       EETeamId: !Ref EETeamId
       EEModuleId: !Ref EEModuleId
       EEModuleVersion: !Ref EEModuleVersion
+      IDEProfileArn: !GetAtt profileClientIDE.Arn
+      IDEProfileName: !Ref profileClientIDE
+      IDEEnvTagName: !If [ condEventEngine, "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Sub "aws-cloud9-${AWS::StackName}-client-ide-${c9ClientIDE}" ]
 
 ## Bug mitigation, RDS default KMS key in secondary region doesn't get created
 ## until the first DB instance gets created. GDB Add region fails if it doesn't
@@ -1419,6 +1579,9 @@ Outputs:
   ec2Instance:
     Description: "EC2 Workstation Instance ID"
     Value: !Ref clientHost
+  clientIdeUrl:
+    Description: "Cloud9 Client IDE"
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloud9/ide/${c9ClientIDE}?region=${AWS::Region}"
   clusterName:
     Description: "Aurora Cluster Name"
     Value: !If [ condDeployDBCluster, !Ref dbCluster, "" ]
