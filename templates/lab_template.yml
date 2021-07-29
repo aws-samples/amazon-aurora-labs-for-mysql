@@ -61,6 +61,10 @@ Parameters:
   EEModuleVersion:
     Type: String
     Description: Please leave blank, reserved for internal use.
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs'
+    Description: Please leave as-is, reserved for internal use.
 
 
 ## Metadata
@@ -85,6 +89,7 @@ Metadata:
           - EETeamId
           - EEModuleId
           - EEModuleVersion
+          - LatestAmiId
     ParameterLabels:
       deployCluster:
         default: "Create DB Cluster Automatically?"
@@ -104,6 +109,8 @@ Metadata:
         default: "EventEngine Module"
       EEModuleVersion:
         default: "EventEngine Version"
+      LatestAmiId:
+        default: "Reference Linux AMI"
 
 
 ## Conditions
@@ -125,9 +132,7 @@ Conditions:
 Mappings:
   RegionalSettings:
     us-east-1:
-      clientAmi: ami-0885b1f6bd170450c
-      supersetAmi: ami-0947d2ba12ee1ff75
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: N. Virginia
@@ -135,9 +140,7 @@ Mappings:
       az2: us-east-1b
       az3: us-east-1c
     us-east-2:
-      clientAmi: ami-0a91cd140a1fc148a
-      supersetAmi: ami-03657b56516ab7912
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Ohio
@@ -145,9 +148,7 @@ Mappings:
       az2: us-east-2a
       az3: us-east-2b
     us-west-2:
-      clientAmi: ami-09d9c897fc36713bf
-      supersetAmi: ami-0721c9af7b9b75114
-      clientType: m6g.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Oregon
@@ -155,9 +156,7 @@ Mappings:
       az2: us-west-2c
       az3: us-west-2d
     ca-central-1:
-      clientAmi: ami-02e44367276fe7adc
-      supersetAmi: ami-0c2f25c1f66a1ff4d
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Montreal
@@ -165,9 +164,7 @@ Mappings:
       az2: ca-central-1a
       az3: ca-central-1b
     eu-central-1:
-      clientAmi: ami-0502e817a62226e03
-      supersetAmi: ami-00a205cb8e06c3c4e
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Frankfurt
@@ -175,9 +172,7 @@ Mappings:
       az2: eu-central-1a
       az3: eu-central-1c
     eu-west-1:
-      clientAmi: ami-0aef57767f5404a3c
-      supersetAmi: ami-0bb3fad3c0286ebd5
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Ireland
@@ -185,9 +180,7 @@ Mappings:
       az2: eu-west-1b
       az3: eu-west-1c
     eu-west-2:
-      clientAmi: ami-0ff4c8fb495a5a50d
-      supersetAmi: ami-0a669382ea0feb73a
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: London
@@ -195,9 +188,7 @@ Mappings:
       az2: eu-west-2a
       az3: eu-west-2c
     eu-west-3:
-      clientAmi: ami-0d3f551818b21ed81
-      supersetAmi: ami-0de12f76efe134f2f
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Paris
@@ -205,9 +196,7 @@ Mappings:
       az2: eu-west-3b
       az3: eu-west-3a
     ap-southeast-1:
-      clientAmi: ami-0c20b8b385217763f
-      supersetAmi: ami-015a6758451df3cb9
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Singapore
@@ -215,9 +204,7 @@ Mappings:
       az2: ap-southeast-1b
       az3: ap-southeast-1a
     ap-southeast-2:
-      clientAmi: ami-07fbdcfe29326c4fb
-      supersetAmi: ami-0f96495a064477ffb
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Sydney
@@ -225,9 +212,7 @@ Mappings:
       az2: ap-southeast-2b
       az3: ap-southeast-2c
     ap-south-1:
-      clientAmi: ami-0a4a70bd98c6d6441
-      supersetAmi: ami-0e306788ff2473ccb
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Mumbai
@@ -235,9 +220,7 @@ Mappings:
       az2: ap-south-1b
       az3: ap-south-1c
     ap-northeast-1:
-      clientAmi: ami-0f2dd5fc989207c82
-      supersetAmi: ami-0ce107ae7af2e92b5
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Tokyo
@@ -245,9 +228,7 @@ Mappings:
       az2: ap-northeast-1a
       az3: ap-northeast-1c
     ap-northeast-2:
-      clientAmi: ami-007b7745d0725de95
-      supersetAmi: ami-03b42693dc6a7dc35
-      clientType: m5.large
+      ideType: m5.large
       supersetType: m5.large
       nodeType: db.r5.large
       name: Seoul
@@ -689,64 +670,6 @@ Resources:
           Value: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
 
 ## Create role for client host
-  roleClientHost:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-wkstation-${AWS::Region}", !Sub "${AWS::StackName}-wkstation-${AWS::Region}" ]
-      Description: "Permits user interaction with AWS APIs from the EC2-based workstation."
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - "sts:AssumeRole"
-            Principal:
-              Service:
-                - "ec2.amazonaws.com"
-                - "ssm.amazonaws.com"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
-        - "arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess"
-      Policies:
-        - PolicyName: inline-policy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "rds:*"
-                  - "s3:*"
-                  - "ssm:*"
-                  - "kinesis:*"
-                  - "kms:*"
-                  - "sns:*"
-                  - "secretsmanager:*"
-                  - "rds-db:connect"
-                  - "iam:AttachRolePolicy"
-                  - "iam:DetachRolePolicy"
-                  - "iam:PutRolePolicy"
-                  - "iam:DeleteRolePolicy"
-                  - "iam:GetRolePolicy"
-                  - "iam:CreatePolicy"
-                  - "iam:DeletePolicy"
-                  - "iam:CreateRole"
-                  - "iam:DeleteRole"
-                  - "iam:ListPolicies"
-                  - "iam:ListRoles"
-                  - "iam:PassRole"
-                Resource: "*"
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-wkstation-${AWS::Region}", !Sub "${AWS::StackName}-wkstation-${AWS::Region}" ]
-  profileClientHost:
-    Type: "AWS::IAM::InstanceProfile"
-    Properties:
-      Path: /
-      Roles:
-        - Ref: roleClientHost
-
-## Create role for client host
   roleClientIDE:
     Type: "AWS::IAM::Role"
     Properties:
@@ -812,7 +735,7 @@ Resources:
       AutomaticStopTimeMinutes: 120
       ConnectionType: CONNECT_SSM
       Description: "Cloud9 IDE to interact with the Aurora DB resources"
-      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetType ]
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", ideType ]
       ImageId: resolve:ssm:/aws/service/cloud9/amis/amazonlinux-2-x86_64
       Name: !If [ condEventEngine, "auroralab-client-ide", !Sub "${AWS::StackName}-client-ide" ]
       SubnetId: !Ref sub1Private
@@ -823,6 +746,7 @@ Resources:
 ## Create a Cloud9 host SSM bootstrap document
   ssmDocClientBootstrap: 
     Type: AWS::SSM::Document
+    DependsOn: [ bootstrapWaitHandle ]
     Properties:
       DocumentType: Command
       Name: !If [ condEventEngine, "auroralab-bootstrap-client", !Sub "${AWS::StackName}-bootstrap-client" ]
@@ -837,133 +761,76 @@ Resources:
           name: BootstrapTools
           inputs:
             runCommand:
-              Fn::Join:
-              - "\n"
-              - - !Sub |
-                  #!/bin/bash -xe
-                  echo "$(date "+%F %T") * running as $(whoami)" >> /bootstrap.log
-                  yum install -y unzip jq
-                  echo "$(date "+%F %T") * installed supporting packages" >> /bootstrap.log
-
-## Create the workstation host
-  clientHost:
-    Type: "AWS::EC2::Instance"
-    Properties:
-      SubnetId: !Ref sub1Public
-      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientType ]
-      SecurityGroupIds: [ !Ref clientSecGroup ]
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-workstation", !Sub "${AWS::StackName}-mysql-workstation" ]
-      BlockDeviceMappings:
-        - DeviceName: "/dev/sda1"
-          Ebs:
-            DeleteOnTermination: true
-            Iops: 7500
-            VolumeSize: 150
-            VolumeType: io1
-      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", clientAmi ]
-      IamInstanceProfile: !Ref profileClientHost
-      UserData:
-        Fn::Base64:
-          Fn::Join:
-            - "\n"
-            - - !Sub |
-                #!/bin/bash -xe
-
-                # start bootstrap
-                echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
-
-                # update & upgrade packages
-                apt-get update
-                DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
-                echo "$(date "+%F %T") * updated and upgraded packages" >> /debug.log
-
-                # install other supporting packages
-                apt-get -y install unzip
-                echo "$(date "+%F %T") * installed supporting packages" >> /debug.log
-
-                # install jq
-                apt-get -y install jq
-                echo "$(date "+%F %T") * installed jq package" >> /debug.log
-
-                # install mysql client tools
-                apt-get -y install mysql-client
-                mysql --version >> /debug.log
-                echo "$(date "+%F %T") * installed mysql-client package" >> /debug.log
-
-                # install sysbench
-                curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | sudo bash
-                apt-get update
-                apt-get -y install sysbench
-                sysbench --version >> /debug.log
-                echo "$(date "+%F %T") * installed sysbench package" >> /debug.log
-
-                # install percona tpcc-like test suite (temporary bug fix for broken tpcc)
-                git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ubuntu/sysbench-tpcc
-                chown -R ubuntu:ubuntu /home/ubuntu/sysbench-tpcc
-                echo "$(date "+%F %T") * cloned percona/sysbench-tpcc repo" >> /debug.log
-
-                # download demo databases
-                git clone https://github.com/datacharmer/test_db.git /home/ubuntu/samples
-                chown -R ubuntu:ubuntu /home/ubuntu/samples
-                echo "$(date "+%F %T") * cloned test databases repo" >> /debug.log
-
-                # install python pip and aws cli
-                apt-get -y install python3-pip
-                cd /home/ubuntu
-                curl -O https://[[website]]/support/client-requirements.txt
-                pip3 install -r client-requirements.txt
-                curl -O https://[[website]]/scripts/reader_loadtest.py
-                curl -O https://[[website]]/scripts/simple_failover.py
-                curl -O https://[[website]]/scripts/aware_failover.py
-                curl -O https://[[website]]/scripts/das_reader.py
-                curl -O https://[[website]]/scripts/bank_deposit.py
-                curl -O https://[[website]]/support/sagemaker_policy.json
-                chown -R ubuntu:ubuntu /home/ubuntu/*.py
-                echo "$(date "+%F %T") * pulled lab scripts" >> /debug.log
-
-                # configure AWS CLI
-                mkdir /home/ubuntu/.aws
-                touch /home/ubuntu/.aws/config
-                echo "[default]" >> /home/ubuntu/.aws/config
-                echo "region = ${AWS::Region}" >> /home/ubuntu/.aws/config
-                chown -R ubuntu:ubuntu /home/ubuntu/.aws/config
-                echo "$(date "+%F %T") * configured aws cli" >> /debug.log
-
-                # set environment variables
-                export ANALYTICSURI="https://[[apigw]]/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ubuntu/.bashrc
-                export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ubuntu/.bashrc
-                export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ubuntu/.bashrc
-                export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ubuntu/.bashrc
-              - Fn::Join:
-                  - ""
-                  - - 'export STACKUUID="'
-                    - !Select
-                      - 2
-                      - !Split
-                        - "/"
-                        - !Ref 'AWS::StackId'
-                    - '" && echo "export STACKUUID=\"$STACKUUID\"" >> /home/ubuntu/.bashrc'
-              - !Sub |
-                export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ubuntu/.bashrc
-                export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ubuntu/.bashrc
-                echo "$(date "+%F %T") * environemnt vars initialized" >> /debug.log
-              - Fn::If:
-                  - condDeployDBCluster
-                  - !Sub |
-                    # set DB cluster user and password as env variables
-                    export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id "${secretClusterMasterUser}" --region ${AWS::Region} | jq -r '.SecretString'`
-                    export DBPASS=`echo $SECRETSTRING | jq -r '.password'`
-                    export DBUSER=`echo $SECRETSTRING | jq -r '.username'`
-                    echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
-                    echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
-                    echo "$(date "+%F %T") * db credentials initialized" >> /debug.log
-                  - ""
-              - !Sub |
-                # reboot
-                echo "$(date "+%F %T") * bootstrap complete, rebooting" >> /debug.log
-                shutdown -r now
+            - "#!/bin/bash -xe"
+            - "echo \"$(date \"+%F %T\") * running as $(whoami)\" >> /bootstrap.log"
+            - "yum install -y unzip jq"
+            - "echo \"$(date \"+%F %T\") * installed supporting packages\" >> /bootstrap.log"
+            - "yum remove -y mariadb"
+            - "yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm"
+            - "percona-release disable all"
+            - "percona-release setup pt"
+            - "percona-release setup ps80"
+            - "yum install -y percona-toolkit percona-server-client"
+            - "mysql --version >> /bootstrap.log"
+            - "echo \"$(date \"+%F %T\") * installed Percona tools and client libraries\" >> /bootstrap.log"
+            - "curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.rpm.sh | sudo bash"
+            - "yum -y install sysbench"
+            - "sysbench --version >> /bootstrap.log"
+            - "echo \"$(date \"+%F %T\") * installed Sysbench\" >> /bootstrap.log"
+            - "git clone https://github.com/Percona-Lab/sysbench-tpcc.git /home/ec2-user/environment/sysbench-tpcc"
+            - "echo \"$(date \"+%F %T\") * cloned percona/sysbench-tpcc repo\" >> /bootstrap.log"
+            - "git clone https://github.com/datacharmer/test_db.git /home/ec2-user/environment/samples"
+            - "echo \"$(date \"+%F %T\") * cloned sample data repo\" >> /bootstrap.log"
+            - "cd /home/ec2-user/environment"
+            - "curl -O https://[[website]]/support/client-requirements.txt"
+            - "pip3 install -r client-requirements.txt"
+            - "curl -O https://[[website]]/scripts/reader_loadtest.py"
+            - "curl -O https://[[website]]/scripts/simple_failover.py"
+            - "curl -O https://[[website]]/scripts/aware_failover.py"
+            - "curl -O https://[[website]]/scripts/das_reader.py"
+            - "curl -O https://[[website]]/scripts/bank_deposit.py"
+            - "curl -O https://[[website]]/support/sagemaker_policy.json"
+            - "echo \"$(date \"+%F %T\") * downloaded lab assets\" >> /bootstrap.log"
+            - "mkdir -p /home/ec2-user/.aws"
+            - "touch /home/ec2-user/.aws/config"
+            - "echo \"[default]\" >> /home/ec2-user/.aws/config"
+            - !Sub "echo \"region = ${AWS::Region}\" >> /home/ec2-user/.aws/config"
+            - "chown -R ec2-user:ec2-user /home/ec2-user/.aws"
+            - "aws --version >> /bootstrap.log"
+            - "echo \"$(date \"+%F %T\") * configured aws cli\" >> /bootstrap.log"
+            - 'export ANALYTICSURI="https://[[apigw]]/v1/track" && echo "export ANALYTICSURI=\"$ANALYTICSURI\"" >> /home/ec2-user/.bashrc'
+            - !Sub 'export AGREETRACKING="${agreeTracking}" && echo "export AGREETRACKING=\"$AGREETRACKING\"" >> /home/ec2-user/.bashrc'
+            - !Sub 'export STACKREGION="${AWS::Region}" && echo "export STACKREGION=\"$STACKREGION\"" >> /home/ec2-user/.bashrc'
+            - !Sub 'export STACKNAME="${AWS::StackName}" && echo "export STACKNAME=\"$STACKNAME\"" >> /home/ec2-user/.bashrc'
+            - Fn::Join:
+              - ""
+              - - 'export STACKUUID="'
+                - !Select
+                  - 2
+                  - !Split
+                    - "/"
+                    - !Ref 'AWS::StackId'
+                - '" && echo "export STACKUUID=\"$STACKUUID\"" >> /home/ec2-user/.bashrc'
+            - !Sub 'export DATABUCKET="${bucketLabData}" && echo "export DATABUCKET=\"$DATABUCKET\"" >> /home/ec2-user/.bashrc'
+            - !Sub 'export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ec2-user/.bashrc'
+            - "echo \"$(date \"+%F %T\") * environment vars initialized\" >> /bootstrap.log"
+            - Fn::If:
+              - condDeployDBCluster
+              - !Sub "export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id \"${secretClusterMasterUser}\" --region ${AWS::Region} | jq -r '.SecretString'` && export DBPASS=`echo $SECRETSTRING | jq -r '.password'` && export DBUSER=`echo $SECRETSTRING | jq -r '.username'`"
+              - ""
+            - Fn::If:
+              - condDeployDBCluster
+              - 'echo "export DBPASS=\"$DBPASS\"" >> /home/ec2-user/.bashrc && echo "export DBUSER=$DBUSER" >> /home/ec2-user/.bashrc'
+              - ""
+            - Fn::If:
+              - condDeployDBCluster
+              - "echo \"$(date \"+%F %T\") * db credentials initialized\" >> /bootstrap.log"
+              - "echo \"$(date \"+%F %T\") * skipped db credentials, no cluster\" >> /bootstrap.log"
+            - "chown -R ec2-user:ec2-user /home/ec2-user/environment/*"
+            - "echo \"$(date \"+%F %T\") * updated file ownership\" >> /bootstrap.log"
+            - !Sub "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\": \"SUCCESS\", \"Reason\": \"Bootstrap complete\", \"UniqueId\": \"${AWS::StackId}\", \"Data\": \"Bootstrap complete\"}' \"${bootstrapWaitHandle}\""
+            - "echo \"$(date \"+%F %T\") * signal bootstrap complete\" >> /bootstrap.log"
+            - "shutdown -r now"
 
 ## Create the Apache Superset host
   supersetHost:
@@ -982,8 +849,8 @@ Resources:
             DeleteOnTermination: true
             VolumeSize: 80
             VolumeType: gp2
-      ImageId: !FindInMap [ RegionalSettings, !Ref "AWS::Region", supersetAmi ]
-      IamInstanceProfile: !Ref profileClientHost
+      ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref profileClientIDE
       UserData:
         Fn::Base64:
           Fn::Join:
@@ -1567,16 +1434,15 @@ Resources:
       IDEBoostrapDoc: !Ref ssmDocClientBootstrap
 
 ## Wait condition to signal bootstrap completion
-#  bootstrapWaitHandle:
-#    Type: "AWS::CloudFormation::WaitConditionHandle",
-#    Properties:
-#  bootstrapWaitCondition:
-#    Type: "AWS::CloudFormation::WaitCondition"
-#    DependsOn: [ resLabSupport ]
-#    Properties: 
-#      Count: 1
-#      Handle: !Ref bootstrapWaitHandle
-#      Timeout: 1800
+  bootstrapWaitHandle:
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+  bootstrapWaitCondition:
+    Type: "AWS::CloudFormation::WaitCondition"
+    DependsOn: [ resLabSupport ]
+    Properties: 
+      Count: 1
+      Handle: !Ref bootstrapWaitHandle
+      Timeout: 1800
 
 ## Bug mitigation, RDS default KMS key in secondary region doesn't get created
 ## until the first DB instance gets created. GDB Add region fails if it doesn't
@@ -1609,9 +1475,6 @@ Outputs:
   vpcId:
     Description: "Aurora Lab VPC"
     Value: !Ref vpc
-  ec2Instance:
-    Description: "EC2 Workstation Instance ID"
-    Value: !Ref clientHost
   clientIdeUrl:
     Description: "Cloud9 Client IDE"
     Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloud9/ide/${c9ClientIDE}?region=${AWS::Region}"
