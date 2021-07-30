@@ -2,7 +2,7 @@
 
 Before you can use the resources in the lab environment, you need to complete a few steps.
 
-If you are attending a formal event, such as a workshop or other training, your instructor will provide specific guidance on how to start. Typically you will be provided an AWS account through a platform called **Event Engine**, and the lab environment has already been deployed in that account for you. Choose the **I'm in a workshop using Event Engine** tab below (already preselected below).
+If you are attending a formal event, such as a workshop or other training, your instructor will provide specific guidance on how to start. Typically you will be provided an AWS account through a platform called **Event Engine**, and the lab environment has already been deployed in that account for you. Choose the **I'm in a workshop using Event Engine** tab below (already preselected).
 
 If you are trying these labs out yourself, in your own account, or you are attending a formal event and your instructor has specifically instructed you to deploy the lab environment manually, choose the  **I need to deploy lab environment manually** tab below.
 
@@ -11,9 +11,9 @@ Please select the option that matches your circumstances best:
 === "I'm in a workshop using Event Engine"
     <h4>Sign into Event Engine</h4>
 
-    At the beginning of the workshop you have been provided with a **12-character access code**. This access code grants you permission to use a dedicated AWS account for the purposes of this workshop.
+    Go to <a href="https://dashboard.eventengine.run/" target="_blank">**https://dashboard.eventengine.run/**</a>.
 
-    Go to <a href="https://dashboard.eventengine.run/" target="_blank">**https://dashboard.eventengine.run/**</a>, enter the access code and click **Proceed**.
+    Follow the instructions provided by the workshop organizers. You may be asked to enter a specific code, or perform additional authentication steps. The EventEngine platform supports multiple authentication and access mechanisms. Once authenticated, the EventEngine platform grants you permission to use a dedicated AWS account for the purposes of this workshop.
 
     <span class="image">![EventEngine Login](1-ee-login.png?raw=true)</span>
 
@@ -82,6 +82,9 @@ Please select the option that matches your circumstances best:
     <span class="image">![Create Stack](2-create-stack-confirm.png?raw=true)</span>
 
     The stack will take approximatively 20 minutes to provision, you can monitor the status on the **Stack detail** page. You can monitor the progress of the stack creation process by refreshing the **Events** tab. The latest event in the list will indicate `CREATE_COMPLETE` for the stack resource.
+
+    !!! warning "Stack Creation Failure"
+        If you have never used AWS Cloud9 in this AWS account before, the creation of the CloudFormation stack will fail due to missing Cloud9 required IAM service role and instance profile. These resources are not created automatically for you on first use by the Cloud9 service, and must be created manually. The Cloud9 documentation on <a href="https://docs.aws.amazon.com/cloud9/latest/user-guide/ec2-ssm.html#service-role-ssm" target="_blank">Managing Systems Manager permissions</a> provides details and instructions to create these resources.
 
     <span class="image">![Stack Status](2-stack-status.png?raw=true)</span>
 
