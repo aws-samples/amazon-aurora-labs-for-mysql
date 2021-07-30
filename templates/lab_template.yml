@@ -669,12 +669,12 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
 
-## Create role for client host
+## Create role for client IDE
   roleClientIDE:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
-      Description: "Permits user interaction with AWS APIs from the CLoud9 IDE."
+      Description: "Permits user interaction with AWS APIs from the Cloud9 IDE."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -685,6 +685,7 @@ Resources:
               Service:
                 - "ec2.amazonaws.com"
                 - "ssm.amazonaws.com"
+                - "cloud9.amazonaws.com"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
         - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
@@ -724,13 +725,52 @@ Resources:
   profileClientIDE:
     Type: "AWS::IAM::InstanceProfile"
     Properties:
+      InstanceProfileName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
       Path: /
       Roles:
         - Ref: roleClientIDE
 
+## Create (missing) Cloud9 service role in EventEngine, use a different name if not running in EventEngine.
+## The service role and profile need to have a specific name, but when running outside EventEngine customers 
+## may already have this service role, hence using a stack specific name. Ideally we wouldn't need to create
+## this role and profile at all for deployments outside EventEngine, but we need them for the 'DependsOn'
+## clause for the Cloud9 Environment resource further below, as CloudFormation doesn't support If conditions
+## in the 'DependsOn' clause.
+  roleCloud9ServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, AWSCloud9SSMAccessRole, !Sub "${AWS::StackName}-cloud9-sr-${AWS::Region}" ]
+      Path: !If [ condEventEngine, "/service-role/", "/" ]
+      Description: "Cloud9 service role used for connectivity type CONNECT_SSM"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+                - "ssm.amazonaws.com"
+                - "cloud9.amazonaws.com"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        - "arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile"
+      Tags:
+        - Key: Name
+          Value: AWSCloud9SSMAccessRole
+  profileCloud9ServiceRole:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      InstanceProfileName: !If [ condEventEngine, AWSCloud9SSMInstanceProfile, !Sub "${AWS::StackName}-cloud9-sr-${AWS::Region}" ]
+      Path: !If [ condEventEngine, "/cloud9/", "/" ]
+      Roles:
+        - Ref: roleCloud9ServiceRole
+
 ## Create a Cloud9 IDE host
   c9ClientIDE:
     Type: AWS::Cloud9::EnvironmentEC2
+    DependsOn: [ profileCloud9ServiceRole ]
     Properties: 
       AutomaticStopTimeMinutes: 120
       ConnectionType: CONNECT_SSM
@@ -1429,7 +1469,7 @@ Resources:
       EEModuleVersion: !Ref EEModuleVersion
       IDEProfileArn: !GetAtt profileClientIDE.Arn
       IDEProfileName: !Ref profileClientIDE
-      IDEEnvTagName: !If [ condEventEngine, "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Sub "aws-cloud9-${AWS::StackName}-client-ide-${c9ClientIDE}" ]
+      IDEEnvTagName: !If [ condEventEngine, !Sub "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Sub "aws-cloud9-${AWS::StackName}-client-ide-${c9ClientIDE}" ]
       IDESecGroupId: !Ref clientSecGroup
       IDEBoostrapDoc: !Ref ssmDocClientBootstrap
 
