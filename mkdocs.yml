@@ -65,7 +65,7 @@ nav:
   - Home: 'index.md'
   - Prerequisites:
     - Get Started: 'prereqs/environment/index.md'
-    - Connect to the Session Manager Workstation: 'prereqs/connect/index.md'
+    - Connect to the Cloud9 Desktop: 'prereqs/connect/index.md'
   - Provisioned:
     - Create a New DB Cluster: 'provisioned/create/index.md'
     - Connect, Load Data and Auto Scale: 'provisioned/interact/index.md'

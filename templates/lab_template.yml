@@ -134,7 +134,7 @@ Mappings:
     us-east-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: N. Virginia
       az1: us-east-1a
       az2: us-east-1b
@@ -142,7 +142,7 @@ Mappings:
     us-east-2:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Ohio
       az1: us-east-2c
       az2: us-east-2a
@@ -158,7 +158,7 @@ Mappings:
     ca-central-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Montreal
       az1: ca-central-1c
       az2: ca-central-1a
@@ -166,7 +166,7 @@ Mappings:
     eu-central-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Frankfurt
       az1: eu-central-1b
       az2: eu-central-1a
@@ -174,7 +174,7 @@ Mappings:
     eu-west-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Ireland
       az1: eu-west-1a
       az2: eu-west-1b
@@ -182,7 +182,7 @@ Mappings:
     eu-west-2:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: London
       az1: eu-west-2b
       az2: eu-west-2a
@@ -198,7 +198,7 @@ Mappings:
     ap-southeast-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Singapore
       az1: ap-southeast-1c
       az2: ap-southeast-1b
@@ -206,7 +206,7 @@ Mappings:
     ap-southeast-2:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Sydney
       az1: ap-southeast-2a
       az2: ap-southeast-2b
@@ -214,7 +214,7 @@ Mappings:
     ap-south-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Mumbai
       az1: ap-south-1a
       az2: ap-south-1b
@@ -222,7 +222,7 @@ Mappings:
     ap-northeast-1:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Tokyo
       az1: ap-northeast-1d
       az2: ap-northeast-1a
@@ -230,7 +230,7 @@ Mappings:
     ap-northeast-2:
       ideType: m5.large
       supersetType: m5.large
-      nodeType: db.r5.large
+      nodeType: db.r6g.large
       name: Seoul
       az1: ap-northeast-2a
       az2: ap-northeast-2b
