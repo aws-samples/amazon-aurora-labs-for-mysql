@@ -39,6 +39,9 @@ Close the **Welcome** tab in the main desktop panel, then close the terminal, an
 
 <span class="image">![Cloud9 Desktop Close](c9-desktop-close.png?raw=true)</span>
 
+Click the **Cloud9 icon** in the top right corner, and open the **Preferences** menu. On the Preferences tab, in the navigation side bar, choose **AWS Settings**, then **Credentials**. Toggle **AWS managed temporary credentials** to `Off` (red). You may close the Preferences tab, by clicking the small `x`-mark on the tab. 
+
+<span class="image">![Cloud9 Desktop Settings](c9-desktop-settings.png?raw=true)</span>
 
 ## 2. Open a terminal in your Cloud9 desktop
 
