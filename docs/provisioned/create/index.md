@@ -14,7 +14,7 @@ This lab contains the following tasks:
 3. Assign an IAM role to the DB cluster
 4. Create a replica auto scaling policy
 5. Create an AWS Secrets Manager secret
-6. Configure the client workstation
+6. Configure your Cloud9 desktop
 7. Verify DB cluster
 
 This lab requires the following lab modules to be completed first:
@@ -55,7 +55,7 @@ In the **Templates** section:
 In the **Settings** section:
 
 * [ ] Set the **DB cluster identifier** to `auroralab-mysql-cluster`. Use this specific name so you don't have to edit commands in subsequent labs.
-* [ ] Set the **Master username** to `masteruser`. This is the user account with the most elevated permissions in the database, you can use a different name but may need to edit commands in subsequent labs.
+* [ ] Set the **Master username** to `administrator`. This is the user account with the most elevated permissions in the database, you can use a different name but may need to edit commands in subsequent labs.
 * [ ] Set the **Master password** to a desired and memorable value, confirm the password.
 * [ ] Ensure the check box **Auto generate a password** is **not checked**.
 
@@ -158,7 +158,7 @@ In the top right corner of the details page, click on **Actions** and then on **
 
 <span class="image">![DB Cluster Add Auto Scaling](4-add-as-policy.png?raw=true)</span>
 
-Set the **Policy name** based on the stack name: `auroralab-autoscale-readers`. For the **Target metric** choose **Average CPU utilization of Aurora Replicas**. Enter a **Target value** of `20` percent. In a production use case this value may need to be set much higher, but we are using a lower value for demonstration purposes. Next, expand the **Additional configuration** section, and change both the **Scale in cooldown period** and **Scale out cooldown period** to a value of `180` seconds. This will reduce the time you have to wait between scaling operations in subsequent labs.
+Set the **Policy name** based on the stack name: `auroralab-autoscale-readers`. For the **Target metric** choose **Average CPU utilization of Aurora Replicas**. Enter a **Target value** of `30` percent. In a production use case this value may need to be set much higher, but we are using a lower value for demonstration purposes. Next, expand the **Additional configuration** section, and change both the **Scale in cooldown period** and **Scale out cooldown period** to a value of `180` seconds. This will reduce the time you have to wait between scaling operations in subsequent labs.
 
 In the **Cluster capacity details** section, set the **Minimum capacity** to `1` and **Maximum capacity** to `2`. In a production use case you may need to use different values, but for demonstration purposes, and to limit the cost associated with the labs we limit the number of readers to two. Next click **Add policy**.
 
@@ -176,13 +176,13 @@ Click **Store a new secret** to start the configuration process.
 
 <span class="image">![Create Secret](5-create-secret.png?raw=true)</span>
 
-In the **Select secret type** section, choose **Credentials for RDS database**, then input the **User name** (should be `masteruser`) and **Password** that you provided when you created the DB cluster previously.
+In the **Select secret type** section, choose **Credentials for RDS database**, then input the **User name** (should be `administrator`) and **Password** that you provided when you created the DB cluster previously.
 
 Next, in the **Select which RDS database this secret will access** section, choose the DB cluster identifier you assigned to your cluster (e.g. `auroralab-mysql-cluster`). Click **Next**.
 
 <span class="image">![Configure Secret](5-config-secret.png?raw=true)</span>
 
-Name the secret `secretClusterMasterUser` and provide a relevant description for the secret, then click **Next**.
+Name the secret `secretClusterAdminUser` and provide a relevant description for the secret, then click **Next**.
 
 <span class="image">![Name Secret](5-name-secret.png?raw=true)</span>
 
@@ -201,7 +201,7 @@ In the detail view of the secret, note the value for **Secret ARN**. Write this 
 <span class="image">![Secret ARN](5-arn-secret.png?raw=true)</span>
 
 
-## 6. Configure the EC2 workstation
+## 6. Configure your Cloud9 desktop
 
 Subsequent labs on this site use a consistent way to access DB credentials, regardless if the DB cluster was created manually or automatically. To simplify interactions, the lab credentials are saved in environment variables on the EC2 workstation you use to issue commands to the database. When the cluster is created automatically, the credentials are also set up for you. When you create the cluster manually, you need to run a few additional commands to reach parity.
 
@@ -211,8 +211,8 @@ If you are not already connected to the Session Manager workstation command line
 CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'`
 export DBUSER="`echo $CREDS | jq -r '.username'`"
 export DBPASS="`echo $CREDS | jq -r '.password'`"
-echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
-echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+echo "export DBPASS=\"$DBPASS\"" >> /home/ec2-user/.bashrc
+echo "export DBUSER=$DBUSER" >> /home/ec2-user/.bashrc
 ```
 
 ## 7. Verify DB cluster
@@ -223,10 +223,10 @@ Let's make sure your DB cluster has been created properly. First let's ensure th
 echo $DBUSER
 ```
 
-You should see `masteruser` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpoint]== placeholder with the value of the cluster endpoint created in the preceding steps:
+You should see `administrator` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpoint]== placeholder with the value of the cluster endpoint created in the preceding steps:
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 
-You should see a response containing version number `2.09.1`.
+You should see a response containing version number `2.10.0`.
