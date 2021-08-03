@@ -1,12 +1,11 @@
-# Connect, Load Data and Auto Scale
+# Connect to the DB Cluster and Load Data
 
-This lab will walk you through the process of connecting to the DB cluster you have just created, and using the cluster for the first time. At the end you will test out how Aurora read replica auto scaling works in practice using a load generator script.
+This lab will walk you through the process of connecting to the DB cluster you have just created, and using the cluster for the first time. You will also load an initial data set from Amazon S3.
 
 This lab contains the following tasks:
 
 1. Connect to the DB cluster
 2. Load an initial data set from S3
-3. Run a read-only workload
 
 This lab requires the following prerequisites:
 
@@ -19,7 +18,7 @@ This lab requires the following prerequisites:
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect.
 
-If you are not already connected to the Session Manager workstation command line from previous labs, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
 !!! tip "Where do I find the cluster endpoint (or any other placeholder parameters)?"
     If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the value of the cluster endpoint on the DB cluster details page in the RDS console, as noted at Step 2. in that lab.
@@ -41,7 +40,7 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
 
-Once connected to the database, use the code below to create a stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
+Once connected to the database, use the code below to create a stored procedure we'll use in future labs, to generate load on the DB cluster. Run the following SQL queries:
 
 ```sql
 DELIMITER $$
@@ -76,7 +75,7 @@ KEY `k_1` (`k`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 ```
 
-Next, load an initial data set by importing data from an Amazon S3 bucket:
+Next, load an initial data set by importing data from an object located in an Amazon S3 bucket:
 
 ```sql
 LOAD DATA FROM S3 MANIFEST
@@ -94,32 +93,8 @@ Data loading may take several minutes, you will receive a successful query messa
 quit;
 ```
 
+You have now completed a few basic commands to interact with your Aurora DB cluster for the first time. These commands illustrate how to:
 
-## 3. Run a read-only workload
-
-Once the data load completes successfully, you can run a read-only workload to generate load on the cluster. You will also observe the effects on the DB cluster topology. For this step you will use the **Reader Endpoint** of the cluster. If you created the cluster manually, you can find the endpoint value as indicated in that lab. If the DB cluster was created automatically for you the value can be found in your CloudFormation stack outputs.
-
-Run the load generation script from the Session Manager workstation command line, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
-
-```shell
-python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
-```
-
-Now, open the <a href="https://console.aws.amazon.com/rds/home#databases:" target="_blank">Amazon RDS service console</a> in a different browser tab.
-
-!!! warning "Region Check"
-    Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
-
-Take note that the reader node is currently receiving load. It may take a minute or more for the metrics to fully reflect the incoming load.
-
-<span class="image">![Reader Load](3-read-load.png?raw=true)</span>
-
-After several minutes return to the list of instances and notice that a new reader is being provisioned to your cluster.
-
-<span class="image">![Application Auto Scaling Creating Reader](3-aas-create-reader.png?raw=true)</span>
-
-Once the new replica becomes available, note that the load distributes and stabilizes (it may take a few minutes to stabilize).
-
-<span class="image">![Application Auto Scaling Creating Reader](3-read-load-balanced.png?raw=true)</span>
-
-You can now toggle back to the Session Manager command line, and type `CTRL+C` to quit the load generator. After a while the additional reader will be removed automatically.
+* create a stored procedure in Aurora MySQL
+* create a new table using standard SQL synthax
+* load data from files located in an Amazon S3 bucket
