@@ -33,7 +33,7 @@ Please select the option that matches your circumstances best:
 
     <span class="image">![Stack Outputs](1-ee-outputs.png?raw=true)</span>
 
-    Once you have completed these steps, you can continue with the next lab: [**Connect to the Session Manager workstation**](/prereqs/connect/)
+    Once you have completed these steps, you can continue with the next lab: [**Connect to the Cloud9 Desktop**](/prereqs/connect/)
 
 
 === "I need to deploy lab environment manually"
@@ -96,6 +96,6 @@ Please select the option that matches your circumstances best:
 
     Let's make sure your workstation has been configured properly:
 
-    * Do you see a value similar to `i-0123456789abcdef0` (the value may vary) for the **ec2Instance** CloudFormation stack output key?
+    * Do you see a URL similar to `https://[region].console.aws.amazon.com/cloud9/ide/[hash]?region=[region])` (the values may vary) for the **clientIdeUrl** CloudFormation stack output key?
 
-    If so, you may proceed to the next lab: [**Connect to the Session Manager workstation**](/prereqs/connect/). Otherwise please revisit the instructions above, you might have missed a step.
+    If so, you may proceed to the next lab: [**Connect to the Cloud9 Desktop**](/prereqs/connect/). Otherwise please revisit the instructions above, you might have missed a step.

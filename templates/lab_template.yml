@@ -964,7 +964,7 @@ Resources:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
         innodb_stats_persistent_sample_pages: "256"
         slow_query_log: "1"
-        long_query_time: "10"
+        long_query_time: "1"
         log_output: FILE
       Tags:
         - Key: Name
