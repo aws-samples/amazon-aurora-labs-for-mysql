@@ -598,13 +598,13 @@ Resources:
       RuleNumber: 100 
 
 ## Create a random generated password and store it as a secret for the DB cluster
-  secretClusterMasterUser:
+  secretClusterAdminUser:
     Type: "AWS::SecretsManager::Secret"
     Condition: condDeployDBCluster
     Properties:
-      Description: !If [ condEventEngine, "Master user credentials for DB cluster 'auroralab-mysql-cluster'", !Sub "Master user credentials for DB cluster '${AWS::StackName}-mysql-cluster'" ]
+      Description: !If [ condEventEngine, "Administrator user credentials for DB cluster 'auroralab-mysql-cluster'", !Sub "Administrator user credentials for DB cluster '${AWS::StackName}-mysql-cluster'" ]
       GenerateSecretString:
-        SecretStringTemplate: '{"username": "masteruser"}'
+        SecretStringTemplate: '{"username": "administrator"}'
         GenerateStringKey: 'password'
         PasswordLength: 10
         ExcludeCharacters: '"@/\$`&:{}()[]'
@@ -856,7 +856,7 @@ Resources:
             - "echo \"$(date \"+%F %T\") * environment vars initialized\" >> /bootstrap.log"
             - Fn::If:
               - condDeployDBCluster
-              - !Sub "export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id \"${secretClusterMasterUser}\" --region ${AWS::Region} | jq -r '.SecretString'` && export DBPASS=`echo $SECRETSTRING | jq -r '.password'` && export DBUSER=`echo $SECRETSTRING | jq -r '.username'`"
+              - !Sub "export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id \"${secretClusterAdminUser}\" --region ${AWS::Region} | jq -r '.SecretString'` && export DBPASS=`echo $SECRETSTRING | jq -r '.password'` && export DBUSER=`echo $SECRETSTRING | jq -r '.username'`"
               - ""
             - Fn::If:
               - condDeployDBCluster
@@ -981,8 +981,8 @@ Resources:
       DBClusterParameterGroupName: !Ref cpgClusterParams
       DBClusterIdentifier: !If [ condEventEngine, "auroralab-mysql-cluster", !Sub "${AWS::StackName}-mysql-cluster" ]
       BackupRetentionPeriod: 1
-      MasterUsername: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:username}}" ]]
-      MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}" ]]
+      MasterUsername: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:username}}" ]]
+      MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:password}}" ]]
       DatabaseName: !FindInMap [ ClusterSettings, global, dbSchema ]
       StorageEncrypted: true
       VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
@@ -1105,11 +1105,11 @@ Resources:
           dbUser:
             type: String
             description: "DB User"
-            default: !If [ condDeployDBCluster, !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:username}}" ] ], "" ]
+            default: !If [ condDeployDBCluster, !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:username}}" ] ], "" ]
           dbPassword:
             type: String
             description: "DB Password"
-            default: !If [ condDeployDBCluster, !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterMasterUser, ":SecretString:password}}" ] ], "" ]
+            default: !If [ condDeployDBCluster, !Join [ "", [ "{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:password}}" ] ], "" ]
           dbSchema:
             type: String
             description: "DB Schema"
@@ -1538,7 +1538,7 @@ Outputs:
     Value: !Ref dbClusterSecGroup
   secretArn:
     Description: "Database Credentials Secret ARN"
-    Value: !If [ condDeployDBCluster, !Ref secretClusterMasterUser, "" ]
+    Value: !If [ condDeployDBCluster, !Ref secretClusterAdminUser, "" ]
   s3BucketName:
     Description: "S3 Bucket Name for SageMaker training data"
     Value: !Ref bucketLabData
