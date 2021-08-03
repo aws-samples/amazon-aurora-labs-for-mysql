@@ -187,14 +187,6 @@ Mappings:
       az1: eu-west-2b
       az2: eu-west-2a
       az3: eu-west-2c
-    eu-west-3:
-      ideType: m5.large
-      supersetType: m5.large
-      nodeType: db.r5.large
-      name: Paris
-      az1: eu-west-3c
-      az2: eu-west-3b
-      az3: eu-west-3a
     ap-southeast-1:
       ideType: m5.large
       supersetType: m5.large
