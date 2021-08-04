@@ -10,7 +10,7 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 
 

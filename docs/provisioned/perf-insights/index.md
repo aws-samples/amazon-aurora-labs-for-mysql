@@ -11,7 +11,7 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 
 
@@ -19,22 +19,22 @@ This lab requires the following prerequisites:
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, choose the tab below that best matches your circumstances, and run the indicated commands:
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, choose the tab below that best matches your circumstances, and run the indicated commands:
 
 === "The DB cluster has been pre-created for me"
-    If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run the simplified command below, replacing the ==[ec2Instance]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
+    If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run the simplified command below:
 
         aws ssm send-command \
         --document-name auroralab-sysbench-test \
-        --instance-ids [ec2Instance]
+        --instance-ids `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
 
 
 === "I have created the DB cluster myself"
-    If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute the command below, replacing the ==[ec2Instance]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop. Also replace the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+    If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
         aws ssm send-command \
         --document-name auroralab-sysbench-test \
-        --instance-ids [ec2Instance] \
+        --instance-ids `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id` \
         --parameters \
         clusterEndpoint=[clusterEndpoint],\
         dbUser=$DBUSER,\
@@ -60,15 +60,15 @@ While the command is running, open the <a href="https://console.aws.amazon.com/r
 
 Find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance details. 
 
-<span class="image">![RDS Dashboard](2-find-writer.png?raw=true)</span>
+<span class="image">![RDS Dashboard](rds-find-writer.png?raw=true)</span>
 
 Next, select the **Monitoring** tab, click the **Monitoring** button, to expand the list of available actions, and choose **Performance Insights**. This will open a new browser tab with the **Performance Insights Dashboard** for that DB instance.
 
-<span class="image">![Select DB Instance](2-select-monitoring.png?raw=true)</span>
+<span class="image">![Select DB Instance](rds-select-monitoring.png?raw=true)</span>
 
 The dashboard is divided into 3 sections, allowing you to drill down from high level performance indicator metrics down to individual queries, waits, users and hosts generating the load.
 
-<span class="image">![Performance Insights Dashboard](2-pi-dashboard.png?raw=true)</span>
+<span class="image">![Performance Insights Dashboard](rds-pi-dashboard.png?raw=true)</span>
 
 The performance metrics displayed by the dashboard are a moving time window. You can adjust the size of the time window by clicking the buttons across the top right of the interface (`5m`, `1h`, `5h`, `24h`, `1w`, `all`). You can also zoom into a specific period of time by dragging across the graphs.
 
@@ -86,7 +86,7 @@ Granular Session Activity | Sort by **Waits**, **SQL** (default), **Users** and 
 
 After running the load generator workload above, you will see a performance profile similar to the example below in the Performance Insights dashboard. The load generator command will first create an initial data set using `sysbench prepare`. And then will run an OLTP workload for the duration of 5 minutes, consisting of concurrent transactional reads and writes using 4 parallel threads.
 
-<span class="image">![Load Test Profile](3-load-profile.png?raw=true)</span>
+<span class="image">![Load Test Profile](rds-pi-loadprofile.png?raw=true)</span>
 
 Amazon Aurora MySQL specific wait events are documented in the <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.Waitevents" target="_blank">Amazon Aurora MySQL Reference guide</a>. Use the Performance Insights dashboard and the reference guide documentation to evaluate the workload profile of your load test, and answer the following questions:
 

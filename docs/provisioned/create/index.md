@@ -20,7 +20,7 @@ This lab contains the following tasks:
 This lab requires the following lab modules to be completed first:
 
 * [Get Started](/prereqs/environment/) (you do not need to provision a DB cluster automatically)
-* [Connect to the Session Manager Workstation](/prereqs/connect/) (needed for task \#6)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/) (needed for task \#6)
 
 ## 1. Create the DB cluster
 
