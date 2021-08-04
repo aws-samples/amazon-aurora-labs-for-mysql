@@ -13,12 +13,12 @@ This lab requires the following prerequisites:
 * [Get Started](/prereqs/environment/)
 * [Connect to the Session Manager Workstation](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
-* [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
+* [Connect to the DB Cluster and Load Data](/provisioned/interact/)
 
 
 ## 1. Make unintended data changes
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
