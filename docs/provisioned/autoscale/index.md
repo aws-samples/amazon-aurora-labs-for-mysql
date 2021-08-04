@@ -27,6 +27,8 @@ python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 
 The command will report the number of queries it is sending to the database per second.
 
+<span class="image">![Cloud9 Read Loadgen](c9-read-loadgen.png?raw=true)</span>
+
 
 ## 2. Observe read replica auto scaling
 

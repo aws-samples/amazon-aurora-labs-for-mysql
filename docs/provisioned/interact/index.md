@@ -87,7 +87,11 @@ FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\r\n';
 ```
 
-Data loading may take several minutes, you will receive a successful query message once it completes. When completed, exit the MySQL command line:
+Data loading may take several minutes, you will receive a successful query message once it completes.
+
+<span class="image">![Cloud9 MySQL Commands](c9-mysql-commands.png?raw=true)</span>
+
+When completed, exit the MySQL command line:
 
 ```sql
 quit;
