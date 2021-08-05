@@ -22,15 +22,16 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
+* [Connect to the DB Cluster and Load Data](/provisioned/interact/)
 
 
 ## 1. Set up failover event notifications
 
 To receive notifications when failover events occur with your DB cluster, you will create an Amazon Simple Notification Service (SNS) topic, subscribe your email address to the SNS topic, create an RDS event subscription publishing events to the SNS topic and registering the DB cluster as an event source.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run:
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once opened, run:
 
 ```shell
 aws sns create-topic \
@@ -39,7 +40,7 @@ aws sns create-topic \
 
 If successful, the command will respond back with a **TopicArn** identifier, you will need this value in the next command.
 
-<span class="image">![Create SNS Topic](1-sns-topic.png?raw=true)</span>
+<span class="image">![Create SNS Topic](cli-sns-topic.png?raw=true)</span>
 
 Next, subscribe your email address to the SNS topic using the command below, changing the placeholder ==[YourEmail]== with your email address:
 
@@ -52,7 +53,7 @@ aws sns subscribe \
 
 You will receive a verification email on that address, please confirm the subscription by following the instructions in the email.
 
-<span class="image">![Create SNS Topic](1-subscription-verify.png?raw=true)</span>
+<span class="image">![Create SNS Topic](email-subscription-verify.png?raw=true)</span>
 
 Once confirmed, or while you are waiting for the verification email to arrive, create an RDS event subscription and register the DB cluster as an event source using the command below:
 
@@ -69,7 +70,7 @@ aws rds add-source-identifier-to-subscription \
 --source-identifier auroralab-mysql-cluster
 ```
 
-<span class="image">![RDS Event Subscription](1-rds-event-source.png?raw=true)</span>
+<span class="image">![RDS Event Subscription](cli-event-subscription.png?raw=true)</span>
 
 At this time the event notifications have been configured. Ensure you have verified your email address before proceeding to the next section.
 
@@ -89,11 +90,11 @@ In this test you will use a [simple failover monitoring script](/scripts/simple_
     --- | --- | ---
     innodb_read_only | `0` for writers, `1` for readers | This global system variable indicates whether the storage engine was opened in read-only mode or not.
     aurora_server_id | `auroralab-[...]` | This is the value of the DB instance identifier configured for that particular cluster member at creation time
-    aurora_version | e.g. `1.19.5` | This is the version of the Amazon Aurora MySQL database engine running on your DB cluster. Note, these version numbers are different than the MySQL version.
+    aurora_version | e.g. `2.10.0` | This is the version of the Amazon Aurora MySQL database engine running on your DB cluster. Note, these version numbers are different than the MySQL version.
 
     In the event of a fault, the script will report the number of seconds it takes to reconnect to the intended endpoint and the writer role.
 
-You will need to open an additional command line session to your Session Manager workstation. You will execute commands in one, and see the results in the other session. See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session. It will also be more effective if the two browser windows are side by side.
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. You will need an additional terminal window as well. You will execute commands in one, and see the results in the other window. See [Connect to the Cloud9 Desktop](/prereqs/connect/), for steps how to change the layout to have two terminal windows side by side.
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
@@ -106,7 +107,7 @@ You can quit the monitoring script at any time by pressing `Ctrl+C`.
 !!! warning "Cluster Endpoint"
     Please ensure you use the **Cluster Endpoint** and not a different endpoint for the purposes of this test. If you encounter an error, starting the script, please verify that the endpoint is correct.
 
-<span class="image">![Initialize Sessions](2-initialize-sessions.png?raw=true)</span>
+<span class="image">![Initialize Sessions](cli-simple-started.png?raw=true)</span>
 
 In the other command line session, you will trigger a manual failover of the cluster. During this process, Amazon Aurora will promote the reader as the new writer DB instance and demote the old writer to a reader role. The process will take several seconds to complete and will disconnect the monitoring script as well as other database connections. All DB instances in the cluster will be restarted.
 
@@ -119,16 +120,16 @@ aws rds failover-db-cluster \
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
 
-<span class="image">![Trigger DNS Failover](2-dns-failover.png?raw=true)</span>
+<span class="image">![Trigger DNS Failover](cli-simple-failover.png?raw=true)</span>
 
 ??? info "Observations"
-    Initially, the Cluster DNS endpoint resolves to the IP address of one of the cluster DB instances (`auroralab-mysql-node-01` in the example above). The monitoring script connects to that particular DB instance and determines it is a writer.
+    Initially, the Cluster DNS endpoint resolves to the IP address of one of the cluster DB instances (`auroralab-mysql-node-2` in the example above). The monitoring script connects to that particular DB instance and determines it is a writer.
 
     When the actual failover is implemented by the AWS automation, the monitoring script stops being able to connect to the database engine, as both the writer and the reader DB engines are being rebooted and re-configured.
 
     After several seconds, the monitoring script is able to connect again to the DB engine, but DNS has not fully updated yet, so it still connects to the old writer DB instance, which is now a reader. This underscores the importance of verifying the role of the engine upon establishing connections or borrowing them from a connection pool. The monitoring script correctly detects the discrepancy, and continues attempting to re-connect to the correct endpoint.
 
-    After several additional seconds, the monitoring script is able to connect to the correct new writer DB instance (`auroralab-mysql-node-02` in the example above), after the cluster endpoint has been re-configured automatically to point to the new writer, and DNS TTL has expired client-side. In the example above, the total client side observed failover disruption was ~12 seconds.
+    After several additional seconds, the monitoring script is able to connect to the correct new writer DB instance (`auroralab-mysql-node-1` in the example above), after the cluster endpoint has been re-configured automatically to point to the new writer, and DNS TTL has expired client-side. In the example above, the total client side observed failover disruption was ~9 seconds.
 
     In the event of a true hardware failure, you will likely not be able to connect to the old writer instance. But the client may attempt to connect until the attempt times out. A very long `connect_timeout` value in the client MySQL driver configuration may delay recovery for a longer period of time. However, there are other use cases where you would want to initiate a manual failover, such as scaling the compute of writer DB instances with minimal disruption.
 
@@ -138,7 +139,7 @@ Feel free to repeat the failover procedure a few times to determine if there are
 
 You will also receive two event notification emails for each failover you initiate, one indicating that a failover has **started**, and one indicating that it has **completed**.
 
-<span class="image">![SNS Emails](2-notification-emails.png?raw=true)</span>
+<span class="image">![SNS Emails](notification-emails.png?raw=true)</span>
 
 !!! note
     The difference between the notification timestamps of the two event notifications may be larger than the actual disruption observed using the monitoring script. The monitoring script measures the actual disruption observed by the client, while the event notification reflects the end-to-end failover process, including subsequent service-side validations once the DB cluster is operational again.
@@ -156,7 +157,7 @@ In this test you will simulate a crash of the database engine service on the DB 
     * Simulate read replica failures
 
 
-Connect to the cluster endpoint using a MySQL client in the command line session that does not run the monitoring script:
+Connect to the cluster endpoint using a MySQL client in the terminal window that does not run the monitoring script:
 
 ```shell
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
@@ -170,16 +171,16 @@ ALTER SYSTEM CRASH INSTANCE;
 
 Wait and observe the monitor script output. Once triggered, you should see monitoring output similar to the example below.
 
-<span class="image">![Trigger Fault Injection](3-fault-injection.png?raw=true)</span>
+<span class="image">![Trigger Fault Injection](cli-crash-failover.png?raw=true)</span>
 
 ??? info "Observations"
     When the crash is triggered, the monitoring script stops being able to connect to the database engine.
 
     After a few seconds the monitoring script is able to connect again to the DB engine.
 
-    The role of the DB instance has not changed, the writer is still the same DB instance (`auroralab-mysql-node-02` in the example above).
+    The role of the DB instance has not changed, the writer is still the same DB instance (`auroralab-mysql-node-1` in the example above).
 
-    No DNS changes are needed. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was ~2 seconds.
+    No DNS changes are needed. As a result the recovery is significantly faster. In the example above, the total client side observed failover disruption was 4 seconds.
 
 You may need to exit the mysql command console, even if it is disconnected using by typing:
 
@@ -199,7 +200,7 @@ Simple DNS-based failovers work well for most use cases, and they are relatively
     * If the current DB instance is not the writer, it simply reconnects to the DB instance endpoint of the new writer directly.
     * Upon encountering a new failure, it falls back to using the cluster DNS endpoint again.
 
-Assuming you still have the two command line sessions open and active, open a 3rd command line session. See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session. It will also be more effective if you put the new browser window side by side with the others.
+Assuming you still have the two terminal windows open and active, open a 3rd terminal window. See [Connect to the Cloud9 Desktop](/prereqs/connect/), for steps how to change the layout to have multiple terminal windows side by side, the example below uses a **Cross Split** layout.
 
 In the new (third) command line session, start the cluster-aware monitoring script using the following command:
 
@@ -221,7 +222,7 @@ aws rds failover-db-cluster \
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
 
-<span class="image">![Trigger Aware Failover](4-aware-failover.png?raw=true)</span>
+<span class="image">![Trigger Aware Failover](cli-aware-failover.png?raw=true)</span>
 
 ??? info "Observations"
     When the crash is triggered, the monitoring script stops being able to connect to the database engine
@@ -230,7 +231,7 @@ Wait and observe the monitor script output. It can take some time for Amazon Aur
 
     It disconnects, and reconnects to the new DB writer directly using the DB instance endpoint.
 
-    In the example above, this process took 4 seconds to restore connectivity compared to 9 seconds when relying exclusively on the cluster DNS endpoint.
+    In the example above, this process took 6 seconds to restore connectivity compared to 12 seconds when relying exclusively on the cluster DNS endpoint.
 
     The initial cluster DNS endpoint is still authoritative and preferred, the cluster-aware monitoring script only uses the DB instance endpoint as long as it works, reverting back to the cluster endpoint when a failure is encountered. This ensures that connectivity is restored as quickly as possible even if there is a total compute failure of the writer DB instance.
 
@@ -253,29 +254,29 @@ Open the <a href="https://console.aws.amazon.com/rds/home" target="_blank">Amazo
 
 Navigate to **Proxies** in the left side navigation menu. Click **Create proxy**.
 
-<span class="image">![Create Proxy](5-create-proxy.png?raw=true)</span>
+<span class="image">![Create Proxy](rds-proxies-blank.png?raw=true)</span>
 
 In the **Proxy configuration** section, set the Proxy identifier to `auroralab-mysql-proxy`. In the **Target group configuration** section, choose `auroralab-mysql-cluster` in the **Database** dropdown. Leave all other default values as they are.
 
-<span class="image">![Configure Proxy](5-config-proxy-target.png?raw=true)</span>
+<span class="image">![Configure Proxy](rds-proxy-target.png?raw=true)</span>
 
-In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretClusterMasterUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `auroralab-database-sg`.
+In the **Connectivity** section, in the **Secret Manager secret(s)** dropdown, choose the secret with a name that starts with `secretClusterAdminUser`. In the **IAM role** dropdown, choose the option **Create IAM role**. Expand the **Additional connectivity options** section, and for **Existing VPC security groups** choose `auroralab-database-sg` (de-select the `default` security group).
 
-<span class="image">![Configure Proxy Connectivity](5-config-connectivity.png?raw=true)</span>
+<span class="image">![Configure Proxy Connectivity](rds-proxy-connectivity.png?raw=true)</span>
 
 Click **Create proxy**.
 
-<span class="image">![Agree Create](5-config-proxy-agree.png?raw=true)</span>
+<span class="image">![Agree Create](rds-proxy-create.png?raw=true)</span>
 
 Creating a proxy may take several minutes, you may need to refresh your browser page to view up to date status information. Once the status is listed as **Available**, click on the proxy identifier to view details.
 
-<span class="image">![Proxy Listing](5-proxy-listing.png?raw=true)</span>
+<span class="image">![Proxy Listing](rds-proxies-list.png?raw=true)</span>
 
-Note down the **Proxy endpoint**, you will use it later.
+In the **Proxy endpoints** section, locate the endpoint with **Target role** set as `Read/write`. Make a note of it, you will use it later.
 
-<span class="image">![Proxy Details](5-proxy-details.png?raw=true)</span>
+<span class="image">![Proxy Details](rds-proxy-endpoint.png?raw=true)</span>
 
-Next, you will need two command line sessions open and active (if you still have 3 open from the previous test you may close one by clicking the **Terminate** button in the top right corner). See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session. It will also be more effective if you put the two command line browser windows side by side.
+Next, you will need two terminal windows open in your Cloud9 desktop. See [Connect to the Cloud9 Desktop](/prereqs/connect/), for steps how to change the layout to have multiple terminal windows side by side, the example below uses a **Horizontal Split** layout.
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
@@ -288,7 +289,7 @@ You can quit the monitoring script at any time by pressing `Ctrl+C`.
 !!! warning "Proxy Endpoint"
     Please ensure you use the **Proxy Endpoint** from the previous step, not the cluster endpoint used in the previous labs. If you encounter an error, starting the script, please verify that the endpoint is correct.
 
-<span class="image">![Monitor Started](5-monitor-started.png?raw=true)</span>
+<span class="image">![Monitor Started](cli-proxy-started.png?raw=true)</span>
 
 In the other command line session, you will trigger a manual failover of the cluster.
 
@@ -301,12 +302,12 @@ aws rds failover-db-cluster \
 
 Wait and observe the monitor script output. It can take some time for Amazon Aurora to initiate the failover. Once the failover occurs, you should see monitoring output similar to the example below.
 
-<span class="image">![Monitor Failover](5-monitor-failover.png?raw=true)</span>
+<span class="image">![Monitor Failover](cli-proxy-failover.png?raw=true)</span>
 
 ??? info "Observations"
-    Initially, the proxy sends traffic to the current writer of the DB cluster (`auroralab-mysql-node-01` in the example above). The proxy forwards the monitoring script queries to that particular DB instance.
+    Initially, the proxy sends traffic to the current writer of the DB cluster (`auroralab-mysql-node-2` in the example above). The proxy forwards the monitoring script queries to that particular DB instance.
 
-    When the actual failover is implemented by the AWS automation, the monitoring script experiences a disconnection with MySQL error 1105. One second later, it is able to reconnect again, only this time the proxy is forwarding the queries to the new writer  (`auroralab-mysql-node-02` in the example above). The client experienced ~2 second of latency to the query response.
+    When the actual failover is implemented by the AWS automation, the proxy holds the client connection open until the failover completes. In this example the script only experiences an additional second of latency to the response, but the response is not provided by the new writer (`auroralab-mysql-node-1` in the example above). In practice, the client experienced ~2 second of latency to the query response.
 
     The timing of requests issued by the client (our monitoring script in this example) matters. If the query is in-flight at the time the failover starts, or you are attempting to establish a new connection while the failover is ongoing, the proxy will return an error so you can retry. Existing client connections with no in-flight queries will be kept open, and any queries received after the failover starts will be queued up at the proxy until the failover completes. Such clients will simply experience increased response latency for the queries issued during the failover.
 
@@ -339,4 +340,7 @@ aws rds delete-event-subscription \
 
 aws sns delete-topic \
 --topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`auroralab-cluster-failovers`)].TopicArn' --output text)
+
+aws rds delete-db-proxy \
+--db-proxy-name auroralab-mysql-proxy
 ```
