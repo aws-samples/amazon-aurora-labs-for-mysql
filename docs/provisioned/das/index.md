@@ -21,9 +21,9 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
-* [Connect, Load Data and Auto Scale](/provisioned/interact/) (connectivity and data loading sections only)
+* [Connect to the DB Cluster and Load Data](/provisioned/interact/)
 
 
 ## 1. Create an AWS KMS customer managed key (CMK)
@@ -112,7 +112,7 @@ Note the **Resource id** and **Kinesis stream** values, you will need these valu
 ## 3. Generate database load
 You will use a read-only workload to generate load on the DB cluster. This [read load generator script](/scripts/reader_loadtest.py) produces a variety of read queries, using concurrent threads.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Next, run the command below, replacing the ==[clusterEndpoint]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
 
 ```shell
 python3 reader_loadtest.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab -t2
@@ -147,7 +147,7 @@ Your output should look similar to the following example:
   "type": "record",
   "clientApplication": null,
   "pid": 21971,
-  "dbUserName": "masteruser",
+  "dbUserName": "administrator",
   "databaseName": "mylab",
   "remoteHost": "172.31.0.211",
   "remotePort": "10935",
