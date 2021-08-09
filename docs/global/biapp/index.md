@@ -51,7 +51,7 @@ Change to the **Outputs** tab, and find the values for the parameters, and make 
 !!! note
     If these values are not present, you may not have selected the correct region, or the lab environment was not initialized with the Global Database feature enabled. If you are participating in an organized event (e.g. workshop), please reach out to a lab assistant for help.
 
-Next, also in the **primary region**, open the <a href="https://console.aws.amazon.com/secretsmanager/home#/listSecrets" target="_blank">AWS Secrets Manager service console</a>. Click on the secret named starting with `secretClusterMasterUser-`.
+Next, also in the **primary region**, open the <a href="https://console.aws.amazon.com/secretsmanager/home#/listSecrets" target="_blank">AWS Secrets Manager service console</a>. Click on the secret named starting with `secretClusterAdminUser-`.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
@@ -89,7 +89,7 @@ In the **secondary region**, open the <a href="https://console.aws.amazon.com/rd
 
 If not already selected, click on the **Connectivity and security** tab, and note down the value of the **Reader Endpoint**. Verify that it is in an `Available` status.
 
-<span class="image">![RDS Secondary Endpoints](rds-secondary-endpoints.png?raw=true)</span>
+<span class="image">![RDS Secondary Endpoints](rds-cluster-secondary-endpoints.png?raw=true)</span>
 
 !!! note
     The **Writer** (cluster) endpoint is also displayed, but is marked in `Creating` or `Inactive` state. This is normal, the cluster endpoint will only be activated when a secondary region is promoted to a stand-alone DB cluster.

@@ -74,10 +74,10 @@ In the **Scheduling of modifications** section, choose the **Apply immediately**
 
 <span class="image">![RDS Cluster Confirm Changes](rds-cluster-modify-confirm.png?raw=true)</span>
 
-Once the modification is complete, and the DB cluster is in an `available` state again, from the **Actions** dropdown button, choose **Add region**.
+Once the modification is complete, and the DB cluster is in an `available` state again, from the **Actions** dropdown button, choose **Add AWS Region**.
 
-!!! note
-    You may need to refresh the web browser page after disabling Backtrack, before you can add a region. If **Add region** appears greyed out, please refresh the web browser page, or verify Backtrack was disabled correctly. 
+!!! warning "Backtrack Error"
+    You may need to refresh the web browser page after disabling Backtrack, before you can add a region. If **Add AWS Region** appears greyed out, our you get an error message when choosing that option, please refresh the web browser page, or verify Backtrack was disabled correctly. 
 
 <span class="image">![RDS Cluster Add Region](rds-cluster-action-add.png?raw=true)</span>
 
@@ -89,20 +89,27 @@ Set the following options on the configuration screen for the secondary DB clust
 2. In the **AWS Region** section:
     * [ ] Choose the **Secondary region** of `US East (N. Virginia)`
 
-3. In the **Connectivity** section, specify where the database cluster will be deployed within your defined network configuration created above:
+<span class="image">![RDS Cluster Add Region](rds-add-region-name.png?raw=true)</span>
+
+Scroll down and set the following parameters:
+
+1. In the **Connectivity** section, specify where the database cluster will be deployed within your defined network configuration created above:
     * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`
     * [ ] Ensure the correct **Subnet Group** was selected automatically, it should be named `auroralab-db-subnet-group`.
     * [ ] Make sure the **Publicly accessible** option is set to `No`
     * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection
 
-4. In the **Read replica write forwarding** section:
+2. In the **Read replica write forwarding** section:
     * [ ] **Check** the box for **Enable read replica write forwarding**
 
-5. Expand the **Advanced configuration** section, and configure the following options:
+<span class="image">![RDS Cluster Add Region](rds-add-region-connectivity.png?raw=true)</span>
+
+Scroll down and set the following parameters:
+
+3. Expand the **Additional configuration** section, and configure the following options:
     * [ ] Set **DB instance identifier** to `auroralab-mysql-node-3`
     * [ ] Set **DB cluster identifier** to `auroralab-mysql-secondary`
     * [ ] For **DB cluster parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)
-    * [ ] For **DB parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)
     * [ ] Set **Backup retention period** to `1 day`
     * [ ] **Check** the box for **Enable Performance Insights**
     * [ ] Set **Retention period** to `Default (7 days)`
@@ -114,7 +121,7 @@ Set the following options on the configuration screen for the secondary DB clust
 !!! note
     Please note there are **two** monitoring roles in the list, one for the primary region (the one in the top right corner of your web page), the other for the secondary region (typically `us-east-1`). At this step, you need the **secondary** region one.
 
-<span class="image">![RDS Cluster Add Region](rds-cluster-add-region.png?raw=true)</span>
+<span class="image">![RDS Cluster Add Region](rds-add-region-additional.png?raw=true)</span>
 
 ??? tip "What do these selections mean?"
     You will create a global cluster, a secondary DB cluster, and DB instance in that secondary cluster, with associated configurations in one step. Your existing DB cluster will become the primary DB cluster in the new global cluster. These are distinct API calls to the RDS service should you create a global cluster using the AWS CLI, SDKs or other tools. The RDS service console, simply combines these distinct steps into a single operation.
