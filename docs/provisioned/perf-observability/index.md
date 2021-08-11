@@ -234,12 +234,7 @@ You can download the logs via the AWS Management Console or the AWS CLI using th
 
 Slow logs are great for troubleshooting, but viewing or downloading individual logs could be time consuming. Also, logs could get rotated periodically. In addition to viewing and downloading DB instance logs from the console, you can **publish** logs to Amazon CloudWatch Logs. With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent.
 
-
-!!! error "Lab issue"
-    We have students enable log publication even if they create the cluster manually in the Create DB Cluster lab. Might be worth removing the "if the cluster was created automatically... if not..." part and just say that the cluster should already have log publication enabled, but they can verify that by checking the console.
-
-If the DB cluster was created automatically, you can see that the export CloudWatch logs option is already enabled.
-This can be verified by going to the RDS console, under cluster **Configuration** → **Published logs** like below. Please proceed to next step only if you see slow query in it. However if you are creating the cluster manually please make sure you enable this option by modifying the database instance using RDS console before proceeding further.
+This can be verified by going to the RDS console, under cluster **Configuration** → **Published logs** like below. Please proceed to next step only if you see slow query in it.
 
 <span class="image">![CloudWatchL](CWL1.png?raw=true)</span>
 
