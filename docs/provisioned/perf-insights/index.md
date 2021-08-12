@@ -47,7 +47,7 @@ If you have not already opened a terminal window or the Cloud9 desktop in a prev
     --instance-ids | The EC2 instance to execute this command on.
     --parameters | Additional command parameters.
 
-The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
+The command will be sent to the Cloud9 desktop EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
 <span class="image">![SSM Command](ssm-command-sysbench.png?raw=true)</span>
 

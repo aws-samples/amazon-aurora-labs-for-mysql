@@ -17,7 +17,7 @@ The following labs are currently available, click on the relevant tab to see the
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
     P1 | [**Get started using the lab environment**](/prereqs/environment/) | **Required, start here** | Set up the lab environment and provision the prerequisite resources.
-    P2 | [**Connect to the Session Manager workstation**](/prereqs/connect/) | **Required** | Connect to the EC2 based workstation using Session Manager, so you can interact with the database.
+    P2 | [**Connect to the Cloud9 Desktop**](/prereqs/connect/) | **Required** | Connect to the AWS Cloud9 cloud-based integrated development environment (IDE) so you can interact with the database.
 
 
 === "Provisioned"

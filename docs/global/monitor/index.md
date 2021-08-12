@@ -10,7 +10,7 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/) (choose the **Deploy Global DB** option)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Deploy an Aurora Global Database](/global/deploy/)
 
 
@@ -18,30 +18,29 @@ This lab requires the following prerequisites:
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/) in the **primary region**. Once connected, enter one of the following commands, replacing the placeholders appropriately.
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, choose the tab below that best matches your circumstances, and run the indicated commands:
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are the links in this guide to open the service console at the right screen.
 
-If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute this command:
+=== "The DB cluster has been pre-created for me"
+    If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run the simplified command below:
 
-```shell
-aws ssm send-command \
---document-name [loadTestRunDoc] \
---instance-ids [ec2Instance] \
---parameters \
-clusterEndpoint=[clusterEndpoint],\
-dbUser=$DBUSER,\
-dbPassword="$DBPASS"
-```
+        aws ssm send-command \
+        --document-name auroralab-sysbench-test \
+        --instance-ids `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
 
-If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create a New DB Cluster** lab, you can run this simplified command:
 
-```shell
-aws ssm send-command \
---document-name [loadTestRunDoc] \
---instance-ids [ec2Instance]
-```
+=== "I have created the DB cluster myself"
+    If you have completed the [Create a New DB Cluster](/provisioned/create/) lab, and created the Aurora DB cluster manually execute the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+
+        aws ssm send-command \
+        --document-name auroralab-sysbench-test \
+        --instance-ids `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id` \
+        --parameters \
+        clusterEndpoint=[clusterEndpoint],\
+        dbUser=$DBUSER,\
+        dbPassword="$DBPASS"
 
 ??? tip "What do all these parameters mean?"
     Parameter | Description
@@ -50,9 +49,9 @@ aws ssm send-command \
     --instance-ids | The EC2 instance to execute this command on.
     --parameters | Additional command parameters.
 
-The command will be sent to the workstation EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
+The command will be sent to the Cloud9 desktop EC2 instance which will prepare the test data set and run the load test. It may take up to a minute for CloudWatch to reflect the additional load in the metrics. You will see a confirmation that the command has been initiated.
 
-<span class="image">![SSM Command](ssm-cmd-sysbench.png?raw=true)</span>
+<span class="image">![SSM Command](ssm-command-sysbench.png?raw=true)</span>
 
 
 ## 2. Monitor cluster load and replication lag
@@ -74,29 +73,37 @@ Open the <a href="https://console.aws.amazon.com/cloudwatch/home?region=us-east-
 !!! warning "Region Check"
     You are going to work in a different region in the subsequent steps: N. Virginia (us-east-1). As you have multiple browser tabs and command line sessions open, please make sure you are always operating in the intended region.
 
+!!! warning "Console Experience Updates"
+    The CloudWatch service team is in the process of updating the service console web interface to improve the experience. Depending on when you are running the labs, you may be offered the old or the new experience. A banner will allow you to switch between them. The screenshots below are using the new console experience.
+
+
 <span class="image">![CloudWatch Dashboards Listing](cw-dash-listing.png?raw=true)</span>
 
-Click **Create dashboard**. Let's name our new dashboard `auroralab-gdb-dashboard` and click on the **Create dashboard** button again.
+Click **Create dashboard**. Name the new dashboard `auroralab-gdb-dashboard` and click on the **Create dashboard** button again.
 
 <span class="image">![CloudWatch Dashboard Creation](cw-dash-create.png)</span>
 
-Let's add our first widget on the dashboard that will show our replication latency between the secondary and primary Aurora cluster. Select **Number** and then click on **Configure**.
+Next, add the first widget on the dashboard that will show replication latency between the secondary and primary Aurora cluster. Select **Number**.
 
 <span class="image">![CloudWatch Dashboard Add Number Widget](cw-dash-add-number.png)</span>
 
-In the **Add Metric Graph** screen, we will look under the **All Metrics** tab, and select **RDS**, and then select the metrics group named **SourceRegion**.
+On the **Add metric graph** screen, in the **Metrics** tab, expand **AWS Namespaces** if needed. From the list of services, select **RDS**, and then select the metrics group named **DBClusterIdentifier, SourceRegion**.
 
-You should now see a filtered Metric Name `AuroraGlobalDBReplicationLag`, with the SourceRegion column as the name of your primary region of the global cluster. Select this metric using the checkbox.
+<span class="image">![CloudWatch Widget Configuration 1](cw-widget-setup1.png)</span>
 
-The widget preview should now be on top with a sample of the lag time in milliseconds. Let's further update the widget. Give it a friendly name by clicking on the edit icon (pencil icon) and rename the widget from `Untitled Graph` to `Global DB Replication Lag (avg, 1min)`, press the tick/check icon to submit your changes.
+You should now see a filtered list of metrics. Choose the metric named `AuroraGlobalDBReplicationLag` and select this metric using the checkbox.
 
-On the bottom, click on the **Graph Metrics** tab to further customize our view. Under the **Statistic** column, we want to change this to `Average` and **Period** to `1 Minute`.
+The widget preview should now be on top with a sample of the lag time in milliseconds. Give the widget a friendly name by clicking on the edit icon (pencil icon) and rename the widget from `Untitled graph` to `Global DB Replication Lag (avg, 1min)`, click **Apply** to submit your changes.
+
+<span class="image">![CloudWatch Widget Configuration 2](cw-widget-setup2.png)</span>
+
+On the bottom, click on the **View graphed metrics (1)** button to further customize the view. Under the **Statistic** column, we want to change this to `Average` and **Period** to `1 Minute`.
 
 Confirm your settings are similar to the example below, and then click **Create widget**.
 
-<span class="image">![CloudWatch Widget Configuration](cw-widget-setup.png)</span>
+<span class="image">![CloudWatch Widget Configuration](cw-widget-setup3.png)</span>
 
-Now you have created your first widget. You can set this to Auto refresh on a set interval on the top right refresh menu.
+You have now created your first widget. You can set this to Auto refresh on a set interval on the top right refresh menu.
 
 Click **Save dashboard** to save your changes.
 
