@@ -35,9 +35,10 @@ theme:
 
 # Customization
 extra_css:
-  - 'assets/css/custom.css'
-#extra_javascript:
-#  - 'assets/js/custom.js'
+  - 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css'
+extra_javascript:
+  - 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js'
+  - 'assets/js/highlight.js'
 extra:
   social:
     - icon: 'fontawesome/solid/home'
@@ -50,10 +51,10 @@ extra:
 # Extensions
 markdown_extensions:
   - admonition
-  - codehilite
   - toc:
       permalink: true
   - pymdownx.details
+  - pymdownx.inlinehilite
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.tabbed
