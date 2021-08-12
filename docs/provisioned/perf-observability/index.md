@@ -292,13 +292,6 @@ Normally, some amount of manual or automation effort is needed to find unique pa
 
 First, you need to download the **slow query logs** from the database instance. You can either do this using the RDS Console, or the AWS CLI.
 
-!!! error "Lab issue"
-    Since the pt-query-digest command will be run on the EC2 workstation, there's no point in showing them how to download it via the RDS console, because if students do it that way, they end up with a file on their own computers that they then either need to upload to the EC2 workstation (complicated) or need to install Percona toolkit locally (complicated/error prone). Suggest you only show and use the CLI command.
-
-=== "Download using RDS Console"
-    <span class="image">![PTQ](view_slow_logs.png?raw=true)</span>
-
-    Please note that logs get rotated hourly, please ensure you are downloading the logs for the workload period of time.
 
 === "Download using the AWS CLI"
     ```shell
@@ -326,11 +319,11 @@ V/M           The Variance-to-mean ratio of response time
 Item          The distilled query
 ```
 
-<span class="image">![PTQ](PTQ2.png?raw=true)</span>
+<span class="image">![PTQ](9-ptq1.png?raw=true)</span>
 
 For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like `concurrency` calculated as a function of the timespan and total `Query_time`, `exec time`, `rows sent`, `rows examine` etc. This also provides the number of occurrences of a query in the slow log. You can collect these slow logs in a file and call them as `slow_query_log3`.
 
-<span class="image">![PTQ](PTQ3.png?raw=true)</span>
+<span class="image">![PTQ](9-ptq2.png?raw=true)</span>
 
 ## 10. Summary
 
