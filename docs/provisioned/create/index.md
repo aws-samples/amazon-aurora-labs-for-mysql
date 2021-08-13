@@ -205,7 +205,7 @@ In the detail view of the secret, note the value for **Secret ARN**. Write this 
 
 Subsequent labs on this site use a consistent way to access DB credentials, regardless if the DB cluster was created manually or automatically. To simplify interactions, the lab credentials are saved in environment variables on the EC2 workstation you use to issue commands to the database. When the cluster is created automatically, the credentials are also set up for you. When you create the cluster manually, you need to run a few additional commands to reach parity.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[secretArn]== placeholder with the ARN of the secret created above:
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the command below, replacing the ==[secretArn]== placeholder with the ARN of the secret created above:
 
 ```shell
 CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'`

@@ -13,7 +13,7 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/) (choose the **Deploy Global DB** option)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Deploy an Aurora Global Database](/global/deploy/)
 
 
@@ -28,9 +28,9 @@ Parameter | Parameter Key | Location in Primary Region | Location in Secondary R
 Aurora **cluster** endpoint | `clusterEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | *not active in the secondary region*
 Aurora **reader** endpoint | `readerEndpoint` | Event Engine Team Dashboard or CloudFormation stack outputs | RDS service console
 Secrets Manager Secret ARN | `secretArn` | Event Engine Team Dashboard or CloudFormation stack outputs | *used from the primary region*
-EC2 Workstation Identifier | `ec2Instance` | Event Engine Team Dashboard or CloudFormation stack outputs | *not needed in the secondary region*
+Cloud9 Desktop URL | `clientIdeUrl` | Event Engine Team Dashboard or CloudFormation stack outputs | CloudFormation stack outputs
 
-If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the parameter values for the **primary region** may be found on the Team Dashboard in Event Engine.
+If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the parameter values for the **primary region** can be found on the Team Dashboard in Event Engine.
 
 Otherwise, in the **primary region**, open the <a href="https://console.aws.amazon.com/cloudformation/home#/stacks" target="_blank">Amazon CloudFormation service console</a>. Click on the stack named either `auroralab` or starting with `mod-`. 
 
@@ -44,6 +44,7 @@ Change to the **Outputs** tab, and find the values for the parameters, and make 
 * clusterEndpoint
 * readerEndpoint
 * secretArn
+* clientIdeUrl
 
 <span class="image">![CFN Stack Outputs](cfn-stack-outputs.png?raw=true)</span>
 
@@ -69,18 +70,18 @@ At this point you have collected all the information needed for both the **prima
 
 The following schema will be used in all the tasks in this lab. While you can issue data manipulation language (DML) requests such as `INSERT INTO`, `UPDATE` or `DELETE` using write forwarding, data definition language (DDL) and certain other operations can only be performed directly on the writer DB instance of the primary DB cluster. Therefore the schema needs to be created on the primary DB cluster.
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/) in the **primary region**. Once connected, enter one of the following commands, replacing the placeholders appropriately.
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now in the **primary region**. Once connected, enter one of the following commands, replacing the placeholders appropriately.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are the links in this guide to open the service console at the right screen.
 
-```shell
+```
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
 Once connected to the database, use the code below to create the schema for this lab. Run the following SQL queries:
 
-```sql
+```
 DROP SCHEMA IF EXISTS `mybank`;
 CREATE SCHEMA `mybank`;
 USE `mybank`;
@@ -114,9 +115,11 @@ You have now created the schema of a very simple banking applications. You can n
 
 Disconnect from the database using the following command:
 
-```sql
+```
 quit;
 ```
+
+<span class="image">![Add New Schema](c9-new-schema.png?raw=true)</span>
 
 In order to demonstrate a more realistic load scenario, you will now start a background workload, so the Global Database is actively performing work, not idle. You will use Percona's TPCC-like benchmark script based on sysbench to generate load. Start the load generator, choose the tab below that best matches your circumstances, and run the indicated commands:
 
@@ -125,7 +128,7 @@ In order to demonstrate a more realistic load scenario, you will now start a bac
 
         aws ssm send-command \
         --document-name auroralab-sysbench-test \
-        --instance-ids [ec2Instance] \
+        --instance-ids `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id` \
         --parameters \
         numThreads=2,\
         runTime=900
@@ -136,7 +139,7 @@ In order to demonstrate a more realistic load scenario, you will now start a bac
 
         aws ssm send-command \
         --document-name auroralab-sysbench-test \
-        --instance-ids [ec2Instance] \
+        --instance-ids `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id` \
         --parameters \
         clusterEndpoint="[clusterEndpoint]",\
         dbUser=$DBUSER,\
@@ -151,10 +154,13 @@ In order to demonstrate a more realistic load scenario, you will now start a bac
 
 Next, you will create some customer accounts for the banking application, simulating the activities that a bank teller in a branch location of your bank might do, if that location is closer to your secondary AWS region.
 
-Open an additional command line session to the Session Manager workstation in the **secondary region**. See [Connect to the Session Manager](/prereqs/connect/), for steps how to create a Session Manager command line session, but make sure you use the **secondary region**.
+If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now, but make sure you use the CLoud9 Desktop URL in the **secondary region**.
 
 !!! warning "Region Check"
     Ensure you are still working in the **secondary region**, especially if you are the links in this guide to open the service console at the right screen.
+
+!!! warning "First time access to Cloud9 desktop in secondary region"
+    If you are accessing the Cloud9 desktop in the **secondary region** for the first time, ensure that the Cloud9 IDE interface is set up correctly, by following the instructions in the [Connect to the Cloud9 Desktop](/prereqs/connect/) lab.
 
 Once connected, you need to set up the database credentials on the EC2 workstation in the secondary region. If you have created the original primary DB cluster manually, you have performed a similar step at that time. Run the following commands, replacing the placeholders with values as indicated in the below table:
 
@@ -163,18 +169,17 @@ Placeholder | Where to find it
 ==[secretArn]== | If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the value of the Secret ARN may be found on the Team Dashboard in Event Engine. Otherwise you will find it in the Outputs of the CloudFormation stack you used to provision the lab environment. The value starts with `arn:aws:secretsmanager:`.
 ==[primaryRegion]== | The identifier of the **primary region** you are using, click on the name in the top right corner of the console. You'll find it next to the name, for example `us-west-2`, although your region may vary.
 
-
-```shell
+```
 CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] --region [primaryRegion] | jq -r '.SecretString'`
 export DBUSER="`echo $CREDS | jq -r '.username'`"
 export DBPASS="`echo $CREDS | jq -r '.password'`"
-echo "export DBPASS=\"$DBPASS\"" >> /home/ubuntu/.bashrc
-echo "export DBUSER=$DBUSER" >> /home/ubuntu/.bashrc
+echo "export DBPASS=\"$DBPASS\"" >> /home/ec2-user/.bashrc
+echo "export DBUSER=$DBUSER" >> /home/ec2-user/.bashrc
 ```
 
 Next, run the command below, replacing the ==[readerEndpoint]== placeholder with the reader endpoint of your **secondary region** DB cluster.
 
-```shell
+```
 mysql -h[readerEndpoint] -u$DBUSER -p"$DBPASS" mybank
 ```
 
@@ -200,13 +205,13 @@ INSERT INTO `transactions` (`account_number`, `trx_medium`, `trx_type`, `trx_amo
 
 Note that the operation latencies are higher because these statements are being forwarded to the primary region, thus incurring a cross region network round-trip.
 
-<span class="image">![Insert Data via Forwarding](ssm-wfwd-insert-data.png?raw=true)</span>
-
 Disconnect from the database using the following command:
 
-```sql
+```
 quit;
 ```
+
+<span class="image">![Insert Data via Forwarding](c9-insert-rows.png?raw=true)</span>
 
 
 ## 4. Test consistency modes with a simple application
@@ -227,15 +232,15 @@ Notice that read operations to populate the account summary are fast.
 
 Next press `d` then `Enter` to make a deposit at the prompt, provide an amount at the next prompt (integer values please!), then press `Enter` again.
 
-<span class="image">![Eventual Consistency Make Deposit](ssm-wfwd-eventual-before.png?raw=true)</span>
+<span class="image">![Eventual Consistency Make Deposit](c9-wfwd-eventual-before.png?raw=true)</span>
 
 What do you see? &mdash; The screen has been refreshed, the read operations to populate the account summary were fast, again, but they show stale data!
 
-<span class="image">![Eventual Consistency After Deposit](ssm-wfwd-eventual-after.png?raw=true)</span>
+<span class="image">![Eventual Consistency After Deposit](c9-wfwd-eventual-after.png?raw=true)</span>
 
 Try refreshing the account summary a few times by pressing `r` then `Enter` at the prompt. Eventually the account summary shows the new account balance.
 
-<span class="image">![Eventual Consistency After Refresh](ssm-wfwd-eventual-refresh.png?raw=true)</span>
+<span class="image">![Eventual Consistency After Refresh](c9-wfwd-eventual-refresh.png?raw=true)</span>
 
 Press `q` then `Enter` to exit the application.
 
@@ -253,15 +258,15 @@ Notice that read operations to populate the account summary initially are fast.
 
 Next press `d` then `Enter` to make a deposit at the prompt, provide an amount at the next prompt (integer values please!), then press `Enter` again.
 
-<span class="image">![Session Consistency Make Deposit](ssm-wfwd-session-before.png?raw=true)</span>
+<span class="image">![Session Consistency Make Deposit](c9-wfwd-session-before.png?raw=true)</span>
 
 What do you see? &mdash; The screen has been refreshed, the read operations to populate the account summary were slower, but they show accurate data!
 
-<span class="image">![Session Consistency After Deposit](ssm-wfwd-session-after.png?raw=true)</span>
+<span class="image">![Session Consistency After Deposit](c9-wfwd-session-after.png?raw=true)</span>
 
 Try refreshing the account summary a few times by pressing `r` then `Enter` at the prompt. Subsequent reads should be fast again, until you make a deposit again.
 
-<span class="image">![Session Consistency After Refresh](ssm-wfwd-session-refresh.png?raw=true)</span>
+<span class="image">![Session Consistency After Refresh](c9-wfwd-session-refresh.png?raw=true)</span>
 
 Press `q` then `Enter` to exit the application.
 
@@ -279,15 +284,15 @@ Notice that read operations to populate the account summary initially are slower
 
 Next press `d` then `Enter` to make a deposit at the prompt, provide an amount at the next prompt (integer values please!), then press `Enter` again.
 
-<span class="image">![Global Consistency Make Deposit](ssm-wfwd-global-before.png?raw=true)</span>
+<span class="image">![Global Consistency Make Deposit](c9-wfwd-global-before.png?raw=true)</span>
 
 What do you see? &mdash; The screen has been refreshed, the read operations to populate the account summary were also slower, but they show accurate data!
 
-<span class="image">![Global Consistency After Deposit](ssm-wfwd-global-after.png?raw=true)</span>
+<span class="image">![Global Consistency After Deposit](c9-wfwd-global-after.png?raw=true)</span>
 
 Try refreshing the account summary a few times by pressing `r` then `Enter` at the prompt. Since each database query waits for the secondary cluster to catch up with committed data as of the time the query began, reads should be consistently slower compared to our previous consistency tests.
 
-<span class="image">![Global Consistency After Refresh](ssm-wfwd-global-refresh.png?raw=true)</span>
+<span class="image">![Global Consistency After Refresh](c9-wfwd-global-refresh.png?raw=true)</span>
 
 Press `q` then `Enter` to exit the application.
 
