@@ -1,5 +1,8 @@
 # Set up Database Activity Streams (DAS)
 
+!!! error "Lab temporarily unavailable"
+    This lab is temporarily unavailable due to underlying feature compatibility issues. We are working on alternatives, and appologize for the inconvenience. This alert will be removed when the issues are resolved.
+
 This lab will show you how to set up and leverage <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/DBActivityStreams.html" target="_blank">Aurora Database Activity Streams (DAS)</a>. Database activity streams provide a near real-time data stream of the database activity in your relational database. When you integrate database activity streams with third-party monitoring tools, you can monitor and audit database activity.
 
 ??? tip "Learn more about Database Activity Streams (DAS)"

@@ -1,5 +1,9 @@
 # Connect an Application to Aurora Global Database
 
+!!! error "Lab temporarily unavailable"
+    This lab is temporarily unavailable due to underlying library dependency issues. We are working on alternatives, and appologize for the inconvenience. This alert will be removed when the issues are resolved.
+
+
 Amazon Aurora provides both MySQL and PostgreSQL compatible database engines. This means any existing applications that work with MySQL and PostgreSQL will have drop-in compatibility with Amazon Aurora. In this lab, you will configure a business intelligence (BI) application operating in each of the two regions, and connect it to the respective local DB Cluster reader endpoint of the Aurora Global Database, in order to achieve lower query latency.
 
 For the purpose of this workshop, you will be using <a href="https://superset.incubator.apache.org/" target="_blank">Apache Superset</a> as the application. Superset is an open source, business intelligence and data exploration platform designed to be visual, intuitive and interactive.
