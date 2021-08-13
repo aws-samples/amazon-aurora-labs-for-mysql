@@ -33,7 +33,7 @@ To receive notifications when failover events occur with your DB cluster, you wi
 
 If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once opened, run:
 
-```shell
+```
 aws sns create-topic \
 --name auroralab-cluster-failovers
 ```
@@ -44,7 +44,7 @@ If successful, the command will respond back with a **TopicArn** identifier, you
 
 Next, subscribe your email address to the SNS topic using the command below, changing the placeholder ==[YourEmail]== with your email address:
 
-```shell
+```
 aws sns subscribe \
 --topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`auroralab-cluster-failovers`)].TopicArn' --output text) \
 --protocol email \
@@ -57,7 +57,7 @@ You will receive a verification email on that address, please confirm the subscr
 
 Once confirmed, or while you are waiting for the verification email to arrive, create an RDS event subscription and register the DB cluster as an event source using the command below:
 
-```shell
+```
 aws rds create-event-subscription \
 --subscription-name auroralab-cluster-failovers \
 --sns-topic-arn $(aws sns list-topics --query 'Topics[?contains(TopicArn,`auroralab-cluster-failovers`)].TopicArn' --output text) \
@@ -98,7 +98,7 @@ If you have not already opened a terminal window or the Cloud9 desktop in a prev
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
-```shell
+```
 python3 simple_failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
@@ -113,7 +113,7 @@ In the other command line session, you will trigger a manual failover of the clu
 
 Enter the following command in the command line session that does not run the monitoring script:
 
-```shell
+```
 aws rds failover-db-cluster \
 --db-cluster-identifier auroralab-mysql-cluster
 ```
@@ -159,13 +159,13 @@ In this test you will simulate a crash of the database engine service on the DB 
 
 Connect to the cluster endpoint using a MySQL client in the terminal window that does not run the monitoring script:
 
-```shell
+```
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
 Now, issue the following fault injection command:
 
-```sql
+```
 ALTER SYSTEM CRASH INSTANCE;
 ```
 
@@ -184,7 +184,7 @@ Wait and observe the monitor script output. Once triggered, you should see monit
 
 You may need to exit the mysql command console, even if it is disconnected using by typing:
 
-```sql
+```
 quit;
 ```
 
@@ -204,7 +204,7 @@ Assuming you still have the two terminal windows open and active, open a 3rd ter
 
 In the new (third) command line session, start the cluster-aware monitoring script using the following command:
 
-```shell
+```
 python3 aware_failover.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
@@ -215,7 +215,7 @@ You can quit the monitoring script at any time by pressing `Ctrl+C`.
 
 Enter the following command in the command line session that does not run any monitoring script, to trigger the failover:
 
-```shell
+```
 aws rds failover-db-cluster \
 --db-cluster-identifier auroralab-mysql-cluster
 ```
@@ -280,7 +280,7 @@ Next, you will need two terminal windows open in your Cloud9 desktop. See [Conne
 
 In one of the two command line sessions, start the monitoring script using the following command:
 
-```shell
+```
 python3 simple_failover.py -e[proxy endpoint from above] -u$DBUSER -p"$DBPASS"
 ```
 
@@ -295,7 +295,7 @@ In the other command line session, you will trigger a manual failover of the clu
 
 Enter the following command in the command line session that does not run the monitoring script:
 
-```shell
+```
 aws rds failover-db-cluster \
 --db-cluster-identifier auroralab-mysql-cluster
 ```
@@ -330,7 +330,7 @@ The tests above represent relatively simple failure conditions. Different failur
 
 By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
 
-```shell
+```
 aws rds remove-source-identifier-from-subscription \
 --subscription-name auroralab-cluster-failovers \
 --source-identifier auroralab-mysql-cluster

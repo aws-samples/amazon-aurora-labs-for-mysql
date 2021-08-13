@@ -117,7 +117,7 @@ First, click the **Actions** dropdown on the dashboard, and choose **View/edit s
 
 In the textbox that appears on the screen, paste the following JSON code. Be sure to update the AWS region, to match your **secondary region**, if needed in the code below. Also, if you used different DB cluster identifiers (names) for the DB clusters than the ones indicated in this guide, you will have to update those as well.
 
-```json
+```
 {
     "widgets": [
         {

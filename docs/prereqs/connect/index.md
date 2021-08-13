@@ -63,7 +63,7 @@ Open a new **Terminal** tab by using the `+` (plus) symbol in the top left of th
 
 Finally, verify that the Cloud9 desktop has been configured properly. Type the following command in the terminal window:
 
-```shell
+```
 tail -n1 /bootstrap.log
 ```
 

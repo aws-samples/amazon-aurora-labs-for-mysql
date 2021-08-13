@@ -224,7 +224,7 @@ When read consistency is set to `EVENTUAL`, results of write operations in the s
 
 Start the banking application using eventual consistency and using the correct database credentials. Replace the ==[readerEndpoint]== placeholder with the reader endpoint of your **secondary region** DB cluster.
 
-```shell
+```
 python3 bank_deposit.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -c EVENTUAL
 ```
 
@@ -250,7 +250,7 @@ When read consistency is set to `SESSION`, all queries in a secondary region tha
 
 As before, start the banking application, this time using session consistency and using the correct database credentials. Replace the ==[readerEndpoint]== placeholder with the reader endpoint of your **secondary region** DB cluster.
 
-```shell
+```
 python3 bank_deposit.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -c SESSION
 ```
 
@@ -276,7 +276,7 @@ When read consistency is set to `GLOBAL`, a session in a secondary region sees c
 
 As before, start the banking application, this time using global consistency and using the correct database credentials. Replace the ==[readerEndpoint]== placeholder with the reader endpoint of your **secondary region** DB cluster.
 
-```shell
+```
 python3 bank_deposit.py -e [readerEndpoint] -u $DBUSER -p "$DBPASS" -c GLOBAL
 ```
 

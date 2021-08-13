@@ -27,7 +27,7 @@ If you have not already opened a terminal window or the Cloud9 desktop in a prev
 
     Otherwise, you can retrieve the cluster endpoint from the CloudFormation stack **Outputs** as indicated in the [Get Started](/prereqs/environment/) prerequisites module.
 
-```shell
+```
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
@@ -36,13 +36,13 @@ mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 
     You can view and retrieve the credentials stored in the secret using the following command:
 
-    ```shell
+    ```
     aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'
     ```
 
 Once connected to the database, use the code below to create a stored procedure we'll use in future labs, to generate load on the DB cluster. Run the following SQL queries:
 
-```sql
+```
 DELIMITER $$
 DROP PROCEDURE IF EXISTS minute_rollup$$
 CREATE PROCEDURE minute_rollup(input_number INT)
@@ -63,7 +63,7 @@ DELIMITER ;
 
 Once connected to the DB cluster, run the following SQL queries to create an initial table:
 
-```sql
+```
 DROP TABLE IF EXISTS `sbtest1`;
 CREATE TABLE `sbtest1` (
  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -77,7 +77,7 @@ KEY `k_1` (`k`)
 
 Next, load an initial data set by importing data from an object located in an Amazon S3 bucket:
 
-```sql
+```
 LOAD DATA FROM S3 MANIFEST
 's3-us-east-1://awsauroralabsmy-us-east-1/samples/sbdata/sample.manifest'
 REPLACE
@@ -93,7 +93,7 @@ Data loading may take several minutes, you will receive a successful query messa
 
 When completed, exit the MySQL command line:
 
-```sql
+```
 quit;
 ```
 

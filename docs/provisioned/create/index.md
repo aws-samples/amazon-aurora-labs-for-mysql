@@ -207,7 +207,7 @@ Subsequent labs on this site use a consistent way to access DB credentials, rega
 
 If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the command below, replacing the ==[secretArn]== placeholder with the ARN of the secret created above:
 
-```shell
+```
 CREDS=`aws secretsmanager get-secret-value --secret-id [secretArn] | jq -r '.SecretString'`
 export DBUSER="`echo $CREDS | jq -r '.username'`"
 export DBPASS="`echo $CREDS | jq -r '.password'`"
@@ -219,13 +219,13 @@ echo "export DBUSER=$DBUSER" >> /home/ec2-user/.bashrc
 
 Let's make sure your DB cluster has been created properly. First let's ensure the credentials have been saved correctly in the environment variables, run:
 
-```shell
+```
 echo $DBUSER
 ```
 
 You should see `administrator` as the response string. Next, verify the version of the database engine created. Run the command below, replacing the ==[clusterEndpoint]== placeholder with the value of the cluster endpoint created in the preceding steps:
 
-```shell
+```
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" -e"SELECT @@aurora_version;"
 ```
 

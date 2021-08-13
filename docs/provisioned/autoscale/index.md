@@ -21,7 +21,7 @@ For this task you will use the **Reader Endpoint** of the cluster. If you create
 
 If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Run the load generation script from the terminal window, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
 
-```shell
+```
 python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
 
