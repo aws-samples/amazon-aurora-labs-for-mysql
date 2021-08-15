@@ -36,8 +36,8 @@ The following labs are currently available, click on the relevant tab to see the
 === "Serverless"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    S1 | [**Create an Aurora Serverless DB cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
-    S2 | [**Use Aurora Serverless with AWS Lambda functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
+    S1 | [**Create an Aurora Serverless DB Cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
+    S2 | [**Use Aurora Serverless with AWS Lambda Functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
 
 
 === "Global Database"
@@ -47,7 +47,7 @@ The following labs are currently available, click on the relevant tab to see the
     G3 | [**Connect an Application**](/global/biapp/) | Recommended | Connect a Business Intelligence application to the Global Database.
     G4 | [**Monitor a Global Database**](/global/monitor/) | Recommended | Create an Amazon CloudWatch Dashboard to monitor the latency, replicated I/O, and the cross region replication data transfer of the Global Database.
     G4 | [**Use Write Forwarding**](/global/wfwd/) | Recommended | Use a simple application to understand and experience the different consistency modes available with the Global Database Write Forwarding feature.
-    G5 | [**Fail Over a Global Database**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario, and promote the secondary region in a Global Database.
+    G5 | [**Recover from an Unplanned Primary DB Cluster Failure**](/global/failover/) | Recommended | Simulate a regional failure and DR scenario, and promote the secondary region in a Global Database.
     G6 | [**Fail Back a Global Database**](/global/failback/) | Optional | Restore full operations in the original primary region for the Global Database after a failover.
 
 

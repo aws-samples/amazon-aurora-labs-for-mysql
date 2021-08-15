@@ -82,7 +82,7 @@ nav:
     - Connect an Application: 'global/biapp/index.md'
     - Monitor a Global Database: 'global/monitor/index.md'
     - Use Write Forwarding: 'global/wfwd/index.md'
-    - Fail Over a Global Database: 'global/failover/index.md'
+    - Recover from an Unplanned Primary DB Cluster Failure: 'global/failover/index.md'
     - Fail Back a Global Database: 'global/failback/index.md'
   - Serverless:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'

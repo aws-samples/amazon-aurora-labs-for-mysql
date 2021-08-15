@@ -162,7 +162,7 @@ If you have not already opened a terminal window or the Cloud9 desktop in a prev
 !!! warning "First time access to Cloud9 desktop in secondary region"
     If you are accessing the Cloud9 desktop in the **secondary region** for the first time, ensure that the Cloud9 IDE interface is set up correctly, by following the instructions in the [Connect to the Cloud9 Desktop](/prereqs/connect/) lab.
 
-Once connected, you need to set up the database credentials on the EC2 workstation in the secondary region. If you have created the original primary DB cluster manually, you have performed a similar step at that time. Run the following commands, replacing the placeholders with values as indicated in the below table:
+Once connected, you need to set up the database credentials on the Cloud9 desktop in the secondary region. If you have created the original primary DB cluster manually, you have performed a similar step at that time. Run the following commands, replacing the placeholders with values as indicated in the below table:
 
 Placeholder | Where to find it
 ----- | -----
