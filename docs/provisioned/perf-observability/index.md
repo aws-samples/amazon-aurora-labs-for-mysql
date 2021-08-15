@@ -196,7 +196,7 @@ Once saved, the session activity for **Top SQL** would look like below. You shou
 <span class="image">![SQL troubleshooting](P.I_expand.png?raw=true)</span>
 
 !!! tip "What's inside a stored procedure"
-  To see the queries inside a stored procedure, please click and expand the `+` (plus) icon.
+    To see the queries inside a stored procedure, please click and expand the `+` (plus) icon.
 
 You can note down the top SQL queries but please keep in mind not all **Top SQL** queries are slow queries it only means that these queries are consuming the load at given point of time.
 
@@ -260,7 +260,7 @@ Under **Log streams**, pick your current **writer** node (since that is where th
 <span class="image">![CloudWatch](CWL_slow_query_select.png?raw=true)</span>
 
 !!! tip "Log retention"
-  The default log retention period is `Never Expire`, however this can be changed. Please see [Change log data retention in CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html) in the documentation.
+    The default log retention period is `Never Expire`, however this can be changed. Please see [Change log data retention in CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SettingLogRetention.html) in the documentation.
 
 To increase the readability of these logs, you are going to use [Amazon CloudWatch Insights](https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=logs-and-events). Click on the **Insights** option in the sidebar menu and select your log group in the drop down list. For slow queries, it will be in the format of `/aws/rds/cluster/auroralab-mysql-cluster/slowquery`. In the text field, enter the following insights query by replacing the ==[writerNode]== placeholder with the database instance ID (name) of your active writer node in the cluster:
 
@@ -294,10 +294,11 @@ First, you need to download the **slow query logs** from the database instance. 
 
 
 === "Download using the AWS CLI"
-    ```shell
-    aws rds download-db-log-file-portion --db-instance-identifier [writerendpoint] \
-    --starting-token 0 --output text --log-file-name slowquery/<slowlogname> > slow_log_file.txt
-    ```
+
+Please run the below by  replacing the ==[writerendpoint]== placeholder with the writer node endpoint of your DB cluster and  ==[slowlogfilename]== placeholder with the correct slow log file name.
+
+      aws rds download-db-log-file-portion --db-instance-identifier [writerendpoint] --starting-token 0 --output text --log-file-name slowquery/<slowlogfilename> > slow_log_file.txt
+
 
 Once downloaded, you can run the pt-query-digest like below using the slow query log file you have just downloaded. Please ensure the log file name is correct, based on the file you .
 
