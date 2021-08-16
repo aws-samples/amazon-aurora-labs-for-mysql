@@ -18,6 +18,9 @@ This lab requires the following lab modules to be completed first:
 
 Before you create an AWS Lambda function, you need to configure an IAM execution role. This will contain the permissions you are granting the function to interact with AWS resources via the APIs. Open the <a href="https://console.aws.amazon.com/iam/home#/roles" target="_blank">Identity and Access Management (IAM) service console</a>. Choose **Roles** from the left hand side menu, if it isn't already selected, and click **Create role**.
 
+!!! warning "Console Experience Updates"
+    The IAM service team is in the process of updating the service console web interface to improve the experience. The console views you see when you go through the labs may differ than the examples below. Once the chnages are finalized, we will update the examples below to reflect the changes where appropriate.
+
 <span class="image">![IAM Roles](1-iam-dash.png?raw=true)</span>
 
 In the **Select type of trusted entity** section, choose **AWS service**. Next, in the **Choose the service that will use this role** section, choose **Lambda**, then click **Next: Permissions**.
@@ -28,7 +31,7 @@ Click the **Create policy** button in the **Attach permissions policies** sectio
 
 <span class="image">![IAM Policies](1-iam-policies.png?raw=true)</span>
 
-In the new browser tab that opens up, toggle to the **JSON** interface tab. Ignore any message that may be displayed warning that the policy validation failed - we have not created a policy yet. Paste the policy listed below in the text editor, and substitute the ==[SecretARN]== placeholder with the ARN of the secret you created in the previous lab. Click **Review policy**.
+In the new browser tab that opens up, toggle to the **JSON** interface tab. Ignore any message that may be displayed warning that the policy validation failed - we have not created a policy yet. Paste the policy listed below in the text editor, and substitute the ==[SecretARN]== placeholder with the ARN of the secret you created in the previous lab. Click **Next: Tags**.
 
 ```
 {
@@ -69,7 +72,7 @@ In the new browser tab that opens up, toggle to the **JSON** interface tab. Igno
 
 <span class="image">![IAM Policy Content](1-iam-policy-json.png?raw=true)</span>
 
-Assign the IAM policy the name `auroralab-serverless-policy`, then click **Create policy**.
+On the **Add tags (Optional)** screen, click **Next: Review**. Assign the IAM policy the name `auroralab-serverless-policy`, then click **Create policy**.
 
 <span class="image">![IAM Policy Review](1-iam-policy-review.png?raw=true)</span>
 
@@ -94,11 +97,11 @@ Choose **Functions** from the left hand side menu, if it isn't already selected,
 
 <span class="image">![Lambda Listing](2-lambda-listing.png?raw=true)</span>
 
-Choose the option to **Author from scratch**, set the **Function name** to `auroralab-serverless-function` and select **Node.js 12.x** for **Runtime**. Under **Permissions**, expand the sub-section called **Choose or create an execution role**. In the **Execution role** dropdown, select **Use an existing role**, then in the **Existing role** dropdown, select the execution role you have created previously, named `auroralab-serverless-role`. Click **Create function**.
+Choose the option to **Author from scratch**, set the **Function name** to `auroralab-serverless-function` and select **Node.js 14.x** for **Runtime**. Under **Permissions**, expand the sub-section called **Choose or create an execution role**. In the **Execution role** dropdown, select **Use an existing role**, then in the **Existing role** dropdown, select the execution role you have created previously, named `auroralab-serverless-role`. Click **Create function**.
 
 <span class="image">![Name Function](2-lambda-create.png?raw=true)</span>
 
-Make sure the **Configuration** tab is selected. In the **Function code** section, select **Edit code inline** for **Code entry type**, if not already selected, and leave the values for **Runtime** and **Handler** as default (`Node.js 10.x` and `index.handler` respectively). Paste the code snipped below into the editor, and change the placeholders as follows:
+Make sure the **Code** tab is selected. In the **Code source** section, paste the code snipped below into the editor, and change the placeholders as follows:
 
 Placeholder | Description | Where to find it
 --- | --- | ---
@@ -158,11 +161,11 @@ exports.handler = (event, context, callback) => {
 }
 ```
 
-Click **Save** to save your code changes.
+Click **Deploy** to save your code changes.
 
 <span class="image">![Code Function](2-lambda-code.png?raw=true)</span>
 
-Scroll down to the **Basic settings** section, and click the **Edit** button.
+Switch to the **Configuration** tab. Choose **General configuration** from the left side menu, and click the **Edit** button.
 
 <span class="image">![Code Function](2-lambda-basic.png?raw=true)</span>
 
@@ -175,7 +178,7 @@ Change the function **Timeout** to `1` min `0` sec, then click **Save**. We are 
 
 Now you are ready to connect to the database from a Lambda function, by using the RDS Data API. The function doesn't bundle a database driver, it simply uses a RESTful AWS API call to send the SQL query: `SHOW TABLES;` and retrieves the result as a JSON data structure. This is accomplished in a minimal number of lines of code.
 
-Execute the function by clicking the **Test** button.
+Switch back to the **Code** tab, and click the **Test** button in the **Code source** section.
 
 <span class="image">![Test Function](3-lambda-test.png?raw=true)</span>
 

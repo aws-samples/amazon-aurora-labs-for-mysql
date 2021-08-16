@@ -22,19 +22,17 @@ Click **Create database** to start the configuration process
 
 In the first configuration section of the **Create database** page, ensure the **Standard Create** database creation method is selected.
 
-Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility edition**, the **Aurora (MySQL)-5.6.10a** version and the **Regional** database location.
+Next, in the **Engine options** section, choose the **Amazon Aurora** engine type, the **Amazon Aurora with MySQL compatibility** edition, the **Serverless** capacity type, and the latest **Aurora (MySQL 5.7) X.XX.X** version.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
-In the **Database features** section, select **Serverless**. The selections so far will instruct AWS to create an Aurora MySQL database cluster with the most recent version of the MySQL 5.6 compatible engine in a serverless configuration.
-
-In the **Settings** section set the database cluster identifier to `auroralab-mysql-serverless`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `masteruser` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
+In the **Settings** section set the database cluster identifier to `auroralab-mysql-serverless`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `administrator` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
 
 <span class="image">![Database Settings](1-serverless-settings.png?raw=true)</span>
 
-In the **Capacity settings** section, choose a **Minimum Aurora capacity unit** of `1 (2GB RAM)` and a **Maximum Aurora capacity unit** of `16 (32 GB RAM)`. Next, expand the **Additional scaling configuration** section, and **check** the box next to **Pause compute capacity after consecutive minutes of inactivity**. This configuration will allow Aurora Serverless to scale the capacity of your DB cluster between 1 capacity unit and 32 capacity units, and to suspect capacity entirely after 5 minutes of inactivity.
+In the **Capacity settings** section, choose a **Minimum Aurora capacity unit** of `1 (2GB RAM)` and a **Maximum Aurora capacity unit** of `8 (16 GB RAM)`. Next, expand the **Additional scaling configuration** section, and **check** the box next to **Pause compute capacity after consecutive minutes of inactivity**. This configuration will allow Aurora Serverless to scale the capacity of your DB cluster between 1 capacity unit and 16 capacity units, and to suspend capacity entirely after 5 minutes of inactivity.
 
-In the **Connectivity** section, expand the sub-section called **Additional connectivity configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. Your environment has been deployed with a VPC that includes all resources needed for an Aurora database cluster. This includes the VPC itself, subnets, DB subnet groups, security groups and several other networking constructs. All you need to do is select the appropriate existing connectivity controls in this section.
+In the **Connectivity** section, expand the sub-section called **Additional configuration**. This section allows you to specify where the database cluster will be deployed within your defined network configuration. Your environment has been deployed with a VPC that includes all resources needed for an Aurora database cluster. This includes the VPC itself, subnets, DB subnet groups, security groups and several other networking constructs. All you need to do is select the appropriate existing connectivity controls in this section.
 
 Pick the **Virtual Private Cloud (VPC)** named `auroralab-vpc`. The lab environment also configured a **VPC security group** that allows your lab workspace EC2 instance to connect to the database. Make sure the **Choose existing** security group option is selected and from the dropdown pick the security group named `auroralab-database-sg`. Please remove any other security groups, such as `default` from the selection.
 
@@ -49,11 +47,11 @@ Next, expand the **Additional configuration** section. Type `mylab` in the **Ini
 ??? tip "What do these selections mean?"
     You will create a database cluster with the following characteristics:
 
-    * Aurora MySQL 5.6 compatible (latest engine version)
+    * Aurora MySQL 5.7 compatible (latest engine version)
     * Serverless db cluster scaling between 1 and 16 capacity units, and pausing compute capacity after 5 minutes of inactivity
     * Deployed in the VPC and using the network configuration of the lab environment
     * Integrated with the RDS Data API
-    * Automatically backed up continuously, retaining backups for 7 days
+    * Automatically backed up continuously, retaining backups for 1 day
     * Using data at rest encryption
 
 Click **Create database** to provision the DB cluster.
@@ -75,7 +73,7 @@ Click **Store a new secret** to start the configuration process.
 
 <span class="image">![Create Secret](2-create-secret.png?raw=true)</span>
 
-In the **Select secret type** section, choose **Credentials for RDS database**, then input the **User name** (e.g. `masteruser`) and **Password** that you provided when you created the serverless DB cluster.
+In the **Select secret type** section, choose **Credentials for RDS database**, then input the **User name** (e.g. `administrator`) and **Password** that you provided when you created the serverless DB cluster.
 
 Next, in the **Select which RDS database this secret will access** section, choose the DB cluster identifier you assigned to your cluster (e.g. `auroralab-mysql-serverless`). Click **Next**.
 
