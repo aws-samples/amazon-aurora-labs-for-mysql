@@ -20,7 +20,7 @@ The following labs are currently available, click on the relevant tab to see the
     P2 | [**Connect to the Cloud9 Desktop**](/prereqs/connect/) | **Required** | Connect to the AWS Cloud9 cloud-based integrated development environment (IDE) so you can interact with the database.
 
 
-=== "Provisioned"
+=== "DB Clusters"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
     R1 | [**Create a New DB Cluster**](/provisioned/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually. This is optional, as you can also deploy the environment with a cluster provisioned automatically for you.
@@ -31,13 +31,6 @@ The following labs are currently available, click on the relevant tab to see the
     R6 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
     R7 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
     R8 | [**Set up Database Activity Streams**](/provisioned/das/) | Recommended | Monitor your database activity by using Database Activity Streams.
-
-
-=== "Serverless"
-    # | Lab Module | Recommendation | Overview
-    --- | --- | --- | ---
-    S1 | [**Create an Aurora Serverless DB Cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
-    S2 | [**Use Aurora Serverless with AWS Lambda Functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
 
 
 === "Global Database"
@@ -58,6 +51,14 @@ The following labs are currently available, click on the relevant tab to see the
     M2 | [**Use Comprehend with Aurora**](/ml/comprehend/) | Recommended | Integrate Aurora with the Comprehend Sentiment Analysis API and make sentiment analysis inferences via SQL commands.
     M3 | [**Use SageMaker with Aurora**](/ml/sagemaker/) | Recommended | Integrate Aurora with SageMaker Endpoints to infer customer churn in a data set using SQL commands.
     M4 | [**Cleanup Lab Resources**](/ml/cleanup/) | Recommended | Clean up after the labs and remove unneeded AWS resources.       
+
+
+=== "Serverless v1"
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    S1 | [**Create an Aurora Serverless DB Cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
+    S2 | [**Use Aurora Serverless with AWS Lambda Functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
+
 
 You can also discover other exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
 

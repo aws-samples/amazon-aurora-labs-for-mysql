@@ -68,7 +68,7 @@ nav:
   - Prerequisites:
     - Get Started: 'prereqs/environment/index.md'
     - Connect to the Cloud9 Desktop: 'prereqs/connect/index.md'
-  - Provisioned:
+  - DB Clusters:
     - Create a New DB Cluster: 'provisioned/create/index.md'
     - Connect to the DB Cluster and Load Data: 'provisioned/interact/index.md'
     - Auto Scale Read Replicas: 'provisioned/autoscale/index.md'
@@ -84,14 +84,14 @@ nav:
     - Use Write Forwarding: 'global/wfwd/index.md'
     - Recover from an Unplanned Primary DB Cluster Failure: 'global/failover/index.md'
     - Fail Back a Global Database: 'global/failback/index.md'
-  - Serverless:
-    - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
-    - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Machine Learning:
     - Overview and Prerequisites: 'ml/overview/index.md'
     - Use Comprehend with Aurora: 'ml/comprehend/index.md'
     - Use SageMaker with Aurora: 'ml/sagemaker/index.md'
     - Cleanup Lab Resources: 'ml/cleanup/index.md'
+  - Serverless v1:
+    - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
+    - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
