@@ -70,7 +70,7 @@ At this point you have collected all the information needed for both the **prima
 
 The following schema will be used in all the tasks in this lab. While you can issue data manipulation language (DML) requests such as `INSERT INTO`, `UPDATE` or `DELETE` using write forwarding, data definition language (DDL) and certain other operations can only be performed directly on the writer DB instance of the primary DB cluster. Therefore the schema needs to be created on the primary DB cluster.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now in the **primary region**. Once connected, enter one of the following commands, replacing the placeholders appropriately.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now in the **primary region**. Once connected, enter one of the following commands, replacing the placeholders appropriately.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are the links in this guide to open the service console at the right screen.

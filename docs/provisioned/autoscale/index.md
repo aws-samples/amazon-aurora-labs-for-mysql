@@ -19,7 +19,7 @@ This lab requires the following prerequisites:
 
 For this task you will use the **Reader Endpoint** of the cluster. If you created the cluster manually, you can find the endpoint value as noted at Step 2. in that lab. If the DB cluster was created automatically for you the value can be found on the Event Engine Dashboard or in your CloudFormation stack outputs.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Run the load generation script from the terminal window, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Run the load generation script from the terminal window, replacing the ==[readerEndpoint]== placeholder with the reader endpoint:
 
 ```
 python3 reader_loadtest.py -e[readerEndpoint] -u$DBUSER -p"$DBPASS" -dmylab

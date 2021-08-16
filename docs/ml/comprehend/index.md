@@ -11,16 +11,17 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Get Started](/prereqs/environment/) - choose **Yes** for the **Enable Aurora ML Labs?** feature option
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Get Started](/prereqs/environment/) (choose **Yes** for the **Enable Aurora ML Labs?** feature option)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
+* [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 * [Overview and Prerequisites](/ml/overview/)
 
 
 ## 1. Create an IAM role to allow Aurora to interface with Comprehend
 
-If you are not already connected to the Session Manager workstation, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below which will create an IAM role, and access policy.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the commands below, they will create an IAM role, and access policy.
 
-```shell
+```
 aws iam create-role --role-name auroralab-comprehend-access \
 --assume-role-policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"rds.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
 
@@ -28,30 +29,32 @@ aws iam put-role-policy --role-name auroralab-comprehend-access --policy-name in
 --policy-document "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"comprehend:DetectSentiment\",\"comprehend:BatchDetectSentiment\"],\"Resource\":\"*\"}]}"
 ```
 
+<span class="image">![Create IAM Role](c9-iam-create-role.png?raw=true)</span>
+
 ## 2. Associate the IAM role with the Aurora DB cluster
 
 Associate the role with the DB cluster by using following command:
 
-```shell
+```
 aws rds add-role-to-db-cluster --db-cluster-identifier auroralab-mysql-cluster \
 --role-arn $(aws iam list-roles --query 'Roles[?RoleName==`auroralab-comprehend-access`].Arn' --output text)
-
 ```
 
-Run the following command and wait until the output shows as **available**, before moving on to the next step.
+Next, run the following command and repeat until the output shows as **available**, before moving on to the next step.
 
-```shell
+```
 aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
-<span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
+<span class="image">![Associate IAM Role](c9-rds-associate-role.png?raw=true)</span>
+
 
 ## 3. Add the IAM role to the DB cluster parameter group and apply it
 
 Set the ==aws_default_comprehend_role== cluster-level parameter to the ARN of the IAM role we created in the first step of this lab. Run the following command:
 
-```shell
+```
 aws rds modify-db-cluster-parameter-group \
 --db-cluster-parameter-group-name $DBCLUSTERPG \
 --parameters "ParameterName=aws_default_comprehend_role,ParameterValue=$(aws iam list-roles --query 'Roles[?RoleName==`auroralab-comprehend-access`].Arn' --output text),ApplyMethod=pending-reboot"
@@ -59,18 +62,18 @@ aws rds modify-db-cluster-parameter-group \
 
 Reboot the DB cluster for the change to take effect. To minimize downtime use the manual failover process to trigger the reboot:
 
-```shell
+```
 aws rds failover-db-cluster --db-cluster-identifier auroralab-mysql-cluster
 ```
 
 Run the following command and wait until the output shows as **available**, before moving on to the next step:
 
-```shell
+```
 aws rds describe-db-clusters --db-cluster-identifier auroralab-mysql-cluster \
 --query 'DBClusters[*].[Status]' --output text
 ```
 
-<span class="image">![Reader Load](/ml/comprehend/2-dbcluster-available.png?raw=true)</span>
+<span class="image">![Reboot Wait Available](c9-rds-failover-wait.png?raw=true)</span>
 
 
 ## 4. Run Comprehend inferences from Aurora
@@ -94,7 +97,7 @@ FROM comments;
 
 You should see result as shown in the screenshot below. Observe the columns `sentiment`, and `confidence`. The combination of these two columns provide the inferred sentiment for the text in the `comment_text` column, and also the confidence score of the inference.
 
-<span class="image">![Reader Load](/ml/comprehend/1-comprehend-query.png?raw=true)</span>
+<span class="image">![Comprehend Query](c9-comprehend-query.png?raw=true)</span>
 
 Disconnect from the DB cluster, using:
 

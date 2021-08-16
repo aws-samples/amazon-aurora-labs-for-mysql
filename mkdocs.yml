@@ -88,7 +88,7 @@ nav:
     - Overview and Prerequisites: 'ml/overview/index.md'
     - Use Comprehend with Aurora: 'ml/comprehend/index.md'
     - Use SageMaker with Aurora: 'ml/sagemaker/index.md'
-    - Cleanup Lab Resources: 'ml/cleanup/index.md'
+    - Clean up Lab Resources: 'ml/cleanup/index.md'
   - Serverless v1:
     - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'

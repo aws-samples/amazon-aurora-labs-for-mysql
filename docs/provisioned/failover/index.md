@@ -31,7 +31,7 @@ This lab requires the following prerequisites:
 
 To receive notifications when failover events occur with your DB cluster, you will create an Amazon Simple Notification Service (SNS) topic, subscribe your email address to the SNS topic, create an RDS event subscription publishing events to the SNS topic and registering the DB cluster as an event source.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once opened, run:
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once opened, run:
 
 ```
 aws sns create-topic \

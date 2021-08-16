@@ -19,7 +19,7 @@ This lab requires the following prerequisites:
 
 ## 1. Simulate a primary region failure
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now in the **primary region**. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now in the **primary region**. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are the links in this guide to open the service console at the right screen.

@@ -18,7 +18,7 @@ This lab requires the following prerequisites:
 
 Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the `mysql` command line tool to connect.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
 !!! tip "Where do I find the cluster endpoint (or any other placeholder parameters)?"
     If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the value of the cluster endpoint on the DB cluster details page in the RDS console, as noted at Step 2. in that lab.

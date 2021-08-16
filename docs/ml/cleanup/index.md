@@ -1,10 +1,10 @@
-# Cleanup Lab Resources
+# Clean up Aurora Machine Learning Lab Resources
 
 By using the Aurora machine learning labs, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed these labs, to ensure you do not incur any unwanted charges for using these services.  
 
-If you are not already connected to the Session Manager workstation, please connect [following these instructions](/prereqs/connect/). Once connected, run the following commands:
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the following commands:
 
-```shell
+```
 aws sagemaker delete-endpoint --endpoint-name auroraml-churn-endpoint
 
 aws sagemaker delete-endpoint-config --endpoint-config-name auroraml-churn-endpoint

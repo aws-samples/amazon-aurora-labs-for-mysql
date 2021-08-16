@@ -8,20 +8,29 @@ This lab contains the following tasks:
 
 This lab requires the following prerequisites:
 
-* [Get Started](/prereqs/environment/) - choose **Yes** for the **Enable Aurora ML Labs?** feature option
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Get Started](/prereqs/environment/) (choose **Yes** for the **Enable Aurora ML Labs?** feature option)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
+* [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
+
 
 ## 1. Setup a sample schema and data for ML labs
 
-If you are not already connected to the Session Manager workstation command line, please connect [following these instructions](/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster. This will connect you to the Aurora Mysql database.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
-```shell
+!!! tip "Where do I find the cluster endpoint (or any other placeholder parameters)?"
+    If you have completed the previous lab, and created the Aurora DB cluster manually, you would find the value of the cluster endpoint on the DB cluster details page in the RDS console, as noted at Step 2. in that lab.
+
+    If you are participating in a formal workshop, and the lab environment was provisioned for you using Event Engine, the value of the cluster endpoint may be found on the Team Dashboard in Event Engine.
+
+    Otherwise, you can retrieve the cluster endpoint from the CloudFormation stack **Outputs** as indicated in the [Get Started](/prereqs/environment/) prerequisites module.
+
+```
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS"
 ```
 
 Execute the following SQL queries to create the `mltest` database and tables, and populate them with data. We will use these tables in subsequent labs for inferences.
 
-```sql
+```
 DROP SCHEMA IF EXISTS `mltest`;
 CREATE SCHEMA `mltest`;
 USE `mltest`;
@@ -68,8 +77,8 @@ IGNORE 1 LINES
 
 Verify that the schema was created correctly by running the following command:
 
-```sql
-show tables;
+```
+SHOW TABLES;
 ```
 
 You should be able to see two tables, **churn** and **comments**, as shown below. If you don't see the tables rerun the commands.
@@ -78,7 +87,7 @@ You should be able to see two tables, **churn** and **comments**, as shown below
 
 Disconnect from the DB cluster, using:
 
-```sql
+```
 quit;
 ```
 

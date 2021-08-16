@@ -115,9 +115,9 @@ Note the **Resource id** and **Kinesis stream** values, you will need these valu
 ## 3. Generate database load
 You will use a read-only workload to generate load on the DB cluster. This [read load generator script](/scripts/reader_loadtest.py) produces a variety of read queries, using concurrent threads.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Next, run the command below, replacing the ==[clusterEndpoint]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Next, run the command below, replacing the ==[clusterEndpoint]== placeholder with the appropriate value from your CloudFormation stack outputs, or Event Engine Team Dashboard if you are participating in an organized workshop.
 
-```shell
+```
 python3 reader_loadtest.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab -t2
 ```
 

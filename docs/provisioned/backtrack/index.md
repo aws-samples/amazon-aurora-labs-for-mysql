@@ -18,7 +18,7 @@ This lab requires the following prerequisites:
 
 ## 1. Make unintended data changes
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
 
 ```
 mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab

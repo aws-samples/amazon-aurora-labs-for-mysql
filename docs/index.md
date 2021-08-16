@@ -50,7 +50,7 @@ The following labs are currently available, click on the relevant tab to see the
     M1 | [**Overview and Prerequisites**](/ml/overview/) | Required | Setup a sample schema and data for machine learning integration.
     M2 | [**Use Comprehend with Aurora**](/ml/comprehend/) | Recommended | Integrate Aurora with the Comprehend Sentiment Analysis API and make sentiment analysis inferences via SQL commands.
     M3 | [**Use SageMaker with Aurora**](/ml/sagemaker/) | Recommended | Integrate Aurora with SageMaker Endpoints to infer customer churn in a data set using SQL commands.
-    M4 | [**Cleanup Lab Resources**](/ml/cleanup/) | Recommended | Clean up after the labs and remove unneeded AWS resources.       
+    M4 | [**Clean up Lab Resources**](/ml/cleanup/) | Recommended | Clean up after the labs and remove unneeded AWS resources.       
 
 
 === "Serverless v1"

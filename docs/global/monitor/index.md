@@ -18,7 +18,7 @@ This lab requires the following prerequisites:
 
 You will use Percona's TPCC-like benchmark script based on sysbench to generate load. For simplicity we have packaged the correct set of commands in an <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html" target="_blank">AWS Systems Manager Command Document</a>. You will use <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html" target="_blank">AWS Systems Manager Run Command</a> to execute the test.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, choose the tab below that best matches your circumstances, and run the indicated commands:
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Once connected, choose the tab below that best matches your circumstances, and run the indicated commands:
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are the links in this guide to open the service console at the right screen.

@@ -23,7 +23,7 @@ This lab requires the following prerequisites:
 !!! warning "Workload State Check"
     Before cloning the DB cluster ensure you have stopped any load generating tasks from previous labs, and exited out of the MySQL client command line using `quit;`.
 
-If you have not already opened a terminal window or the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack, or Event Engine Team Dashboard if you are participating in a formal workshop:
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Run the command below, replacing the ==[dbSecurityGroup]== and ==[dbSubnetGroup]== placeholders with the appropriate outputs from your CloudFormation stack, or Event Engine Team Dashboard if you are participating in a formal workshop:
 
 ```
 aws rds restore-db-cluster-to-point-in-time \
