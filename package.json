@@ -15,11 +15,7 @@
   "bugs": {
     "url": "https://github.com/aws-samples/amazon-aurora-labs-for-mysql/issues"
   },
-  "dependencies": {
-    "grunt": "^1.4.1",
-    "grunt-exec": "^3.0.0",
-    "standard": "^16.0.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "grunt": "^1.4.1",
     "grunt-exec": "^3.0.0",
