@@ -1,5 +1,8 @@
 # Observe and Identify SQL Performance Issues
 
+This lab will demonstrate how you can use native AWS tools, as well as community tools to achieve observability of your Amazon Aurora database clusters. You will run a sample workload on your database cluster and review monitoring and logging data to analyze the performance of the database and its workload.
+
+
 This lab contains the following tasks:
 
 1. Prepare the initial dataset
@@ -16,22 +19,22 @@ This lab contains the following tasks:
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
-* [Connect to the Session Manager Workstation](/prereqs/connect/)
+* [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
-* [Connect, Load Data](/provisioned/interact/) (connectivity and data loading sections only)
+* [Connect to the DB Cluster and Load Data](/provisioned/interact/)
 
 
 ## 1. Prepare the initial dataset
 
-Connect to the Aurora database just like you would to any other MySQL-based database, using a compatible client tool. In this lab you will be using the mysql command line tool to connect. If you are not already connected to the Session Manager workstation command line from previous labs, please connect following these [instructions](https://awsauroralabsmy.com/prereqs/connect/). Once connected, run the command below, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [following these instructions](/prereqs/connect/) to do so now. Then, connect to the DB cluster endpoint using the MySQL client, if you are not already connected after completing the previous lab, by running:
 
-```shell
-  mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
+```
+mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS" mylab
 ```
 
-Once connected to the database, please use the code below to create the schema and stored procedure we'll use later in the lab, to generate load on the DB cluster. Run the following SQL queries:
+Once connected to the database, please use the code below to create the schema and stored procedure needed later in the lab to generate load on the DB cluster. Run the following SQL queries:
 
-```sql
+```
 DROP TABLE IF EXISTS `weather`;
 CREATE TABLE `weather` (
   `date_Str` date NOT NULL COMMENT 'Date and Time of Readings',
@@ -45,9 +48,6 @@ CREATE TABLE `weather` (
   type char(25) NOT NULL COMMENT 'weather condition',
   serialid int(11) NOT NULL COMMENT 'serial id of log'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 ;
-```
-
-```sql
 DELIMITER $$
 DROP PROCEDURE IF EXISTS insert_temp;
 CREATE PROCEDURE insert_temp()
@@ -63,14 +63,15 @@ DELIMITER ;
 Next, load an initial data set by importing data from an Amazon S3 bucket:
 
 ```sql
-  LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anomalies.csv' INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
+LOAD DATA FROM S3 's3-us-east-1://awsauroralabsmy-us-east-1/samples/weather/anomalies.csv' INTO TABLE weather CHARACTER SET 'latin1' fields terminated by ',' OPTIONALLY ENCLOSED BY '\"' ignore 1 lines;
 ```
 
-Data loading may take several minutes, you will receive a successful query message once it completes. Please proceed to next lab without exiting the mysql terminal.
+Data loading may take several minutes, you will receive a successful query message once it completes.
+
 
 ## 2. Verify the slow query log is configured correctly
 
-In many cases the slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are **[slow_query_log](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_slow_query_log), [long_query_time](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_long_query_time) and [log_output](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_output)** .
+In many cases the slow query log can be used to find queries that take a long time to execute and are therefore candidates for optimization. Slow query logs are controlled by various parameters and the most notable ones are <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_slow_query_log" target="_blank">slow_query_log</a>, <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_long_query_time" target="_blank">long_query_time</a> and <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_output" target="_blank">log_output</a>.
 
 While still connected to the database, run the query below:
 
@@ -81,31 +82,36 @@ SELECT @@slow_query_log,@@long_query_time,@@log_output;
 <span class="image">![long query output](long_query_out.png?raw=true)</span>
 
 ??? tip  "Changing slow query log settings in production"
-    In production systems, you can change the values for **long_query_time** in multiple iterations eg. 10 to 5 and then 5 to 3 and so on.
+    In production systems, you can change the values for **long_query_time** in multiple iterations eg. 10 to 5 and then 5 to 3 and so on to find the best value that fits your workload's needs.
 
-Before proceeding further, please ensure the output looks like above. When completed, exit the MySQL command line:
+Please make sure your output matches the example above, `slow_query_log = 1`, `long_query_time > 0` and `log_output = FILE`. If your values do not match the configuration above and you are participating in an organized event, please reach out to an assistant.
 
-```shell
+When completed, exit the MySQL command line:
+
+```
 quit;
 ```
 
 ??? tip "Other useful parameters related to slow_log"
-    There are other useful parameters like [log_queries_not_using_indexes](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes), [log_slow_admin_statements](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements).
+    There are other useful parameters controlling what statements get captured by the slow query log, such as: <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_queries_not_using_indexes" target="_blank">log_queries_not_using_indexes</a> and <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_log_slow_admin_statements" target="_blank">log_slow_admin_statements</a>.
+
 
 ## 3. Run a sample workload
 
-Next, please run the following command to generate a workload, replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+Please run the following command to generate a [sample workload](/scripts/weather_perf.py), replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
 
-```shell
-  python3 weather_perf.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
 ```
-This script will take about **4~5** minutes to complete but you do not need to wait to proceed further.
+python3 weather_perf.py -e[clusterEndpoint] -u$DBUSER -p"$DBPASS" -dmylab
+```
+
+This script will take about **4 ~ 5** minutes to complete but you do not need to wait to proceed further.
+
 
 ## 4. Monitor database performance using Amazon CloudWatch Metrics
 
-To monitor DB instances you can use Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. While the script is running, open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring" target="_blank">Amazon RDS service console</a> at the DB cluster details in a new tab, if not already open.Find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance CloudWatch metrics.
+For monitoring you can use Amazon CloudWatch, which collects and processes raw data from Amazon RDS into readable, near real-time metrics. While the script is running, open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=monitoring" target="_blank">Amazon RDS service console</a> at the DB cluster details page in a new tab, if not already open. Find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance CloudWatch metrics.
 
-Although all the metrics are important to monitor, the base metrics like *CPU, DB connections, write latency,* *Read latency* etc are spiking up during this workload. You can click on a chart to drill down for more details, select any chart area to zoom in on a specific time period to understand the overall workload and its impact on the database.
+Although all the metrics are important to monitor, base metrics such as: `CPU Utilization`, `DB Connections`, `Write Latency` and `Read Latency` can be viewd as leading indicators, you should see them spiking as a result of the workload you previously started. You can click on any chart to drill down for more details and select any chart area to zoom in on a specific time period to understand the overall workload and its impact on the database.
 
 <span class="image">![CloudWatch Metrics](db-cpu.png?raw=true)</span>
 
