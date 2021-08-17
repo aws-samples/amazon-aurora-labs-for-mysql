@@ -79,11 +79,10 @@ Earlier investigations says that query[5] is slow and P.I also suggested this qu
 
     Ensure that `statement` and `stage instrumentation` is enabled by updating the `setup_instruments` table. Some instruments may already be enabled by default.
 
-        ```sql
         UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%statement/%';
 
         UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES' WHERE NAME LIKE '%stage/%';
-        ```
+
     <span class="image">![profile_setup_instruments](PI_setup_instruments.png?raw=true)</span>
 
     Ensure that `events_statements_` and `events_stages_` consumers are enabled. Some consumers may already be enabled by default.
@@ -180,17 +179,6 @@ Presence of index can be done by running one of the methods below:
 
     You can see that **mylab.weather** table does not have any primary keys.
 
-
-??? tip "Slow query logs"
-
-        [Q1] UPDATE mylab.weather SET max_temp = 31 where id='USC00103882' ;
-        [Q2] CALL insert_temp ;
-        INSERT INTO mylab.weather VALUES ('1993-12-10','14.38','USC00147271',-100.92,38.47,21.70,-4.40,'SCOTT CITY','Weak Hot',key_value);
-        DELETE from mylab.weather  where serialid=key_value;
-        [Q3] SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > 42 and id = 'USC00103882' ORDER BY max_temp DESC;
-        [Q4] SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
-
-
 ## 4. Tune a query
 
 In real world, based on the type of wait events, schemas, resource utilisation the tuning approach varies. There are many ways to take appropriate corrective actions like tune the server parameters, tune a query by re-writing it, tune the database schemas or even tune the code(App,DB).
@@ -286,6 +274,11 @@ You can revisit the `PROFILING` to see if it has been changed after adding the i
 
 === "Query Profiling using Performance Schema"
 
+          SELECT sql_no_cache count(id) FROM weather WHERE station_name = 'EAGLE MTN' and type = 'Weak Cold';
+          SELECT EVENT_ID, TRUNCATE(TIMER_WAIT/1000000000000,6) as Duration, SQL_TEXT FROM performance_schema.events_statements_history_long WHERE SQL_TEXT like '%EAGLE MTN%';
+          SELECT event_name AS Stage, TRUNCATE(TIMER_WAIT/1000000000000,6) AS Duration FROM performance_schema.events_stages_history_long WHERE NESTING_EVENT_ID=EVENT_ID;
+
+
     <span class="image">![Tune](PI_prof_after_index.png?raw=true)</span>
 
 
@@ -308,7 +301,7 @@ In both cases, the query which was spending time on `sending data` is not seen a
 
 After adding the indexes, please `re-run` the script and compare and review the performance in whole for before and after. Before re-running the tests make sure truncate the performance schema tables to have fresh counters. This would make `before vs after` comparison much easier.
 
-Please re-run the test like below
+Please re-run the test like below by replacing the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster
 
 ```shell
 python3 weather_perf.py -e[clusterendpoint] -u$DBUSER -p"$DBPASS" -dmylab
