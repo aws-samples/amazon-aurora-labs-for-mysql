@@ -77,6 +77,8 @@ nav:
     - Use Performance Insights: 'provisioned/perf-insights/index.md'
     - Test Fault Tolerance: 'provisioned/failover/index.md'
     - Set up Database Activity Streams: 'provisioned/das/index.md'
+    - Observe and Identify SQL Performance Issues: 'provisioned/perf-observability/index.md'
+    - Analyze SQL Query Performance: 'provisioned/perf-analysis/index.md'
   - Global Database:
     - Deploy a Global Database: 'global/deploy/index.md'
     - Connect an Application: 'global/biapp/index.md'

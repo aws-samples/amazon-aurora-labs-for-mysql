@@ -821,6 +821,7 @@ Resources:
             - "curl -O https://[[website]]/scripts/aware_failover.py"
             - "curl -O https://[[website]]/scripts/das_reader.py"
             - "curl -O https://[[website]]/scripts/bank_deposit.py"
+            - "curl -O https://[[website]]/scripts/weather_perf.py"
             - "curl -O https://[[website]]/support/sagemaker_policy.json"
             - "echo \"$(date \"+%F %T\") * downloaded lab assets\" >> /bootstrap.log"
             - "mkdir -p /home/ec2-user/.aws"

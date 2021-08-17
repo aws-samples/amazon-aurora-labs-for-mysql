@@ -19,22 +19,20 @@ Install dependencies:
 
 ```
 brew install python3
-brew install mkdocs
 brew install node
-brew install jq
 pip3 install virtualenv
 virtualenv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
 
-npm install -g npm
-npm install -g grunt-cli
+npm install -g npm --registry=https://registry.npmjs.org/
+npm install -g grunt-cli --registry=https://registry.npmjs.org/
 ```
 
 Install project dependencies (from [project root] folder):
 
 ```
-npm install
+npm install --registry=https://registry.npmjs.org/
 ```
 
 ### Build and Deploy the Project
@@ -82,5 +80,7 @@ Additionally, this project installs the following software for the purposes of d
 * [mysql-client](https://dev.mysql.com/doc/refman/5.6/en/programs-client.html) package. MySQL open source software is provided under the GPL License.
 * [sysbench](https://github.com/akopytov/sysbench) available using the GPL License.
 * [test_db](https://github.com/datacharmer/test_db) available using the Creative Commons Attribution-Share Alike 3.0 Unported License.
+* [weather_data](https://query.data.world/s/jc734imun7wfihq6q5qeo45xvv5ezw) available using the Creative Commons Attribution-ShareAlike 4.0 International.
 * [Percona's sysbench-tpcc](https://github.com/Percona-Lab/sysbench-tpcc) available using the Apache License 2.0.
+* [Percona Toolkit](https://www.percona.com/doc/percona-toolkit/LATEST/index.html) available using the Apache License 2.0.
 * [Apache Superset](https://superset.apache.org/index.html) available using the Apache License 2.0.
