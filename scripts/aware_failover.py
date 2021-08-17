@@ -6,9 +6,6 @@ connects to the database using the cluster endpoint, approx. once a second and c
 the database engine. If it cannot connect or it connects to a reader instead, it attempts to discover
 the writer and connect to it directly. It also counts the elapsed time for as long as it cannot connect.
 
-Changelog:
-2019-10-28 - Initial release
-
 Dependencies:
 none
 

@@ -2,10 +2,6 @@
 Amazon Aurora Labs for MySQL
 This scripts will process the database activity stream events and printing them on the console.
 
-Changelog:
-2020-07-31 - Initial release
-2020-11-08 - Added CommitmentPolicy from upgraded aws_encryption_sdk
-
 Dependencies:
 none
 
