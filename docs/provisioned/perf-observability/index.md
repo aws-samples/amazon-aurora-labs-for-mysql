@@ -262,7 +262,7 @@ You can download slow query logs via the AWS Management Console or the AWS CLI u
 
 Slow logs are great for troubleshooting, but viewing or downloading individual logs could be tedious and time consuming. In addition to viewing and downloading DB instance logs from the console, you can **publish logs** to <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html" target="_blank">Amazon CloudWatch Logs</a>. With CloudWatch Logs, you can perform real-time analysis of the log data, store and retain the data in highly durable storage, and manage the data with the CloudWatch Logs Agent. Your DB cluster has already been configured to publish **error logs** and **slow query logs** to CloudWatch Logs.
 
-To verify that your DB cluster is publishing logs, Open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=configuration" target="_blank">Amazon RDS service console</a> at the cluster detail page, and check the **Published logs** section of the **Configuration** tab. Please proceed to the next steps only if you see slow query log publication enabled.
+To verify that your DB cluster is publishing logs, Open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true;tab=configuration" target="_blank">Amazon RDS service console</a> at the cluster detail page, and check the **Published logs** section of the **Configuration** tab. Please proceed to the next tasks only if you see slow query log publication enabled.
 
 <span class="image">![Publish Logs to CloudWatch Logs](rds-config-publish-logs.png?raw=true)</span>
 
@@ -317,12 +317,12 @@ Normally, some amount of manual or automation effort is needed to find unique qu
 
 **pt-query-digest** analyzes MySQL queries from slow, general, and binary log files. It summaries the top queries based on the input log file, ranked by response time. To save time and complexity, we have already installed this tool in your lab environment. You can learn more and find installation instructions on the <a href="https://www.percona.com/doc/percona-toolkit/LATEST/installation.html" target="_blank">Percona Toolkit</a> website.
 
-First, you need to download the **slow query logs** from the database instance (similar to the steps with did previously using the console). 
+First, you need to download the **slow query logs** from the database instance (similar to the steps you took previously using the console). 
 
 ??? note "Why can't I use the file i have already downloaded?"
-    At step **7. Download slow query logs** above, you have used the Amazon RDS service console to download a slow query log file. However, that file has been downloaded using a web browser to your local computer. You will need to process slow query log files using pt-query-digest using your Cloud9 desktop instead.
+    In task **7. Download slow query logs** above, you have used the Amazon RDS service console to download a slow query log file. However, that file has been downloaded using a web browser to your local computer. You will need to process slow query log files using pt-query-digest using your Cloud9 desktop instead.
 
-In the terminal window of your Cloud9 desktop, end the execution of the workload if it is still running, by typing `Ctrl+c`. Then run the following command by replacing the ==[writerNode]== placeholder with the database instance ID (name) of your active writer node in the cluster and  ==[slowLogFileName]== placeholder with the correct slow log file name containing the desired events (the same file you viewed above at step **7. Download slow query logs**).
+In the terminal window of your Cloud9 desktop, end the execution of the workload if it is still running, by typing `Ctrl+c`. Then run the following command by replacing the ==[writerNode]== placeholder with the database instance ID (name) of your active writer node in the cluster and  ==[slowLogFileName]== placeholder with the correct slow log file name containing the desired events (the same file you viewed above in task **7. Download slow query logs**).
 
 ```
 aws rds download-db-log-file-portion --db-instance-identifier [writerNode] --starting-token 0 --output text --log-file-name slowquery/[slowLogFileName] > slow_log_file.log
@@ -352,7 +352,7 @@ Item          The distilled query
 
 For the queries listed above in the previous section, this section contains individual metrics about each query ID with stats like `concurrency` calculated as a function of the timespan and total `Query_time`, `exec time`, `rows sent`, `rows examine` etc. This also provides the number of occurrences of a query in the slow log. You can collect these slow logs in a file and call them as `slow_query_log3`.
 
-<span class="image">![pt-query-digest Output Continued](c9-pt-query-detail.png?raw=true)</span>
+<span class="image">![pt-query-digest Output Continued](c9-pt-query-details.png?raw=true)</span>
 
 ## 10. Summary
 
