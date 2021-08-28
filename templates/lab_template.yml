@@ -722,47 +722,10 @@ Resources:
       Roles:
         - Ref: roleClientIDE
 
-## Create (missing) Cloud9 service role in EventEngine, use a different name if not running in EventEngine.
-## The service role and profile need to have a specific name, but when running outside EventEngine customers 
-## may already have this service role, hence using a stack specific name. Ideally we wouldn't need to create
-## this role and profile at all for deployments outside EventEngine, but we need them for the 'DependsOn'
-## clause for the Cloud9 Environment resource further below, as CloudFormation doesn't support If conditions
-## in the 'DependsOn' clause.
-  roleCloud9ServiceRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !If [ condEventEngine, AWSCloud9SSMAccessRole, !Sub "${AWS::StackName}-cloud9-sr-${AWS::Region}" ]
-      Path: !If [ condEventEngine, "/service-role/", "/" ]
-      Description: "Cloud9 service role used for connectivity type CONNECT_SSM"
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - "sts:AssumeRole"
-            Principal:
-              Service:
-                - "ec2.amazonaws.com"
-                - "ssm.amazonaws.com"
-                - "cloud9.amazonaws.com"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-        - "arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile"
-      Tags:
-        - Key: Name
-          Value: AWSCloud9SSMAccessRole
-  profileCloud9ServiceRole:
-    Type: "AWS::IAM::InstanceProfile"
-    Properties:
-      InstanceProfileName: !If [ condEventEngine, AWSCloud9SSMInstanceProfile, !Sub "${AWS::StackName}-cloud9-sr-${AWS::Region}" ]
-      Path: !If [ condEventEngine, "/cloud9/", "/" ]
-      Roles:
-        - Ref: roleCloud9ServiceRole
-
 ## Create a Cloud9 IDE host
   c9ClientIDE:
     Type: AWS::Cloud9::EnvironmentEC2
-    DependsOn: [ profileCloud9ServiceRole ]
+    DependsOn: [ resLabAccount ]
     Properties: 
       AutomaticStopTimeMinutes: 120
       ConnectionType: CONNECT_SSM
@@ -895,34 +858,16 @@ Resources:
                 # start bootstrap
                 echo "$(date "+%F %T") * running as $(whoami)" >> /debug.log
 
-                # update SSM & upgrade packages
-                echo "$(date "+%F %T") * updating SSM agent and python packages" >> /debug.log           
-                yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-                systemctl start amazon-ssm-agent
-                source ~/.bashrc
-                yum update -y >> /debug.log
-                echo "$(date "+%F %T") * updated SSM agent" >> /debug.log
+                # install Docker and necessary packages
+                echo "$(date "+%F %T") Updating packages and install Docker" >> /debug.log           
+                yum update -y
+                amazon-linux-extras install docker
+                service docker start >> /debug.log
+                usermod -a -G docker ec2-user
+                usermod -a -G docker ssm-user
+                echo "$(date "+%F %T") * installed docker" >> /debug.log
 
-                # install dependencies for superset
-                amazon-linux-extras install postgresql10 vim epel
-                yum install -y gcc gcc-c++ python37 python3-devel cyrus-sasl-devel mysql mysql-devel postgresql postgresql-devel jq git
-                echo "$(date "+%F %T") * installed python and MySQL/pgSQL dependencies" >> /debug.log
-
-                # path management
-                export PATH=/usr/local/bin:$PATH
-                export PYTHONPATH=/usr/local/bin:$PYTHONPATH
-                alias python=python37
-                alias pip=pip3
-                echo "$(date "+%F %T") * updated paths" >> /debug.log
-
-                # install latest version of superset
-                # downgrade/force installation packages to last good known versions for superset and dependencies
-                # desired path: wget https://[[website]]/support/superset-requirements.txt
-                wget https://[[website]]/support/superset-requirements.txt
-                pip3 install -r superset-requirements.txt >> /debug.log
-                echo "$(date "+%F %T") * force installed superset to frozen application packages list" >> /debug.log
-
-                # create an admin user
+                # export credentials
               - Fn::Join:
                   - ""
                   - - 'export ADMINUSER="'
@@ -934,18 +879,19 @@ Resources:
                     - !FindInMap [ GDBSettings, superset, password ]
                     - '"'
               - !Sub |
-                superset fab create-admin --username "$ADMINUSER" --password "$ADMINPASS" --firstname "Superset" --lastname "Administrator" --email "admin@example.com"
-                echo "$(date "+%F %T") * created a Superset admin user (from secret)" >> /debug.log
+                # use docker to handle Apache Superset
+                docker run -d -p 80:8088 --name superset apache/superset >> /debug.log
+                docker exec -i superset superset fab create-admin \
+                  --username "$ADMINUSER" \
+                  --firstname Superset \
+                  --lastname Admin \
+                  --email admin@superset.com \
+                  --password "$ADMINPASS" >> /debug.log
+                docker exec -i superset superset db upgrade >> /debug.log
+                docker exec -i superset superset load_examples >> /debug.log
+                docker exec -i superset superset init >> /debug.log
+                echo "$(date "+%F %T") superset deployed" >> /debug.log
 
-                # initialize the superset database
-                superset db upgrade
-                superset load_examples
-                superset init
-                echo "$(date "+%F %T") * Superset initialization completed" >> /debug.log
-
-                # start web server with gunicorn; forcing on port 80 (default 8088)
-                echo "$(date "+%F %T") * serving web traffic with gunicorn" >> /debug.log
-                nohup gunicorn -b 0.0.0.0:80 --limit-request-line 0 --limit-request-field_size 0 superset:app
 
 ## Create cluster parameter group
   cpgClusterParams:
@@ -1221,7 +1167,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Sub "${AWS::StackName}-support-${AWS::Region}" ]
-      Description: "Role to permit the Lambda support function to interact with relevant AWS APIs."
+      Description: "Role to permit the Lambda support functions to interact with relevant AWS APIs."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -1242,21 +1188,6 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "arn:aws:logs:*:*:*"
-              - Effect: Allow
-                Action:
-                  - "s3:ListBucket"
-                  - "s3:GetObject"
-                  - "s3:GetObjectVersion"
-                  - "s3:DeleteObject"
-                  - "s3:DeleteObjects"
-                  - "s3:ListMultipartUploadParts"
-                  - "s3:PutObject"
-                  - "s3:ListObjects"
-                  - "s3:ListObjectsV2"
-                  - "s3:ListObjectVersions"
-                Resource:
-                  - !Sub "arn:aws:s3:::${bucketLabData}/*"
-                  - !Sub "arn:aws:s3:::${bucketLabData}"
               - Effect: Allow
                 Action:
                   - cloudformation:DescribeStacks
@@ -1283,13 +1214,13 @@ Resources:
 ## Create Lambda function to implement support operations
   funcLabSupport:
     Type: "AWS::Lambda::Function"
-    DependsOn: [ c9ClientIDE, bucketLabData ]
+    DependsOn: [ c9ClientIDE ]
     Properties:
       FunctionName: !If [ condEventEngine, "auroralab-support", !Sub "${AWS::StackName}-support" ]
       Description: "Custom Resource to provide support operations for the Aurora MySQL labs."
       Handler: "index.handler"
       Role: !GetAtt roleLabSupport.Arn
-      Runtime: "python3.7"
+      Runtime: "python3.8"
       Timeout: 600
       Tags:
         - Key: Name
@@ -1311,7 +1242,6 @@ Resources:
 
           print("[INFO]", "Initialize function")
           session = boto3.session.Session(region_name=environ["REGION"])
-          s3 = session.resource('s3')
           ide = session.resource('ec2')
           ec2 = session.client('ec2')
           ssm = session.client('ssm')
@@ -1331,7 +1261,6 @@ Resources:
               # lowercase names, set response as success
               response_data["DBClusterId"] = props["Cluster"].lower()
               response_data["DBClusterScalableTarget"] = "cluster:%s" % response_data["DBClusterId"]
-              response_status = cfnresponse.SUCCESS
               print("[INFO]", "ScalableTarget computed:", response_data["DBClusterScalableTarget"])
 
               # only send analytics if agreed
@@ -1417,12 +1346,8 @@ Resources:
                   else:
                     print("[ERROR]", "Timeout exceeded waiting for SSM registration")
 
-              # on stack deletion
-              if event["RequestType"] == 'Delete':
-                # delete all objects out of the bucket
-                bucket = s3.Bucket(props["DataBucket"])
-                bucket.objects.delete()
-                print("[INFO]", "Bucket cleaned up for:", props["DataBucket"])
+              # success
+              response_status = cfnresponse.SUCCESS
 
             except Exception as e:
               print("[ERROR]", e)
@@ -1442,7 +1367,6 @@ Resources:
     Type: "Custom::resLabSupport"
     Properties:
       ServiceToken: !GetAtt funcLabSupport.Arn
-      DataBucket: !Ref bucketLabData
       StackRegion: !Ref "AWS::Region"
       StackName: !Ref "AWS::StackName"
       StackUUID: !Select
@@ -1465,6 +1389,197 @@ Resources:
       IDEEnvTagName: !If [ condEventEngine, !Sub "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Sub "aws-cloud9-${AWS::StackName}-client-ide-${c9ClientIDE}" ]
       IDESecGroupId: !Ref clientSecGroup
       IDEBoostrapDoc: !Ref ssmDocClientBootstrap
+
+## Create role for use with the lab account function
+  roleLabAccount:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !If [ condEventEngine, !Sub "auroralab-account-${AWS::Region}", !Sub "${AWS::StackName}-account-${AWS::Region}" ]
+      Description: "Role to permit the Lambda account functions to interact with relevant AWS APIs."
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "s3:ListBucket"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:DeleteObject"
+                  - "s3:DeleteObjects"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:PutObject"
+                  - "s3:ListObjects"
+                  - "s3:ListObjectsV2"
+                  - "s3:ListObjectVersions"
+                Resource:
+                  - !Sub "arn:aws:s3:::${bucketLabData}/*"
+                  - !Sub "arn:aws:s3:::${bucketLabData}"
+              - Effect: Allow
+                Action:
+                  - iam:CreateInstanceProfile
+                  - iam:GetRole
+                  - iam:PassRole
+                  - iam:GetInstanceProfile
+                  - iam:ListRoles
+                  - iam:CreateRole
+                  - iam:AttachRolePolicy
+                  - iam:ListInstanceProfiles
+                  - iam:AddRoleToInstanceProfile
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, !Sub "auroralab-account-${AWS::Region}", !Sub "${AWS::StackName}-account-${AWS::Region}" ]
+
+## Create Lambda function to implement conditional initialization and cleanup of accounts
+  funcLabAccount:
+    Type: "AWS::Lambda::Function"
+    DependsOn: [ bucketLabData ]
+    Properties:
+      FunctionName: !If [ condEventEngine, "auroralab-account", !Sub "${AWS::StackName}-account" ]
+      Description: "Custom Resource to provide account initialization and cleanup for the Aurora MySQL labs."
+      Handler: "index.handler"
+      Role: !GetAtt roleLabAccount.Arn
+      Runtime: "python3.8"
+      Timeout: 600
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-account", !Sub "${AWS::StackName}-account" ]
+      Environment:
+        Variables:
+          REGION: !Ref "AWS::Region"
+      Code:
+        ZipFile: |
+          # Dependencies
+          from os import environ
+          import cfnresponse
+          import boto3
+          import urllib3
+          import json
+          import datetime
+          import time
+
+          print("[INFO]", "Initialize function")
+          session = boto3.session.Session(region_name=environ["REGION"])
+          s3 = session.resource('s3')
+          iam = session.client('iam')
+
+          # Lambda handler function / main function
+          def handler(event, context):
+            print("[INFO]", "Invocation start")
+
+            # init response
+            props = event["ResourceProperties"]
+            response_status = cfnresponse.FAILED
+            response_data = {}
+
+            # try/catch
+            try:
+              # on stack creation
+              if event["RequestType"] == 'Create':
+                # does the Cloud9 standard role exist?
+                missing = False
+                try:
+                  response = iam.get_role(RoleName='AWSCloud9SSMAccessRole')
+                  print("[INFO]", "IAM role exists:", "AWSCloud9SSMAccessRole")
+                except iam.exceptions.NoSuchEntityException:
+                  missing = True
+                except Exception as e:
+                  print("[ERROR]", e)
+
+                # create it if it doesn't exist
+                if missing:
+                  response = iam.create_role(
+                    Path='/service-role/',
+                    RoleName='AWSCloud9SSMAccessRole',
+                    AssumeRolePolicyDocument='{"Version": "2012-10-17","Statement": [{"Effect": "Allow","Principal": {"Service": ["ec2.amazonaws.com","cloud9.amazonaws.com"]},"Action": "sts:AssumeRole"}]}'
+                  )
+                  response = iam.attach_role_policy(
+                    RoleName='AWSCloud9SSMAccessRole',
+                    PolicyArn='arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile'
+                  )
+                  response = iam.attach_role_policy(
+                      RoleName='AWSCloud9SSMAccessRole',
+                      PolicyArn='arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+                  )
+                  print("[INFO]", "Created IAM role:", "AWSCloud9SSMAccessRole")
+
+                # does the Cloud9 standard instance profile exist?
+                missing = False
+                try:
+                  response = iam.get_instance_profile(InstanceProfileName='AWSCloud9SSMInstanceProfile')
+                  print("[INFO]", "IAM instance profile exists:", "AWSCloud9SSMInstanceProfile")
+                except iam.exceptions.NoSuchEntityException:
+                  missing = True
+                except Exception as e:
+                  print("[ERROR]", e)
+
+                # create it if it doesn't exit
+                if missing:
+                  response = iam.create_instance_profile(
+                    InstanceProfileName='AWSCloud9SSMInstanceProfile',
+                    Path='/cloud9/'
+                  )
+                  response = iam.add_role_to_instance_profile(
+                    InstanceProfileName='AWSCloud9SSMInstanceProfile',
+                    RoleName='AWSCloud9SSMAccessRole'
+                  )
+                  print("[INFO]", "Created IAM instance profile:", "AWSCloud9SSMInstanceProfile")
+
+              # on stack deletion
+              if event["RequestType"] == 'Delete':
+                # delete all objects out of the bucket
+                bucket = s3.Bucket(props["DataBucket"])
+                bucket.objects.delete()
+                print("[INFO]", "Bucket cleaned up for:", props["DataBucket"])
+
+              # success
+              response_status = cfnresponse.SUCCESS
+
+            except Exception as e:
+              print("[ERROR]", e)
+
+            # try/catch
+            try:
+              # send response to CloudFormation
+              cfnresponse.send(event, context, response_status, response_data)
+            except Exception as e:
+              print("[ERROR]", e)
+              response_status = cfnresponse.FAILED
+            print("[INFO]", "Invocation end")
+            return response_status
+
+## Custom resource to implement initialization and cleanup of account
+  resLabAccount:
+    Type: "Custom::resLabAccount"
+    Properties:
+      ServiceToken: !GetAtt funcLabAccount.Arn
+      DataBucket: !Ref bucketLabData
+      StackRegion: !Ref "AWS::Region"
+      StackName: !Ref "AWS::StackName"
+      StackUUID: !Select
+        - 2
+        - !Split
+          - "/"
+          - !Ref "AWS::StackId"
+      EEModuleId: !Ref EEModuleId
+      EEModuleVersion: !Ref EEModuleVersion
 
 ## Wait condition to signal bootstrap completion
   bootstrapWaitHandle:
