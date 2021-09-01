@@ -228,7 +228,15 @@ Mappings:
       az2: ap-northeast-2b
       az3: ap-northeast-2c
   NetworkSettings:
-    global:
+    primary:
+      vpcCidr: 172.30.0.0/16
+      subPub1Cidr: 172.30.0.0/24
+      subPub2Cidr: 172.30.1.0/24
+      subPub3Cidr: 172.30.2.0/24
+      subPrv1Cidr: 172.30.10.0/24
+      subPrv2Cidr: 172.30.11.0/24
+      subPrv3Cidr: 172.30.12.0/24
+    secondary:
       vpcCidr: 172.31.0.0/16
       subPub1Cidr: 172.31.0.0/24
       subPub2Cidr: 172.31.1.0/24
@@ -236,7 +244,6 @@ Mappings:
       subPrv1Cidr: 172.31.10.0/24
       subPrv2Cidr: 172.31.11.0/24
       subPrv3Cidr: 172.31.12.0/24
-      sshSourceCidr: 0.0.0.0/0
   ClusterSettings:
     global:
       dbSchema: mylab
@@ -273,7 +280,7 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
-      CidrBlock: !FindInMap [ NetworkSettings, global, vpcCidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, vpcCidr ], !FindInMap [ NetworkSettings, primary, vpcCidr ] ]
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-vpc", !Sub "${AWS::StackName}-vpc" ]
@@ -296,7 +303,7 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPub1Cidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPub1Cidr ], !FindInMap [ NetworkSettings, primary, subPub1Cidr ] ]
       AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
       MapPublicIpOnLaunch: true
       Tags:
@@ -306,7 +313,7 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPub2Cidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPub2Cidr ], !FindInMap [ NetworkSettings, primary, subPub2Cidr ] ]
       AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
       MapPublicIpOnLaunch: true
       Tags:
@@ -316,7 +323,7 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPub3Cidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPub3Cidr ], !FindInMap [ NetworkSettings, primary, subPub3Cidr ] ]
       AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
       MapPublicIpOnLaunch: true
       Tags:
@@ -359,7 +366,7 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv1Cidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPrv1Cidr ], !FindInMap [ NetworkSettings, primary, subPrv1Cidr ] ]
       AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
       MapPublicIpOnLaunch: false
       Tags:
@@ -369,7 +376,7 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv2Cidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPrv2Cidr ], !FindInMap [ NetworkSettings, primary, subPrv2Cidr ] ]
       AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
       MapPublicIpOnLaunch: false
       Tags:
@@ -379,7 +386,7 @@ Resources:
     Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref vpc
-      CidrBlock: !FindInMap [ NetworkSettings, global, subPrv3Cidr ]
+      CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPrv3Cidr ], !FindInMap [ NetworkSettings, primary, subPrv3Cidr ] ]
       AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
       MapPublicIpOnLaunch: false
       Tags:
@@ -599,7 +606,7 @@ Resources:
         SecretStringTemplate: '{"username": "administrator"}'
         GenerateStringKey: 'password'
         PasswordLength: 10
-        ExcludeCharacters: '"@/\$`&:{}()[]'
+        ExcludeCharacters: '="@/\$`&:{}()[]'
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]
