@@ -1,8 +1,5 @@
 # Connect an Application to Aurora Global Database
 
-!!! error "Lab temporarily unavailable"
-    This lab is temporarily unavailable due to underlying library dependency issues. We are working on alternatives, and appologize for the inconvenience. This alert will be removed when the issues are resolved.
-
 
 Amazon Aurora provides both MySQL and PostgreSQL compatible database engines. This means any existing applications that work with MySQL and PostgreSQL will have drop-in compatibility with Amazon Aurora. In this lab, you will configure a business intelligence (BI) application operating in each of the two regions, and connect it to the respective local DB Cluster reader endpoint of the Aurora Global Database, in order to achieve lower query latency.
 
@@ -113,28 +110,42 @@ You should see the login page for Apache Superset. Type in the values of ==[supe
 
 <span class="image">![Superset Login](superset-login.png?raw=true)</span>
 
-Next, you will create a new datasource for Apache Superset in order to connect to the Aurora Global Database cluster. In the Apache Superset navigation menu (top bar), mouse over **Sources**, then click on **Databases**.
+Next, you will create a new datasource for Apache Superset in order to connect to the Aurora Global Database cluster. In the Apache Superset navigation menu (top bar), mouse over **Data**, then click on **Databases**.
 
-<span class="image">![Superset Source Databases](superset-source-db.png)</span>
+<span class="image">![Superset Menu Databases](superset-source-db.png)</span>
 
-Near the top right, click on the green **+** icon to add a new database source.
+Near the top right, click on the **+ Database** button to add a new database source.
 
-<span class="image">![Superset Source Databases](superset-list-sources.png)</span>
+<span class="image">![Superset List Databases](superset-list-sources.png)</span>
 
-Provide the following values in the relevant form fields to add the data source, then click **Save**:
+Select the **MySQL** database engine in the following screen.
+
+<span class="image">![Superset Add Database](superset-dbconn-engine.png)</span>
+
+Provide the following values in the relevant form fields to add the data source, then click **Connect**:
 
 Field | Value | Description
 ----- | ----- | -----
-Database | `aurora-mysql-writer` | This will be the friendly name of our Aurora Database in Superset.
-SQLAlchemy URI | `mysql://[username]:[password]@[cluster_endpoint]/mysql` | Replace ==[username]== and ==[password]== with the Aurora DB credentials retrieved before from the secet. Replace ==[cluster_endpoint]== with the Aurora DB **cluster endpoint**  retrieved previously (in the primary region). Click on **Test Connection** to confirm the settings are correct.
-Expose in SQL Lab | &#9745; | Make sure this option is **checked**.
-Allow CREATE TABLE AS | &#9745; | Make sure this option is **checked**.
-Allow DML | &#9745; | Make sure this option is **checked**.
+HOST | ==[clusterEndpoint]== | Replace ==[clusterEndpoint]== with the Aurora DB **cluster endpoint** retrieved previously (in the primary region).
+PORT | `3306` | The port number on the database server to connect to.
+DATABASE NAME | `mylab` | The name of database (schema) to connect to.
+USERNAME | ==[username]== | Replace ==[username]== with the Aurora DB credentials retrieved before from the secret.
+PASSWORD | ==[password]== | Replace ==[password]== with the Aurora DB credentials retrieved before from the secret.
+DISPLAY NAME | `auroralab-writer-endpoint` | Friendly name for this database.
 
 <span class="image">![Superset Writer DB Connection Settings](superset-dbconn-writer.png)</span>
 
+In the next screen, titled **Your database was successfully connected! Here are some optional settings for your database**, expand the **SQL Lab** section and check the following boxes:
 
-## 2. Configure application in secondary region
+* [ ] Expose database in SQL Lab
+* [ ] Allow CREATE TABLE AS
+* [ ] Allow DML
+
+<span class="image">![Superset Writer DB Connection Options](superset-dbconn-options.png)</span>
+
+Finally, click **Finish**.
+
+## 3. Configure application in secondary region
 
 The secondary region setup will be very similar. Open a new browser tab or window. Apache Superset is a web-based application that is also running on an EC2 instance in the **secondary region**, simply paste the ==[supersetURL]== value from the **secondary region** into your address bar. The URL will have the following format:
 
@@ -158,13 +169,16 @@ Provide the following values in the relevant form fields to add the data source,
 
 Field | Value | Description
 ----- | ----- | -----
-Database | `aurora-mysql-secondary` | This will be the friendly name of our Aurora Database in Superset.
-SQLAlchemy URI | `mysql://[username]:[password]@[reader_endpoint]/mysql` | Replace ==[username]== and ==[password]== with the Aurora DB credentials retrieved before from the secet. Replace ==[reader_endpoint]== with the Aurora DB **reader endpoint**  retrieved previously foir the **secondary region**. Click on **Test Connection** to confirm the settings are correct.
-Expose in SQL Lab | &#9745; | Make sure this option is **checked**.
-Allow CREATE TABLE AS | &#9744; | Make sure this option is **not checked**.
-Allow DML | &#9744; | Make sure this option is **not checked**.
+HOST | ==[clusterEndpoint]== | Replace ==[clusterEndpoint]== with the Aurora DB **cluster endpoint** retrieved previously (in the primary region).
+PORT | `3306` | The port number on the database server to connect to.
+DATABASE NAME | `mylab` | The name of database (schema) to connect to.
+USERNAME | ==[username]== | Replace ==[username]== with the Aurora DB credentials retrieved before from the secret.
+PASSWORD | ==[password]== | Replace ==[password]== with the Aurora DB credentials retrieved before from the secret.
+DISPLAY NAME | `auroralab-secondary-endpoint` | Friendly name for this database.
 
 <span class="image">![Superset Secondary DB Connection Settings](superset-dbconn-secondary.png)</span>
+
+In the next screen, leave the default selections, then click **Finish**.
 
 ## 4. Access data using the application
 
@@ -174,9 +188,9 @@ In the Apache Superset navigation menu, mouse over **SQL Lab**, then click on **
 
 <span class="image">![Superset SQL Lab](superset-sql-lab.png)</span>
 
-In the web-based IDE within Superset that displays, on the left menu, select `mysql aurora-mysql-writer`, for **Database** and then select `mylab` for **Schema**.
+In the web-based IDE within Superset that displays, on the left menu, select `mysql auroralab-writer-endpoint`, for **Database** and then select `mylab` for **Schema**.
 
-Copy and paste the following SQL query in the editor and then click on **Run Query**.
+Copy and paste the following SQL query in the editor and then click **Run**.
 
 ```sql
 DROP TABLE IF EXISTS gdbtest1;
@@ -213,9 +227,9 @@ Next, if you no longer have a browser window or tab open for Apache Superset in 
 
 Similarly, in the Apache Superset navigation menu, mouse over **SQL Lab**, then click on **SQL Editor**.
 
-In the web-based IDE within Superset, on the left menu, select `aurora-mysql-secondary`, for **Database** and then select `mylab` for **Schema**.
+In the web-based IDE within Superset, on the left menu, select `mysql auroralab-secondary-endpoint`, for **Database** and then select `mylab` for **Schema**.
 
-Copy and paste in the following SQL query and then click on **Run Query**.
+Copy and paste in the following SQL query and then click **Run**.
 
 ```sql
 SELECT count(pk), sum(gen_number), md5(avg(gen_number)) FROM gdbtest1;
