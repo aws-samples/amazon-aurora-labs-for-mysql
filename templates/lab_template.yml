@@ -796,6 +796,7 @@ Resources:
             - "curl -O https://[[website]]/scripts/bank_deposit.py"
             - "curl -O https://[[website]]/scripts/weather_perf.py"
             - "curl -O https://[[website]]/support/sagemaker_policy.json"
+            - "curl -O https://[[website]]/support/peer_vpcs.py"
             - "echo \"$(date \"+%F %T\") * downloaded lab assets\" >> /bootstrap.log"
             - "mkdir -p /home/ec2-user/.aws"
             - "touch /home/ec2-user/.aws/config"
