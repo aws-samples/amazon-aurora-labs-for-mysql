@@ -96,7 +96,7 @@ try:
     ])
     print("[INFO]", "Retrieved Route Tables for VPCs:", args.source_vpc, args.target_vpc)
 
-    # Get DB security groups
+    # Get DB security groups (tag value dbClusterSecGroup)
     l_db_sec_groups = l_vpc.describe_security_groups(
         Filters=[
         {
