@@ -128,7 +128,7 @@ def thread_func(endpoint, username, password, schema, max_id, iterations):
                 sql_command = "SELECT sql_no_cache max_temp,min_temp,station_name FROM weather WHERE max_temp > %d and id = '%s' ORDER BY max_temp DESC;" % (temp_value,stationid)
                 # run query
             with conn.cursor() as cursor:
-                print("executing %s... .." %sql_command)
+                print("Executing %s \t" %sql_command)
                 cursor.execute(sql_command)
                 cursor.close()
                 # run query
@@ -140,7 +140,6 @@ def thread_func(endpoint, username, password, schema, max_id, iterations):
     except:
         # Display any exception information
         print(sys.exc_info()[1])
-
 
 # Progress thread
 def progress_func():
@@ -158,7 +157,7 @@ def progress_func():
         if initial != True:
             # Format an output string
             end_time = time.time()
-            output = "Queries/sec: {0} (press Ctrl+C when it hit Queries/sec: 0 after few mins )\r".format(int(query_count / (end_time-start_time)))
+            output = "Q/s: {0}\r ".format(int(query_count / (end_time-start_time)))
             start_time = end_time
 
             # Reset the executed query count
@@ -175,7 +174,6 @@ def progress_func():
         # No longer initial pass
         initial = False
 
-
 # Invoke tracking function
 track_analytics()
 
@@ -186,6 +184,7 @@ _thread.start_new_thread(progress_func, ())
 for thread_id in range(args.threads):
     _thread.start_new_thread(thread_func, (args.endpoint, args.username, args.password, args.database, max_id, query_iterations))
 
-# Loop indefinitely to prevent application exit
-while 1:
-    pass
+# Loop for 5 minutes before application exit
+for x in range(300):
+  time.sleep(1)
+print("\n Thank you")
