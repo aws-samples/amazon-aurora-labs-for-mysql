@@ -1,6 +1,6 @@
 {
   "name": "amazon-aurora-labs-for-mysql",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "engines": {
     "node": ">=16.4.0",
     "npm": ">=7.19.0"
