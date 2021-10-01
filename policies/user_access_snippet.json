@@ -5,6 +5,7 @@
       "application-autoscaling:*",
       "cloudformation:*",
       "cloudwatch:*",
+      "cloud9:*",
       "ec2:*",
       "events:*",
       "iam:*",

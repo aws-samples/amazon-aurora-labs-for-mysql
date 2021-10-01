@@ -35,6 +35,13 @@ Parameters:
       - "Yes"
       - "No"
     Description: If you plan to run the Aurora Global Database labs, choose 'Yes', to deploy the required resources.
+  deployBacktrack:
+    Default: "Yes"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Backtrack lab, choose 'Yes', to deploy a cluster with Backtrack enabled.
   agreeTracking:
     Default: "Yes"
     Type: String
@@ -77,6 +84,7 @@ Metadata:
           - deployCluster
           - deployGDB
           - deployML
+          - deployBacktrack
       - Label:
           default: "Help Us Improve Our Labs!"
         Parameters:
@@ -97,6 +105,8 @@ Metadata:
         default: "Enable Aurora Global Database Labs?"
       deployML:
         default: "Enable Aurora ML Labs?"
+      deployBacktrack:
+        default: "Enable Backtrack?"
       agreeTracking:
         default: "Collect Usage Data?"
       isSecondary:
@@ -126,6 +136,8 @@ Conditions:
   condDeployGDBResources: !Or [ !Equals [ !Ref deployGDB, "Yes" ], !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
   # the bug fix for secondary region KMS is only deployed if parameter is yes
   condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
+  # GDB and Backtrack are currently incompatible, don't enable backtrack if deployBacktrack = No, or EE module matches the 'global-cluster' or 'all-features' module id
+  condEnableBacktrack: !And [ !Equals [ !Ref deployBacktrack, "Yes" ], !Not [ !Or [ !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ] ] ]
 
 
 ## Mappings
@@ -744,6 +756,7 @@ Resources:
       ImageId: resolve:ssm:/aws/service/cloud9/amis/amazonlinux-2-x86_64
       Name: !If [ condEventEngine, "auroralab-client-ide", !Sub "${AWS::StackName}-client-ide" ]
       SubnetId: !Ref sub1Private
+      OwnerArn: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", Ref: AWS::NoValue ]
       Tags:
         - Key: BootstrapGroup
           Value: !Sub "bootstrap-${AWS::StackName}"
@@ -937,7 +950,7 @@ Resources:
       StorageEncrypted: true
       VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
-      BacktrackWindow: 86400
+      BacktrackWindow: !If [ condEnableBacktrack, 86400, 0 ]
       EnableIAMDatabaseAuthentication: true
       AssociatedRoles:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
