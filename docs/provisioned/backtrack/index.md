@@ -1,5 +1,9 @@
 # Backtrack a DB Cluster
 
+!!! error "Backtrack is not compatible with Global Database"
+    Please note that backtrack feature is not compatible with Aurora Global Database. If you run through these labs, you will not be able to use this cluster for Global Database lab. You will have to either create a new cluster for global database labs, or create a new stack using the instruction listed in the [Global Database labs](/global/deploy) section.
+
+
 This lab will walk you through the process of backtracking a DB cluster. <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.Backtrack.html" target="_blank">
 Backtracking</a> "rewinds" the DB cluster to the time you specify. While it is not a replacement for backing up your DB cluster for DR purposes, backtracking allows you to easily undo mistakes quickly, or explore earlier data changes.
 

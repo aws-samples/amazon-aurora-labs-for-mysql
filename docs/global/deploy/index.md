@@ -1,5 +1,9 @@
 # Deploy an Aurora Global Database
 
+!!! error "Backtrack is not compatible with Global Database"
+    Please note that backtrack feature is not compatible with Aurora Global Database. If you run through these labs, you will not be able to use this cluster for backtrack lab. You will have to either create a new cluster for the backtrack labs, or create a new stack using the instruction listed in the [Create a New DB Cluster](/provisioned/create/) section.
+
+
 Amazon Aurora <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html" target="_blank">Global Database</a> is designed for globally distributed applications, allowing a single Amazon Aurora database to span multiple AWS regions. It replicates your data with no impact on database performance, enables fast local reads with low latency in each region, and provides disaster recovery from region-wide outages.
 
 This lab contains the following tasks:
