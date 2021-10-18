@@ -12,6 +12,7 @@ This sample code is made available under the MIT-0 license. See the LICENSE file
 :root {
   --md-default-fg-color:           #161E2D;
   --md-default-fg-color--light:    #232F3E;
+  --md-primary-tab-bg-color:       #161E2D;
   --md-default-fg-color--dark:     #000000;
   --md-default-bg-color:           #FFFFFF;
   --md-primary-fg-color:           #527FFF;
@@ -75,6 +76,12 @@ This sample code is made available under the MIT-0 license. See the LICENSE file
   color: var(--md-typeset-active-nav-link);
 }
 
+.md-tabs {
+  
+  background-color: var(--md-footer-bg1-color);
+  color: var(--md-primary-tab-bg-color);
+ 
+}
 /* Custom dark scheme based on slate, but adopted for Aurora Immersion Day */
 [data-md-color-scheme="darkaurora"] {
 
@@ -134,5 +141,6 @@ This sample code is made available under the MIT-0 license. See the LICENSE file
   
   /* Customer color variables */
   --md-footer-bg1-color:             #005276;
+  --md-primary-tab-bg-color:         #D5DBDB;
     
   }

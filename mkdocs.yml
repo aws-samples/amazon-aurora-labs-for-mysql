@@ -27,7 +27,10 @@ theme:
   logo: 'assets/images/aws_smile_logo.png'
   favicon: 'assets/images/aws-favicon.ico'
   features:
-    - tabs
+    # - tabs
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - toc.integrate
   icon:
     repo: fontawesome/brands/github
   palette:
