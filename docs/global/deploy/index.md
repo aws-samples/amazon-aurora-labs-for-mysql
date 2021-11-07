@@ -49,7 +49,7 @@ Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab.
 
 ## 2. Create an Aurora global cluster
 
-The lab environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster, that you are running the load generator against. You will create a Global Database cluster using this existing DB cluster, as the **primary**.
+The lab environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster. You will create a Global Database cluster using this existing DB cluster, as the **primary**.
 
 ???+ info "'Global cluster' vs. 'DB cluster': What is the difference?"
     A **DB cluster** exists in one region only. It is a container for up to 16 **DB instances** that share the same storage volume. This is the traditional configuration of an Aurora cluster. Whether you are deploying a provisioned, Serverless or Multi-Master cluster, you are deploying a **DB cluster**, within a single region.
@@ -58,7 +58,25 @@ The lab environment that was provisioned automatically for you, already has an A
 
 Once the lab environment created above at **Step 1. Create a lab environment in a different region** has finished deploying, you may proceed.
 
-Open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
+Before we begin, we will replicate the KMS key used by the Aurora database cluster in the primary region, so it can be used in the secondary region. To do this, ope the Cloud9 environment, and execute the following command. Make sure you pass the secondary region as the `--region` parameter value by replacing `secondary region`. If you are running the labs in an event engine provisioned environment then the `secondary region` value would always be `us-east-1`. If you provisioned the lab in your own account, you will have to use the correct region value, where you created the stack in **Step 1**.
+
+Execute the following command by first connecting to the Cloud9 IDE by following instruction [here](/prereqs/connect/)
+
+```
+cd ~/environment/
+python3 replicatekey.py --region 'secondary region'
+
+```
+After executing the command the result should look like the screenshot below.
+
+<span class="image">![replicatekey result](cl9.png?raw=true)</span>
+
+If you see an error `[ERROR] An error occurred (AuthFailure) when calling the DescribeRegions operation: AWS was not able to validate the provided access credentials` such as the one shown in screenshot below, make sure you have toggled AWS managed temporary credentials to Off (red). For instruction see [here](/prereqs/connect/#1-open-and-set-up-your-cloud9-desktop).
+
+<span class="image">![Authentication error](autherror.png?raw=true)</span>
+
+
+Next, open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.
@@ -98,10 +116,11 @@ Set the following options on the configuration screen for the secondary DB clust
 Scroll down and set the following parameters:
 
 1. In the **Connectivity** section, specify where the database cluster will be deployed within your defined network configuration created above:
-    * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`
+    * [ ] Set **Virtual Private Cloud (VPC)** to `auroralab-vpc`.
     * [ ] Ensure the correct **Subnet Group** was selected automatically, it should be named `auroralab-db-subnet-group`.
-    * [ ] Make sure the **Publicly accessible** option is set to `No`
-    * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection
+    * [ ] Make sure the **Publicly accessible** option is set to `No`.
+    * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection.
+    * [ ] For **Encryption Key** use **AWS KMS Key** dropdown and select `auroralab-mysql-db-key` from the selection.
 
 2. In the **Read replica write forwarding** section:
     * [ ] **Check** the box for **Enable read replica write forwarding**
