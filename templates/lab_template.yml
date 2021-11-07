@@ -138,6 +138,8 @@ Conditions:
   condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
   # GDB and Backtrack are currently incompatible, don't enable backtrack if deployBacktrack = No, or EE module matches the 'global-cluster' or 'all-features' module id
   condEnableBacktrack: !And [ !Equals [ !Ref deployBacktrack, "Yes" ], !Not [ !Or [ !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ] ] ]
+  # Condition to skip creating multi region KMS key in the secondary region
+  condIsNotSecondary: !Not [Condition: condIsSecondary]
 
 
 ## Mappings
@@ -702,6 +704,7 @@ Resources:
         - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
         - "arn:aws:iam::aws:policy/AWSGlueConsoleSageMakerNotebookFullAccess"
         - "arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile"
+        - "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
       Policies:
         - PolicyName: inline-policy
           PolicyDocument:
@@ -720,6 +723,7 @@ Resources:
                   - "ec2:CreateVpcPeeringConnection"
                   - "ec2:DescribeVpcPeeringConnections"
                   - "ec2:AcceptVpcPeeringConnection"
+                  - "ec2:DescribeRegions"
                   - "iam:AttachRolePolicy"
                   - "iam:DetachRolePolicy"
                   - "iam:PutRolePolicy"
@@ -782,7 +786,15 @@ Resources:
             - "#!/bin/bash -xe"
             - "echo \"$(date \"+%F %T\") * running as $(whoami)\" >> /bootstrap.log"
             - "yum install -y unzip jq"
+            - "sudo pip3 uninstall awscli -y"
+            - "sudo rm -r /usr/bin/aws -f"
             - "echo \"$(date \"+%F %T\") * installed supporting packages\" >> /bootstrap.log"
+            - "mkdir /home/ec2-user/awscl"
+            - "curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"/home/ec2-user/awscl/awscliv2.zip\""
+            - "unzip \"/home/ec2-user/awscl/awscliv2.zip\" -d \"/home/ec2-user/awscl\""
+            - "sudo chown ec2-user:ec2-user /home/ec2-user/awscl/aws -R"
+            - "sudo /home/ec2-user/awscl/aws/install -i /usr/local/aws-cli -b /usr/local/bin"
+            - "echo \"$(date \"+%F %T\") * installed awscli (v2)\" >> /bootstrap.log"
             - "yum remove -y mariadb"
             - "yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm"
             - "percona-release disable all"
@@ -808,6 +820,7 @@ Resources:
             - "curl -O https://[[website]]/scripts/das_reader.py"
             - "curl -O https://[[website]]/scripts/bank_deposit.py"
             - "curl -O https://[[website]]/scripts/weather_perf.py"
+            - "curl -O https://[[website]]/scripts/replicatekey.py"
             - "curl -O https://[[website]]/support/sagemaker_policy.json"
             - "curl -O https://[[website]]/support/peer_vpcs.py"
             - "echo \"$(date \"+%F %T\") * downloaded lab assets\" >> /bootstrap.log"
@@ -933,9 +946,87 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
 
+## Create Primary region KMS key used for database cluster volume encryption
+
+  dbclusterkey:
+    Type: AWS::KMS::Key
+    Condition: condIsNotSecondary
+    Properties: 
+      Description: "Multi region key (primary) for Global DB labs."
+      Enabled: true
+      MultiRegion: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: Enable IAM User Permissions
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          Action: kms:*
+          Resource: "*"
+        - Sid: Allow access for Key TeamRole
+          Effect: Allow
+          Principal:
+            AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
+          Action:
+          - kms:Create*
+          - kms:Describe*
+          - kms:Enable*
+          - kms:List*
+          - kms:Put*
+          - kms:Update*
+          - kms:Revoke*
+          - kms:Disable*
+          - kms:Get*
+          - kms:Delete*
+          - kms:ImportKeyMaterial
+          - kms:TagResource
+          - kms:UntagResource
+          - kms:ScheduleKeyDeletion
+          - kms:CancelKeyDeletion
+          - kms:ReplicateKey
+          - kms:UpdatePrimaryRegion
+          Resource: "*"
+        - Sid: Allow use of the key
+          Effect: Allow
+          Principal:
+            AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
+          Action:
+          - kms:Encrypt
+          - kms:Decrypt
+          - kms:ReEncrypt*
+          - kms:GenerateDataKey*
+          - kms:DescribeKey
+          Resource: "*"
+        - Sid: Allow attachment of persistent resources
+          Effect: Allow
+          Principal:
+            AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
+          Action:
+          - kms:CreateGrant
+          - kms:ListGrants
+          - kms:RevokeGrant
+          Resource: "*"
+          Condition:
+            Bool:
+              kms:GrantIsForAWSResource: 'true'
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql-mregion-key", !Sub "${AWS::StackName}-auroralab-mysql-mregion-key" ]
+
+## Create KMS key alias in the primary region
+  dbclusterkeyAlias:
+    Type: AWS::KMS::Alias
+    Condition: condIsNotSecondary
+    DependsOn: dbclusterkey
+    Properties:
+      AliasName: !If [ condEventEngine, "alias/auroralab-mysql-db-key", !Sub "alias/${AWS::StackName}-auroralab-mysql-db-key" ]
+      TargetKeyId: !Ref dbclusterkey
+
 ## Create Aurora cluster
   dbCluster:
     Type: "AWS::RDS::DBCluster"
+    DependsOn: dbclusterkey
     Condition: condDeployDBCluster
     Properties:
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
@@ -951,6 +1042,7 @@ Resources:
       VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
       BacktrackWindow: !If [ condEnableBacktrack, 86400, 0 ]
+      KmsKeyId: !GetAtt dbclusterkey.Arn
       EnableIAMDatabaseAuthentication: true
       AssociatedRoles:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
@@ -1125,24 +1217,24 @@ Resources:
             Principal:
               Service:
                 - "sagemaker.amazonaws.com"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
-      Policies:
-        - PolicyName: inline-policy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "s3:ListBucket"
-                  - "s3:GetObject"
-                  - "s3:GetObjectVersion"
-                  - "s3:DeleteObject"
-                  - "s3:ListMultipartUploadParts"
-                  - "s3:PutObject"
-                Resource:
-                  - "arn:aws:s3:::*/*"
-                  - "arn:aws:s3:::*"
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+        Policies:
+          - PolicyName: inline-policy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "s3:ListBucket"
+                    - "s3:GetObject"
+                    - "s3:GetObjectVersion"
+                    - "s3:DeleteObject"
+                    - "s3:ListMultipartUploadParts"
+                    - "s3:PutObject"
+                  Resource:
+                    - "arn:aws:s3:::*/*"
+                    - "arn:aws:s3:::*"
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Sub "${AWS::StackName}-ml-${AWS::Region}" ]
@@ -1164,8 +1256,8 @@ Resources:
               unset SUDO_UID
               python3 -m pip install sagemaker boto3 sagemaker_containers
               cd /home/ec2-user/SageMaker/
-              wget https://[[website]]/support/notebook_churn.py
-              wget https://[[website]]/support/sample_churn_data.zip
+              wget https://https://[[website]]/support/notebook_churn.py
+              wget https://https://[[website]]/support/sample_churn_data.zip
               sed -i "s%mlbucketplaceholder%${bucketLabData}%" notebook_churn.py
               sudo mkdir -p /opt/ml/code/
               cd /home/ec2-user/SageMaker/
@@ -1230,6 +1322,10 @@ Resources:
                   - iam:PassRole
                   - ssm:DescribeInstanceInformation
                   - ssm:SendCommand
+                  - cloud9:UpdateEnvironment
+                  - cloud9:UpdateEnvironmentSettings
+                  - cloud9:DescribeEnvironments
+                  - cloud9:ListEnvironments
                 Resource: "*"
       Tags:
         - Key: Name
@@ -1269,6 +1365,7 @@ Resources:
           ide = session.resource('ec2')
           ec2 = session.client('ec2')
           ssm = session.client('ssm')
+          cl9ide = session.client('cloud9')
           http = urllib3.PoolManager()
 
           # Lambda handler function / main function
@@ -1369,10 +1466,10 @@ Resources:
                     print("[INFO]", "Started IDE bootstrap:", response)
                   else:
                     print("[ERROR]", "Timeout exceeded waiting for SSM registration")
-
+                
               # success
               response_status = cfnresponse.SUCCESS
-
+              
             except Exception as e:
               print("[ERROR]", e)
 
@@ -1614,33 +1711,7 @@ Resources:
     Properties: 
       Count: 1
       Handle: !Ref bootstrapWaitHandle
-      Timeout: 3600
-
-## Bug mitigation, RDS default KMS key in secondary region doesn't get created
-## until the first DB instance gets created. GDB Add region fails if it doesn't
-## exist
-  dbIgnoreBugFix:
-    Type: "AWS::RDS::DBInstance"
-    Condition: condIsSecondary
-    Properties:
-      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-ignore-me", !Sub "${AWS::StackName}-ignore-me" ]
-      CopyTagsToSnapshot: true
-      DBInstanceClass: db.t3.micro
-      Engine: mysql
-      EngineVersion: '5.7.28'
-      PubliclyAccessible: false
-      MasterUsername: ignoreme
-      MasterUserPassword: qqn6e3wQ8I9qGN5aBN9R
-      DBSubnetGroupName: !Ref dbSubnets
-      BackupRetentionPeriod: 0
-      StorageEncrypted: true
-      VPCSecurityGroups: [ !Ref dbClusterSecGroup ]
-      AllocatedStorage: 20
-      StorageType: gp2
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, "auroralab-ignore-me", !Sub "${AWS::StackName}-ignore-me" ]
-
+      Timeout: 1800
 
 ## Outputs
 Outputs:
