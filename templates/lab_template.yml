@@ -1217,24 +1217,24 @@ Resources:
             Principal:
               Service:
                 - "sagemaker.amazonaws.com"
-        ManagedPolicyArns:
-          - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
-        Policies:
-          - PolicyName: inline-policy
-            PolicyDocument:
-              Version: 2012-10-17
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - "s3:ListBucket"
-                    - "s3:GetObject"
-                    - "s3:GetObjectVersion"
-                    - "s3:DeleteObject"
-                    - "s3:ListMultipartUploadParts"
-                    - "s3:PutObject"
-                  Resource:
-                    - "arn:aws:s3:::*/*"
-                    - "arn:aws:s3:::*"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+      Policies:
+        - PolicyName: inline-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:ListBucket"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:DeleteObject"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:PutObject"
+                Resource:
+                  - "arn:aws:s3:::*/*"
+                  - "arn:aws:s3:::*"
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Sub "${AWS::StackName}-ml-${AWS::Region}" ]
