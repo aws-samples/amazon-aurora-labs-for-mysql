@@ -169,7 +169,7 @@ Provide the following values in the relevant form fields to add the data source,
 
 Field | Value | Description
 ----- | ----- | -----
-HOST | ==[clusterEndpoint]== | Replace ==[clusterEndpoint]== with the Aurora DB **cluster endpoint** retrieved previously (in the primary region).
+HOST | ==[readerEndpoint]== | Replace ==[readerEndpoint]== with the Aurora DB **reader endpoint** retrieved previously in the **secondary region**.
 PORT | `3306` | The port number on the database server to connect to.
 DATABASE NAME | `mylab` | The name of database (schema) to connect to.
 USERNAME | ==[username]== | Replace ==[username]== with the Aurora DB credentials retrieved before from the secret.
