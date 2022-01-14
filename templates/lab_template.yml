@@ -1256,8 +1256,8 @@ Resources:
               unset SUDO_UID
               python3 -m pip install sagemaker boto3 sagemaker_containers
               cd /home/ec2-user/SageMaker/
-              wget https://https://[[website]]/support/notebook_churn.py
-              wget https://https://[[website]]/support/sample_churn_data.zip
+              wget https://[[website]]/support/notebook_churn.py
+              wget https://[[website]]/support/sample_churn_data.zip
               sed -i "s%mlbucketplaceholder%${bucketLabData}%" notebook_churn.py
               sudo mkdir -p /opt/ml/code/
               cd /home/ec2-user/SageMaker/
