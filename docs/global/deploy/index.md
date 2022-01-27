@@ -58,7 +58,7 @@ The lab environment that was provisioned automatically for you, already has an A
 
 Once the lab environment created above at **Step 1. Create a lab environment in a different region** has finished deploying, you may proceed.
 
-Before we begin, we will replicate the KMS key used by the Aurora database cluster in the primary region, so it can be used in the secondary region. To do this, ope the Cloud9 environment, and execute the following command. Make sure you pass the secondary region as the `--region` parameter value by replacing `secondary region`. If you are running the labs in an event engine provisioned environment then the `secondary region` value would always be `us-east-1`. If you provisioned the lab in your own account, you will have to use the correct region value, where you created the stack in **Step 1**.
+Before we begin, we will replicate the KMS key used by the Aurora database cluster in the primary region, so it can be used in the secondary region. To do this, open the Cloud9 environment, and execute the following command. Make sure you pass the secondary region as the `--region` parameter value by replacing `secondary region`. If you are running the labs in an event engine provisioned environment then the `secondary region` value would always be `us-east-1`. If you provisioned the lab in your own account, you will have to use the correct region value, where you created the stack in **Step 1**.
 
 Execute the following command by first connecting to the Cloud9 IDE by following instruction [here](/prereqs/connect/)
 
@@ -91,6 +91,10 @@ First, you need to **disable** the **Backtrack** feature. At present database ba
 Scroll down to the **Additional Configuration** section (expand it if needed) and uncheck the **Enable Backtrack** option, then click **Continue** at the bottom of the page.
 
 <span class="image">![RDS Cluster Disable Backtrack](rds-cluster-disable-backtrack.png?raw=true)</span>
+
+!!! note
+    If you don't see the Backtrack section as shown in the section below, your cluster did not have backtrack feature enabled, and you can safely skip this step without affecting rest of the lab.
+
 
 In the **Scheduling of modifications** section, choose the **Apply immediately** option, then click **Modify cluster** to confirm the changes.
 
