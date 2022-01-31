@@ -48,11 +48,14 @@ theme:
 
 
 # Customization
+# removed cloudflare dependency, moved highlighting syntax library to local assets dir
 extra_css:
-  - 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css'
+  #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css'
+  - 'assets/css/default.min.css'
   - 'assets/css/custom.css'
 extra_javascript:
-  - 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js'
+  #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js'
+  - 'assets/js/highlight.min.js'
   - 'assets/js/highlight.js'
 extra:
   social:
