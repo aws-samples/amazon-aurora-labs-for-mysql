@@ -35,6 +35,23 @@ Parameters:
       - "Yes"
       - "No"
     Description: If you plan to run the Aurora Global Database labs, choose 'Yes', to deploy the required resources.
+  GDBSecondaryRegion:
+    Default: "us-east-1"
+    Type: String
+    AllowedValues:
+      - "us-east-1"
+      - "us-east-2"
+      - "us-west-2"
+      - "ca-central-1"
+      - "eu-central-1"
+      - "eu-west-1"
+      - "eu-west-2"
+      - "ap-southeast-1"
+      - "ap-southeast-2"
+      - "ap-south-1"
+      - "ap-northeast-1"
+      - "ap-northeast-2"
+    Description: If you plan to run the Aurora Global Database labs, Select which region will act as a secondary for the Global database cluster.
   deployBacktrack:
     Default: "Yes"
     Type: String
@@ -86,6 +103,10 @@ Metadata:
           - deployML
           - deployBacktrack
       - Label:
+          default: "Region Selection"
+        Parameters:
+          - GDBSecondaryRegion
+      - Label:
           default: "Help Us Improve Our Labs!"
         Parameters:
           - agreeTracking
@@ -103,6 +124,8 @@ Metadata:
         default: "Create DB Cluster Automatically?"
       deployGDB:
         default: "Enable Aurora Global Database Labs?"
+      GDBSecondaryRegion:
+        default: "Select the secondary region for Global Database"
       deployML:
         default: "Enable Aurora ML Labs?"
       deployBacktrack:
@@ -140,6 +163,10 @@ Conditions:
   condEnableBacktrack: !And [ !Equals [ !Ref deployBacktrack, "Yes" ], !Not [ !Or [ !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ] ] ]
   # Condition to skip creating multi region KMS key in the secondary region
   condIsNotSecondary: !Not [Condition: condIsSecondary]
+  # Condition to create StackSet and related resources . Create global database stackset and roles only once from the primary region stack and only  if global database condition is true.
+  condStackSet: !And 
+    - !Condition condIsNotSecondary
+    - !Condition condDeployGDBResources
 
 
 ## Mappings
@@ -297,7 +324,7 @@ Resources:
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, vpcCidr ], !FindInMap [ NetworkSettings, primary, vpcCidr ] ]
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-vpc", !Sub "${AWS::StackName}-vpc" ]
+          Value: !If [ condEventEngine, "auroralab-vpc", !Join ['-', ['auroralab-vpc', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create an IGW & attach it to the VPC
   vpcIgw:
@@ -305,7 +332,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-igw", !Sub "${AWS::StackName}-igw" ]
+          Value: !If [ condEventEngine, "auroralab-igw", !Join ['-', ['auroralab-igw', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   attachIgwVpc:
     Type: "AWS::EC2::VPCGatewayAttachment"
     Properties:
@@ -322,7 +349,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-pub-sub-1", !Sub "${AWS::StackName}-pub-sub-1" ]
+          Value: !If [ condEventEngine, "auroralab-pub-sub-1", !Join ['-', ['auroralab-pub-sub-1', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   sub2Public:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -332,7 +359,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-pub-sub-2", !Sub "${AWS::StackName}-pub-sub-2" ]
+          Value: !If [ condEventEngine, "auroralab-pub-sub-2",  !Join ['-', ['auroralab-pub-sub-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   sub3Public:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -342,7 +369,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-pub-sub-3", !Sub "${AWS::StackName}-pub-sub-3" ]
+          Value: !If [ condEventEngine, "auroralab-pub-sub-3",  !Join ['-', ['auroralab-pub-sub-3', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Associate the public subnets with a public route table
   rtbPublic:
@@ -351,7 +378,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-public-rtb", !Sub "${AWS::StackName}-public-rtb" ]
+          Value: !If [ condEventEngine, "auroralab-public-rtb",  !Join ['-', ['auroralab-public-rtb', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   rteToIgw:
     Type: "AWS::EC2::Route"
     DependsOn: attachIgwVpc
@@ -385,7 +412,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-prv-sub-1", !Sub "${AWS::StackName}-prv-sub-1" ]
+          Value: !If [ condEventEngine, "auroralab-prv-sub-1", !Join ['-', ['auroralab-prv-sub-1', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   sub2Private:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -395,7 +422,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-prv-sub-2", !Sub "${AWS::StackName}-prv-sub-2" ]
+          Value: !If [ condEventEngine, "auroralab-prv-sub-2", !Join ['-', ['auroralab-prv-sub-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   sub3Private:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -405,7 +432,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-prv-sub-3", !Sub "${AWS::StackName}-prv-sub-3" ]
+          Value: !If [ condEventEngine, "auroralab-prv-sub-3", !Join ['-', ['auroralab-prv-sub-3', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create a NAT Gateway & EIP
   natEip:
@@ -426,7 +453,7 @@ Resources:
       VpcId: !Ref vpc
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-nat-rtb", !Sub "${AWS::StackName}-nat-rtb" ]
+          Value: !If [ condEventEngine, "auroralab-nat-rtb", !Join ['-', ['auroralab-nat-rtb', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   rteToNgw:
     Type: "AWS::EC2::Route"
     Properties:
@@ -474,7 +501,7 @@ Resources:
     Properties:
       BucketName: !Join
         - "-"
-        - - !If [ condEventEngine, "auroralab", !Ref "AWS::StackName" ]
+        - - "auroralab"
           - data
           - !Select
             - 0
@@ -494,7 +521,7 @@ Resources:
         - Key: Name
           Value: !Join
             - "-"
-            - - !If [ condEventEngine, "auroralab", !Ref "AWS::StackName" ]
+            - - "auroralab"
               - data
               - !Select
                 - 0
@@ -510,23 +537,24 @@ Resources:
   dbSubnets:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties:
-      DBSubnetGroupName: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
+      DBSubnetGroupName: !If [ condEventEngine, "auroralab-db-subnet-group",!Join ['-', ['auroralab-db-subnet-group', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
+
       DBSubnetGroupDescription: "Aurora Lab subnets allowed for deploying DB instances"
       SubnetIds: [ !Ref sub1Private, !Ref sub2Private, !Ref sub3Private ]
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-db-subnet-group", !Sub "${AWS::StackName}-db-subnet-group" ]
+          Value: !If [ condEventEngine, "auroralab-db-subnet-group", !Join ['-', ['auroralab-db-subnet-group', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create client security group
   clientSecGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       VpcId: !Ref vpc
-      GroupName: !If [ condEventEngine, "auroralab-workstation-sg", !Sub "${AWS::StackName}-workstation-sg" ]
+      GroupName: !If [ condEventEngine, "auroralab-workstation-sg", !Join ['-', ['auroralab-workstation-sg', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       GroupDescription: "Aurora lab workstation security group (firewall)"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-workstation-sg", !Sub "${AWS::StackName}-workstation-sg" ]
+          Value: !If [ condEventEngine, "auroralab-workstation-sg", !Join ['-', ['auroralab-workstation-sg', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create Apache Superset security group
   supersetSecGroup:
@@ -534,11 +562,11 @@ Resources:
     Condition: condDeployGDBResources
     Properties:
       VpcId: !Ref vpc
-      GroupName: !If [ condEventEngine, "auroralab-superset-sg", !Sub "${AWS::StackName}-superset-sg" ]
+      GroupName: !If [ condEventEngine, "auroralab-superset-sg", !Join ['-', ['auroralab-superset-sg', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       GroupDescription: "Aurora Lab Apache Superset security group (firewall)"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-superset-sg", !Sub "${AWS::StackName}-superset-sg" ]
+          Value: !If [ condEventEngine, "auroralab-superset-sg", !Join ['-', ['auroralab-superset-sg', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -551,11 +579,11 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       VpcId: !Ref vpc
-      GroupName: !If [ condEventEngine, "auroralab-database-sg", !Sub "${AWS::StackName}-database-sg" ]
+      GroupName: !If [ condEventEngine, "auroralab-database-sg", !Join ['-', ['auroralab-database-sg', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       GroupDescription: "Aurora lab database security group (firewall)"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-database-sg", !Sub "${AWS::StackName}-database-sg" ]
+          Value: !If [ condEventEngine, "auroralab-database-sg", !Join ['-', ['auroralab-database-sg', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
@@ -588,7 +616,7 @@ Resources:
       VpcId: !Ref vpc
       Tags: 
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-denyall-nacl", !Sub "${AWS::StackName}-denyall-nacl" ]
+          Value: !If [ condEventEngine, "auroralab-denyall-nacl", !Join ['-', ['auroralab-denyall-nacl', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   naclEntryDenyAllEgress:
     Type: "AWS::EC2::NetworkAclEntry"
     Condition: condDeployGDBResources
@@ -615,7 +643,7 @@ Resources:
     Type: "AWS::SecretsManager::Secret"
     Condition: condDeployDBCluster
     Properties:
-      Description: !If [ condEventEngine, "Administrator user credentials for DB cluster 'auroralab-mysql-cluster'", !Sub "Administrator user credentials for DB cluster '${AWS::StackName}-mysql-cluster'" ]
+      Description: "Administrator user credentials for DB cluster 'auroralab-mysql-cluster'"
       GenerateSecretString:
         SecretStringTemplate: '{"username": "administrator"}'
         GenerateStringKey: 'password'
@@ -623,13 +651,13 @@ Resources:
         ExcludeCharacters: '="@/\$`&:{}()[]'
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-cluster-secret", !Sub "${AWS::StackName}-cluster-secret" ]
+          Value: !If [ condEventEngine, "auroralab-cluster-secret", !Join ['-', ['auroralab-cluster-secret', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create enhanced monitoring role
   roleEnhancedMonitoring:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-monitor-${AWS::Region}", !Sub "${AWS::StackName}-monitor-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-monitor-${AWS::Region}", !Join ['-', ['auroralab-monitor', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Description: "Allows your Aurora DB cluster to deliver Enhanced Monitoring metrics."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -644,13 +672,86 @@ Resources:
         - "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-monitor-${AWS::Region}", !Sub "${AWS::StackName}-monitor-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-monitor-${AWS::Region}", !Join ['-', ['auroralab-monitor', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
+  ## Create StackSet Admin Role. Do not change role names. Must be exactly as below.
+  StackSetAdministrationRole:
+    Type: AWS::IAM::Role
+    Condition: condStackSet
+    DependsOn: StackSetExecutionRole
+    Properties:
+      RoleName: AWSCloudFormationStackSetAdministrationRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: auroralab-StackSetAdminRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource:
+                  - "arn:*:iam::*:role/AWSCloudFormationStackSetExecutionRole"
+
+  ## Create StackSet execution role. Do not change role names. Must be exactly as below.
+  StackSetExecutionRole:
+    Type: AWS::IAM::Role
+    Condition: condStackSet
+    Properties:
+      RoleName: AWSCloudFormationStackSetExecutionRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !Ref "AWS::AccountId"
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: auroralab-StackSetExecutionRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "application-autoscaling:*"
+                  - "cloudformation:*"
+                  - "cloudwatch:*"
+                  - "cloud9:*"
+                  - "ec2:*"
+                  - "events:*"
+                  - "iam:*"
+                  - "kms:*"
+                  - "kinesis:*"
+                  - "lambda:*"
+                  - "logs:*"
+                  - "rds:*"
+                  - "rds-data:*"
+                  - "rds-db:*"
+                  - "s3:*"
+                  - "secretsmanager:*"
+                  - "sns:*"
+                  - "ssm:*"
+                  - "ssmmessages:*"
+                  - "sts:*"
+                  - "pi:*"
+                  - "sagemaker:*"
+                Resource:
+                  - "*"
 ## Create external integration role
   roleServiceIntegration:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Join ['-', ['auroralab-integrate', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Description: "Allows your Aurora DB cluster to integrate with other AWS services, such as Amazon S3 for import/export."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -680,13 +781,13 @@ Resources:
                   - "arn:aws:s3:::*"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Sub "${AWS::StackName}-integrate-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-integrate-${AWS::Region}", !Join ['-', ['auroralab-integrate', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create role for client IDE
   roleClientIDE:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Join ['-', ['auroralab-ide', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Description: "Permits user interaction with AWS APIs from the Cloud9 IDE."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -739,11 +840,11 @@ Resources:
                 Resource: "*"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Join ['-', ['auroralab-ide', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
   profileClientIDE:
     Type: "AWS::IAM::InstanceProfile"
     Properties:
-      InstanceProfileName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Sub "${AWS::StackName}-ide-${AWS::Region}" ]
+      InstanceProfileName: !If [ condEventEngine, !Sub "auroralab-ide-${AWS::Region}", !Join ['-', ['auroralab-ide', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
       Path: /
       Roles:
         - Ref: roleClientIDE
@@ -758,12 +859,12 @@ Resources:
       Description: "Cloud9 IDE to interact with the Aurora DB resources"
       InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", ideType ]
       ImageId: resolve:ssm:/aws/service/cloud9/amis/amazonlinux-2-x86_64
-      Name: !If [ condEventEngine, "auroralab-client-ide", !Sub "${AWS::StackName}-client-ide" ]
+      Name: !If [ condEventEngine, "auroralab-client-ide",!Join ['-', ['auroralab-client-ide', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       SubnetId: !Ref sub1Private
       OwnerArn: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", Ref: AWS::NoValue ]
       Tags:
         - Key: BootstrapGroup
-          Value: !Sub "bootstrap-${AWS::StackName}"
+          Value: !Join ['-', ['bootstrap', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
 
 ## Create a Cloud9 host SSM bootstrap document
   ssmDocClientBootstrap: 
@@ -771,10 +872,10 @@ Resources:
     DependsOn: [ bootstrapWaitHandle ]
     Properties:
       DocumentType: Command
-      Name: !If [ condEventEngine, "auroralab-bootstrap-client", !Sub "${AWS::StackName}-bootstrap-client" ]
+      Name: !If [ condEventEngine, "auroralab-bootstrap-client", !Join ['-', ['auroralab-bootstrap-client', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-bootstrap-client", !Sub "${AWS::StackName}-bootstrap-client" ]
+          Value: !If [ condEventEngine, "auroralab-bootstrap-client", !Join ['-', ['auroralab-bootstrap-client', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Content:
         schemaVersion: '2.2'
         description: "Bootstrap Cloud9 Client IDE Instance"
@@ -875,7 +976,7 @@ Resources:
       SecurityGroupIds: [ !Ref supersetSecGroup ]
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-superset-host", !Sub "${AWS::StackName}-superset-host" ]
+          Value: !If [ condEventEngine, "auroralab-superset-host", !Join ['-', ['auroralab-superset-host', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -934,7 +1035,7 @@ Resources:
   cpgClusterParams:
     Type: "AWS::RDS::DBClusterParameterGroup"
     Properties:
-      Description: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
+      Description: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Join ['-', ['auroralab-mysql-cluster-params', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Family: !FindInMap [ ClusterSettings, global, dbFamily ]
       Parameters:
         aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
@@ -944,96 +1045,138 @@ Resources:
         log_output: FILE
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Sub "${AWS::StackName}-mysql-cluster-params" ]
+          Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Join ['-', ['auroralab-mysql-cluster-params', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create Primary region KMS key used for database cluster volume encryption
+## No longer needed. Glbal database creation does not need a pr-created key. aws/rds is automatically created in a new region.
+#   dbclusterkey:
+#     Type: AWS::KMS::Key
+#     Condition: condIsNotSecondary
+#     Properties: 
+#       Description: "Multi region key (primary) for Global DB labs."
+#       Enabled: true
+#       MultiRegion: true
+#       KeyPolicy:
+#         Version: '2012-10-17'
+#         Statement:
+#         - Sid: Enable IAM User Permissions
+#           Effect: Allow
+#           Principal:
+#             AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+#           Action: kms:*
+#           Resource: "*"
+#         - Sid: Allow access for Key TeamRole
+#           Effect: Allow
+#           Principal:
+#             AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
+#           Action:
+#           - kms:Create*
+#           - kms:Describe*
+#           - kms:Enable*
+#           - kms:List*
+#           - kms:Put*
+#           - kms:Update*
+#           - kms:Revoke*
+#           - kms:Disable*
+#           - kms:Get*
+#           - kms:Delete*
+#           - kms:ImportKeyMaterial
+#           - kms:TagResource
+#           - kms:UntagResource
+#           - kms:ScheduleKeyDeletion
+#           - kms:CancelKeyDeletion
+#           - kms:ReplicateKey
+#           - kms:UpdatePrimaryRegion
+#           Resource: "*"
+#         - Sid: Allow use of the key
+#           Effect: Allow
+#           Principal:
+#             AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
+#           Action:
+#           - kms:Encrypt
+#           - kms:Decrypt
+#           - kms:ReEncrypt*
+#           - kms:GenerateDataKey*
+#           - kms:DescribeKey
+#           Resource: "*"
+#         - Sid: Allow attachment of persistent resources
+#           Effect: Allow
+#           Principal:
+#             AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
+#           Action:
+#           - kms:CreateGrant
+#           - kms:ListGrants
+#           - kms:RevokeGrant
+#           Resource: "*"
+#           Condition:
+#             Bool:
+#               kms:GrantIsForAWSResource: 'true'
+#       Tags:
+#         - Key: Name
+#           Value: "auroralab-mysql-mregion-key"
 
-  dbclusterkey:
-    Type: AWS::KMS::Key
-    Condition: condIsNotSecondary
-    Properties: 
-      Description: "Multi region key (primary) for Global DB labs."
-      Enabled: true
-      MultiRegion: true
-      KeyPolicy:
-        Version: '2012-10-17'
-        Statement:
-        - Sid: Enable IAM User Permissions
-          Effect: Allow
-          Principal:
-            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-          Action: kms:*
-          Resource: "*"
-        - Sid: Allow access for Key TeamRole
-          Effect: Allow
-          Principal:
-            AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
-          Action:
-          - kms:Create*
-          - kms:Describe*
-          - kms:Enable*
-          - kms:List*
-          - kms:Put*
-          - kms:Update*
-          - kms:Revoke*
-          - kms:Disable*
-          - kms:Get*
-          - kms:Delete*
-          - kms:ImportKeyMaterial
-          - kms:TagResource
-          - kms:UntagResource
-          - kms:ScheduleKeyDeletion
-          - kms:CancelKeyDeletion
-          - kms:ReplicateKey
-          - kms:UpdatePrimaryRegion
-          Resource: "*"
-        - Sid: Allow use of the key
-          Effect: Allow
-          Principal:
-            AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
-          Action:
-          - kms:Encrypt
-          - kms:Decrypt
-          - kms:ReEncrypt*
-          - kms:GenerateDataKey*
-          - kms:DescribeKey
-          Resource: "*"
-        - Sid: Allow attachment of persistent resources
-          Effect: Allow
-          Principal:
-            AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
-          Action:
-          - kms:CreateGrant
-          - kms:ListGrants
-          - kms:RevokeGrant
-          Resource: "*"
-          Condition:
-            Bool:
-              kms:GrantIsForAWSResource: 'true'
-      Tags:
-        - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-mregion-key", !Sub "${AWS::StackName}-auroralab-mysql-mregion-key" ]
+# ## Create KMS key alias in the primary region
+#   dbclusterkeyAlias:
+#     Type: AWS::KMS::Alias
+#     Condition: condIsNotSecondary
+#     DependsOn: dbclusterkey
+#     Properties:
+#       AliasName: "alias/auroralab-mysql-db-key"
+#       TargetKeyId: !Ref dbclusterkey
 
-## Create KMS key alias in the primary region
-  dbclusterkeyAlias:
-    Type: AWS::KMS::Alias
-    Condition: condIsNotSecondary
-    DependsOn: dbclusterkey
+
+##STACKSETBLOCKSTART
+## Creates Aurora stack for deploying Global Database in secondary region
+  auroralabGDBStackSet:
+    Type: AWS::CloudFormation::StackSet
+    Condition: condStackSet
+    DependsOn:
+    - StackSetAdministrationRole
+    - StackSetExecutionRole
     Properties:
-      AliasName: !If [ condEventEngine, "alias/auroralab-mysql-db-key", !Sub "alias/${AWS::StackName}-auroralab-mysql-db-key" ]
-      TargetKeyId: !Ref dbclusterkey
+      StackSetName: auroralabgdbtest
+      Description: Lab stack the secondary region for deploying Global Databases
+      PermissionModel: SELF_MANAGED
+      StackInstancesGroup:
+        - DeploymentTargets:
+            Accounts:
+              - !Ref "AWS::AccountId"
+          Regions:
+              - !If [ condEventEngine, "us-east-1", !Ref GDBSecondaryRegion ]
+      TemplateURL: https://ams-stack-prod-content-us-east-1.s3.amazonaws.com/templates/lab_template_stackset.yml
+      Capabilities:
+        - CAPABILITY_NAMED_IAM
+      Parameters: 
+        - ParameterKey: deployCluster
+          ParameterValue: "No"
+        - ParameterKey: deployML
+          ParameterValue: "No"
+        - ParameterKey: deployGDB
+          ParameterValue: "Yes"
+        - ParameterKey: isSecondary
+          ParameterValue: "Yes"
+        - ParameterKey: EEModuleId 
+          ParameterValue: !Ref EEModuleId
+        - ParameterKey: EEModuleVersion
+          ParameterValue: !Ref EEModuleVersion
+        - ParameterKey: EEEventId
+          ParameterValue: !Ref EEEventId
+        - ParameterKey: EETeamId
+          ParameterValue: !Ref EETeamId
+##STACKSETBLOCKEND
 
 ## Create Aurora cluster
   dbCluster:
     Type: "AWS::RDS::DBCluster"
     DependsOn: dbclusterkey
     Condition: condDeployDBCluster
+    DeletionPolicy: Delete
     Properties:
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
       EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
       DBSubnetGroupName: !Ref dbSubnets
       DBClusterParameterGroupName: !Ref cpgClusterParams
-      DBClusterIdentifier: !If [ condEventEngine, "auroralab-mysql-cluster", !Sub "${AWS::StackName}-mysql-cluster" ]
+      DBClusterIdentifier: !If [ condEventEngine, "auroralab-mysql-cluster", !Join ['-', ['auroralab-mysql-cluster', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       BackupRetentionPeriod: 1
       MasterUsername: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:username}}" ]]
       MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:password}}" ]]
@@ -1048,7 +1191,7 @@ Resources:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-cluster", !Sub "${AWS::StackName}-mysql-cluster" ]
+          Value: !If [ condEventEngine, "auroralab-mysql-cluster", !Join ['-', ['auroralab-mysql-cluster', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Deploy cluster node #1 (may or may not be writer depending which one initializes first)
   dbNode1:
@@ -1056,7 +1199,7 @@ Resources:
     Condition: condDeployDBCluster
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-1", !Join ['-', ['auroralab-mysql-node-1', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
@@ -1067,7 +1210,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-node-1", !Sub "${AWS::StackName}-mysql-node-1" ]
+          Value: !If [ condEventEngine, "auroralab-mysql-node-1", !Join ['-', ['auroralab-mysql-node-1', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Deploy cluster node #2 (may or may not be writer depending which one initializes first)
   dbNode2:
@@ -1075,7 +1218,7 @@ Resources:
     Condition: condDeployDBCluster
     Properties:
       DBClusterIdentifier: !Ref dbCluster
-      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
+      DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-2", !Join ['-', ['auroralab-mysql-node-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       CopyTagsToSnapshot: true
       DBInstanceClass: !FindInMap [ RegionalSettings, !Ref "AWS::Region", nodeType ]
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
@@ -1086,7 +1229,7 @@ Resources:
       PerformanceInsightsRetentionPeriod: 7
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-mysql-node-2", !Sub "${AWS::StackName}-mysql-node-2" ]
+          Value: !If [ condEventEngine, "auroralab-mysql-node-2", !Join ['-', ['auroralab-mysql-node-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Role to overcome current limitations in CFN ScalableTarget implemetation
 ## This role is *NOT* actively used by any resource and service, but must be present
@@ -1094,7 +1237,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Condition: condDeployDBCluster
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-scaling-${AWS::Region}", !Sub "${AWS::StackName}-scaling-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-scaling-${AWS::Region}", !Join ['-', ['auroralab-mysql-node-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
       Description: "Role to integrate the Aurora DB cluster with Application AutoScaling for read replica auto scaling."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -1107,7 +1250,7 @@ Resources:
                 - "rds.application-autoscaling.amazonaws.com"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-scaling-${AWS::Region}", !Sub "${AWS::StackName}-scaling-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-scaling-${AWS::Region}", !Join ['-', ['auroralab-mysql-node-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
 
 ## Register the scalable target
 ## Bug fix: when the stack name contains uppercase letters,
@@ -1130,7 +1273,7 @@ Resources:
     Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
     Condition: condDeployDBCluster
     Properties:
-      PolicyName: !If [ condEventEngine, "auroralab-autoscale-readers", !Sub "${AWS::StackName}-autoscale-readers" ]
+      PolicyName: !If [ condEventEngine, "auroralab-autoscale-readers", !Join ['-', ['auroralab-autoscale-readers', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       PolicyType: TargetTrackingScaling
       ScalingTargetId: !Ref dbScalableTarget
       TargetTrackingScalingPolicyConfiguration:
@@ -1145,10 +1288,10 @@ Resources:
     Type: "AWS::SSM::Document"
     Properties:
       DocumentType: Command
-      Name: !If [ condEventEngine, "auroralab-sysbench-test", !Sub "${AWS::StackName}-sysbench-test" ]
+      Name: "auroralab-sysbench-test"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-sysbench-test", !Sub "${AWS::StackName}-sysbench-test" ]
+          Value: "auroralab-sysbench-test"
       Content:
         schemaVersion: '2.2'
         description: "SysBench Percona TPCC-LIKE Preparation"
@@ -1207,7 +1350,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Condition: condDeployMLResources
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Sub "${AWS::StackName}-ml-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Join ['-', ['auroralab-ml', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -1237,7 +1380,7 @@ Resources:
                   - "arn:aws:s3:::*"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Sub "${AWS::StackName}-ml-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-ml-${AWS::Region}", !Join ['-', ['auroralab-ml', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
 
 ## Create a Sagemaker Lifecycle hook, which will clone the github repo and get the Jupyter notebook and other resources needed to build the model.
 ## using nohup, so the script keeps running after 5 minutes. The onstart event fails, if script doesn't finish in 5 minutes.
@@ -1245,7 +1388,7 @@ Resources:
     Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
     Condition: condDeployMLResources
     Properties:
-      NotebookInstanceLifecycleConfigName: !If [ condEventEngine, "auroralab-notebook-hook", !Sub "${AWS::StackName}-notebook-hook" ]
+      NotebookInstanceLifecycleConfigName: !If [ condEventEngine, "auroralab-notebook-hook", !Join ['-', ['auroralab-notebook-hook', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       OnCreate:
         - Content:
             Fn::Base64: !Sub |
@@ -1272,17 +1415,17 @@ Resources:
       InstanceType: !FindInMap [ MLSettings, global, notebookType ]
       RootAccess: Enabled
       RoleArn: !GetAtt roleMLNotebook.Arn
-      NotebookInstanceName: !If [ condEventEngine, "auroralab-notebook", !Sub "${AWS::StackName}-notebook" ]
+      NotebookInstanceName: !If [ condEventEngine, "auroralab-notebook", !Join ['-', ['auroralab-notebook', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       LifecycleConfigName: !GetAtt smMLNotebookHook.NotebookInstanceLifecycleConfigName
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-notebook", !Sub "${AWS::StackName}-notebook" ]
+          Value: !If [ condEventEngine, "auroralab-notebook", !Join ['-', ['auroralab-notebook', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
 ## Create role for use with the lab support function
   roleLabSupport:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Sub "${AWS::StackName}-support-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Join ['-', ['auroralab-support', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
       Description: "Role to permit the Lambda support functions to interact with relevant AWS APIs."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -1329,14 +1472,14 @@ Resources:
                 Resource: "*"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Sub "${AWS::StackName}-support-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-support-${AWS::Region}", !Join ['-', ['auroralab-support', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
 
 ## Create Lambda function to implement support operations
   funcLabSupport:
     Type: "AWS::Lambda::Function"
     DependsOn: [ c9ClientIDE ]
     Properties:
-      FunctionName: !If [ condEventEngine, "auroralab-support", !Sub "${AWS::StackName}-support" ]
+      FunctionName: !If [ condEventEngine, "auroralab-support", !Join ['-', ['auroralab-support', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Description: "Custom Resource to provide support operations for the Aurora MySQL labs."
       Handler: "index.handler"
       Role: !GetAtt roleLabSupport.Arn
@@ -1344,7 +1487,7 @@ Resources:
       Timeout: 600
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-support", !Sub "${AWS::StackName}-support" ]
+          Value: !If [ condEventEngine, "auroralab-support", !Join ['-', ['auroralab-support', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Environment:
         Variables:
           REGION: !Ref "AWS::Region"
@@ -1366,6 +1509,7 @@ Resources:
           ec2 = session.client('ec2')
           ssm = session.client('ssm')
           cl9ide = session.client('cloud9')
+          cfn = boto3.client('cloudformation', region_name=environ["REGION"])
           http = urllib3.PoolManager()
 
           # Lambda handler function / main function
@@ -1507,7 +1651,8 @@ Resources:
       EEModuleVersion: !Ref EEModuleVersion
       IDEProfileArn: !GetAtt profileClientIDE.Arn
       IDEProfileName: !Ref profileClientIDE
-      IDEEnvTagName: !If [ condEventEngine, !Sub "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Sub "aws-cloud9-${AWS::StackName}-client-ide-${c9ClientIDE}" ]
+      IDEEnvTagName: !If [ condEventEngine, !Sub "aws-cloud9-auroralab-client-ide-${c9ClientIDE}", !Join ['-', ['aws-cloud9-auroralab-client-ide', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${c9ClientIDE}"]]]
+      #IDEEnvTagName: !Sub "aws-cloud9-auroralab-client-ide-${c9ClientIDE}"
       IDESecGroupId: !Ref clientSecGroup
       IDEBoostrapDoc: !Ref ssmDocClientBootstrap
 
@@ -1515,7 +1660,7 @@ Resources:
   roleLabAccount:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !If [ condEventEngine, !Sub "auroralab-account-${AWS::Region}", !Sub "${AWS::StackName}-account-${AWS::Region}" ]
+      RoleName: !If [ condEventEngine, !Sub "auroralab-account-${AWS::Region}", !Join ['-', ['auroralab-account', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
       Description: "Role to permit the Lambda account functions to interact with relevant AWS APIs."
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -1566,14 +1711,14 @@ Resources:
                 Resource: "*"
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, !Sub "auroralab-account-${AWS::Region}", !Sub "${AWS::StackName}-account-${AWS::Region}" ]
+          Value: !If [ condEventEngine, !Sub "auroralab-account-${AWS::Region}", !Join ['-', ['auroralab-account', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]],!Sub "${AWS::Region}"]]]
 
 ## Create Lambda function to implement conditional initialization and cleanup of accounts
   funcLabAccount:
     Type: "AWS::Lambda::Function"
     DependsOn: [ bucketLabData ]
     Properties:
-      FunctionName: !If [ condEventEngine, "auroralab-account", !Sub "${AWS::StackName}-account" ]
+      FunctionName: !If [ condEventEngine, "auroralab-account", !Join ['-', ['auroralab-account', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Description: "Custom Resource to provide account initialization and cleanup for the Aurora MySQL labs."
       Handler: "index.handler"
       Role: !GetAtt roleLabAccount.Arn
@@ -1581,7 +1726,7 @@ Resources:
       Timeout: 600
       Tags:
         - Key: Name
-          Value: !If [ condEventEngine, "auroralab-account", !Sub "${AWS::StackName}-account" ]
+          Value: !If [ condEventEngine, "auroralab-account", !Join ['-', ['auroralab-account', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       Environment:
         Variables:
           REGION: !Ref "AWS::Region"
