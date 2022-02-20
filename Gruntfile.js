@@ -69,12 +69,15 @@ grunt.initConfig({
     },
     runTaskCat: {
       cmd: 'taskcat -c ./taskcat/ci/taskcat.yml -s tst'
+    },
+    processTemplateStackset: {
+      cmd: 'cp ./build/templates/lab_template.yml ./build/templates/lab_template_stackset.yml && sed -i "/^##STACKSETBLOCKSTART/,/^##STACKSETBLOCKEND/{/^##STACKSETBLOCKSTART/!{/^##STACKSETBLOCKEND/!d}}" ./build/templates/lab_template_stackset.yml'
     }
   }
 })
 
 // register tasks
-grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildInfra', ((process.platform === "darwin") ? 'exec:buildSiteMac' : 'exec:buildSiteLinux'), ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux'), 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts', 'exec:copySupport' ])
-grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', ((process.platform === "darwin") ? 'exec:buildSiteMac' : 'exec:buildSiteLinux'), ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux'), 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts', 'exec:copySupport' ])
+grunt.registerTask('deploy-all', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', 'exec:buildInfra', ((process.platform === "darwin") ? 'exec:buildSiteMac' : 'exec:buildSiteLinux'), ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux'), 'exec:processTemplateStackset', 'exec:copySite', 'exec:copyTemplates', 'exec:copyScripts', 'exec:copySupport' ])
+grunt.registerTask('deploy-skipinfra', [ 'exec:clearBuild', 'exec:clearTemp', 'exec:pkgInfra', ((process.platform === "darwin") ? 'exec:buildSiteMac' : 'exec:buildSiteLinux'), ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux'), 'exec:copySite', 'exec:processTemplateStackset', 'exec:copyTemplates', 'exec:copyScripts', 'exec:copySupport' ])
 grunt.registerTask('run-taskcat', [ 'exec:clearBuild', ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux'), 'exec:prepTaskCat', 'exec:runTaskCat' ])
-grunt.registerTask('build-templates', [ 'exec:clearBuild', 'exec:clearTemp', ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux') ])
+grunt.registerTask('build-templates', [ 'exec:clearBuild', 'exec:clearTemp', ((process.platform === "darwin") ? 'exec:buildTemplatesMac' : 'exec:buildTemplatesLinux'), 'exec:processTemplateStackset' ])
