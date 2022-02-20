@@ -1125,6 +1125,7 @@ Resources:
 #       TargetKeyId: !Ref dbclusterkey
 
 
+### !!!WARNING :  DO NOT DELETE THIS COMMENT BLOCK. It will affect stackset processing functionality.
 ##STACKSETBLOCKSTART
 ## Creates Aurora stack for deploying Global Database in secondary region
   auroralabGDBStackSet:
@@ -1143,7 +1144,7 @@ Resources:
               - !Ref "AWS::AccountId"
           Regions:
               - !If [ condEventEngine, "us-east-1", !Ref GDBSecondaryRegion ]
-      TemplateURL: https://ams-stack-prod-content-us-east-1.s3.amazonaws.com/templates/lab_template_stackset.yml
+      TemplateURL: https://[[bucket]]/templates/lab_template_stackset.yml
       Capabilities:
         - CAPABILITY_NAMED_IAM
       Parameters: 
@@ -1164,6 +1165,8 @@ Resources:
         - ParameterKey: EETeamId
           ParameterValue: !Ref EETeamId
 ##STACKSETBLOCKEND
+### !!!WARNING :  DO NOT DELETE THIS COMMENT BLOCK. It will affect stackset processing functionality.
+
 
 ## Create Aurora cluster
   dbCluster:
