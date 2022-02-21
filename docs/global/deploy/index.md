@@ -8,16 +8,13 @@ Amazon Aurora <a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGu
 
 This lab contains the following tasks:
 
-1. Create a lab environment in a different region
-2. Create an Aurora global cluster
+1. Create an Aurora global cluster
 
 This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/) (choose the **Deploy Global DB** option)
 * [Create a New DB Cluster](/provisioned/create/) (conditional, only if you plan to create a cluster manually)
 
-
-## 1. Create a lab environment in a different region
 
 !!! warning "Using Multiple Regions"
     Due to the **multi-region** nature of a Global Database, you will often be switching between two regions to accomplish the tasks in this lab. **Please be mindful** that you are performing the actions in the proper region, as some of the resources created are very similar between the two regions.
@@ -26,28 +23,18 @@ This lab requires the following prerequisites:
 
     We will refer to the region where you will deploy the secondary, read-only DB cluster as the **secondary region**.
 
-To simplify the getting started experience with the labs, we have created foundational templates for <a href="https://aws.amazon.com/cloudformation/" target="_blank">AWS CloudFormation</a> that provision the resources needed for the lab environment. These templates are designed to deploy a consistent networking infrastructure, and client-side experience of software packages and components used in the lab.
+To simplify the getting started experience with the labs, we have created the pre-requisite resources, like VPC, security groups, etc. in the secondary region. If you are running a facilitator led lab, then the secondary region is chosen for you as **N. Virginia** or **US-EAST-1**. If you are running these labs in your account by deploying the stack yourself, then you would have chose an secondary region during the initial launch. 
 
-Click **Launch Stack** below to provision a lab environment in the **US East (N Virginia, us-east-1)** region to support the Aurora Global Database.
+Navigate to [Cloudformation console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1). Make sure you have chosen the correct **secondary region**. 
 
-<a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=auroralab&templateURL=https://s3.amazonaws.com/[[bucket]]/templates/lab_template.yml&param_deployCluster=No&param_deployML=No&param_deployGDB=Yes&param_isSecondary=Yes" target="_blank"><img src="/assets/images/cloudformation-launch-stack.png" alt="Launch Stack"></a>
-
-In the field named **Stack Name**, ensure the value `auroralab` is preset. Accept all default values for the remaining parameters.
-
-Scroll to the bottom of the page, check the box that reads: **I acknowledge that AWS CloudFormation might create IAM resources with custom names** and then click **Create stack**.
-
-<span class="image">![Create Stack](cfn-create-stack-confirm.png?raw=true)</span>
-
-The stack will take approximatively 10 minutes to provision, you can monitor the status on the **Stack detail** page. You can monitor the progress of the stack creation process by refreshing the **Events** tab. The latest event in the list will indicate `CREATE_COMPLETE` for the stack resource.
-
-<span class="image">![Stack Status](cfn-stack-status.png?raw=true)</span>
+Click **Stacks** on the left navigation panel. Under the **Stacks** column, select the stack that starts with the name **stackset-auroralab**.   
 
 Once the status of the stack is `CREATE_COMPLETE`, click on the **Outputs** tab. The values here will be critical to the completion of the remainder of the lab.  Please take a moment to save these values somewhere that you will have easy access to them during the remainder of the lab. The names that appear in the **Key** column are referenced directly in the instructions in subsequent steps, using the parameter format: ==[outputKey]==.
 
 <span class="image">![Stack Outputs](cfn-stack-outputs.png?raw=true)</span>
 
 
-## 2. Create an Aurora global cluster
+## 1. Create an Aurora global cluster
 
 The lab environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster. You will create a Global Database cluster using this existing DB cluster, as the **primary**.
 
@@ -56,27 +43,6 @@ The lab environment that was provisioned automatically for you, already has an A
 
     A **Global [database] cluster** is a container for several **DB clusters** each located in a different region, that act as a cohesive database. A **global cluster** is comprised of a **primary [DB] cluster** in one given region that is able to accept writes, and up to 5 **secondary [DB] clusters** that are read-only each in a different region. Each one of the **DB clusters** in a given **global cluster** have their own storage volume, however data is replicated from the **primary cluster** to each of the **secondary clusters** asynchronously, using a purpose-built low latency and high throughput replication system.  
 
-Once the lab environment created above at **Step 1. Create a lab environment in a different region** has finished deploying, you may proceed.
-
-Before we begin, we will replicate the KMS key used by the Aurora database cluster in the primary region, so it can be used in the secondary region. To do this, open the Cloud9 environment, and execute the following command. Make sure you pass the secondary region as the `--region` parameter value by replacing `secondary region`. If you are running the labs in an event engine provisioned environment then the `secondary region` value would always be `us-east-1`. If you provisioned the lab in your own account, you will have to use the correct region value, where you created the stack in **Step 1**.
-
-Execute the following command by first connecting to the Cloud9 IDE by following instruction [here](/prereqs/connect/)
-
-```
-cd ~/environment/
-python3 replicatekey.py --region 'secondary region'
-
-```
-After executing the command the result should look like the screenshot below.
-
-<span class="image">![replicatekey result](cl9.png?raw=true)</span>
-
-If you see an error `[ERROR] An error occurred (AuthFailure) when calling the DescribeRegions operation: AWS was not able to validate the provided access credentials` such as the one shown in screenshot below, make sure you have toggled AWS managed temporary credentials to Off (red). For instruction see [here](/prereqs/connect/#1-open-and-set-up-your-cloud9-desktop).
-
-<span class="image">![Authentication error](autherror.png?raw=true)</span>
-
-
-Next, open the <a href="https://console.aws.amazon.com/rds/home#database:id=auroralab-mysql-cluster;is-cluster=true" target="_blank">Amazon RDS service console</a> at the MySQL DB cluster details page in the **primary** region. If you navigated to the RDS console by means other than the link in this paragraph, click on the `auroralab-mysql-cluster` in the **Databases** section of the RDS service console, and make sure you are back in the primary regions.
 
 !!! warning "Region Check"
     Ensure you are still working in the **primary region**, especially if you are following the links above to open the service console at the right screen.

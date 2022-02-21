@@ -1135,8 +1135,8 @@ Resources:
     - StackSetAdministrationRole
     - StackSetExecutionRole
     Properties:
-      StackSetName: auroralabgdbtest
-      Description: Lab stack the secondary region for deploying Global Databases
+      StackSetName: auroralab
+      Description: "Aurora MySQL lab stackset in the secondary region for deploying Global Database"
       PermissionModel: SELF_MANAGED
       StackInstancesGroup:
         - DeploymentTargets:
@@ -1144,7 +1144,7 @@ Resources:
               - !Ref "AWS::AccountId"
           Regions:
               - !If [ condEventEngine, "us-east-1", !Ref GDBSecondaryRegion ]
-      TemplateURL: https://[[bucket]]/templates/lab_template_stackset.yml
+      TemplateURL: https://[[bucket]].s3.amazonaws.com/templates/lab_template_stackset.yml
       Capabilities:
         - CAPABILITY_NAMED_IAM
       Parameters: 
@@ -1171,7 +1171,7 @@ Resources:
 ## Create Aurora cluster
   dbCluster:
     Type: "AWS::RDS::DBCluster"
-    DependsOn: dbclusterkey
+    #DependsOn: dbclusterkey
     Condition: condDeployDBCluster
     DeletionPolicy: Delete
     Properties:
@@ -1188,7 +1188,7 @@ Resources:
       VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
       BacktrackWindow: !If [ condEnableBacktrack, 86400, 0 ]
-      KmsKeyId: !GetAtt dbclusterkey.Arn
+      #KmsKeyId: !GetAtt dbclusterkey.Arn
       EnableIAMDatabaseAuthentication: true
       AssociatedRoles:
         - RoleArn: !GetAtt roleServiceIntegration.Arn
