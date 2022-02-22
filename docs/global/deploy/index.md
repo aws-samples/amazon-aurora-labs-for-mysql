@@ -59,7 +59,7 @@ Scroll down to the **Additional Configuration** section (expand it if needed) an
 <span class="image">![RDS Cluster Disable Backtrack](rds-cluster-disable-backtrack.png?raw=true)</span>
 
 !!! note
-    If you don't see the Backtrack section as shown in the section below, your cluster did not have backtrack feature enabled, and you can safely skip this step without affecting rest of the lab.
+    If you don't see the Backtrack section as shown in the section above, your cluster did not have backtrack feature enabled, and you can safely skip this step without affecting rest of the lab.
 
 
 In the **Scheduling of modifications** section, choose the **Apply immediately** option, then click **Modify cluster** to confirm the changes.
