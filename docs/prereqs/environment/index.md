@@ -9,6 +9,7 @@ If you are trying these labs out yourself, in your own account, or you are atten
 Please select the option that matches your circumstances best:
 
 === "I'm in a workshop using Event Engine"
+
     <h4>Sign into Event Engine</h4>
 
     Go to <a href="https://dashboard.eventengine.run/" target="_blank">**https://dashboard.eventengine.run/**</a>.
@@ -37,6 +38,7 @@ Please select the option that matches your circumstances best:
 
 
 === "I need to deploy lab environment manually"
+
     <h4>Access the AWS Management Console</h4>
 
     If you are running these labs in a formal, instructional setting, please use the Console URL, and credentials provided to you to access and log into the AWS Management Console. Otherwise, please use your own credentials. You can access the console at: <a href="https://console.aws.amazon.com/" target="_blank">https://console.aws.amazon.com/</a> or through the Single Sign-On (SSO) mechanism provided by your organization.

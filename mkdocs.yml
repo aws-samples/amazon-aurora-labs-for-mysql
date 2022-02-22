@@ -57,25 +57,32 @@ extra_javascript:
   #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js'
   - 'assets/js/highlight.min.js'
   - 'assets/js/highlight.js'
-# extra:
-#   social:
-#     - icon: 'fontawesome/solid/home'
-#       link: 'https://awsauroralabsmy.com'
-#     - icon: 'fontawesome/brands/amazon'
-#       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
-#     - icon: 'fontawesome/brands/github'
-#       link: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
+extra:
+  social:
+    - icon: 'fontawesome/solid/house'
+    # Use home for older version of materials. Newer version uses house.svg
+    #- icon: 'fontawesome/solid/home'
+      link: 'https://awsauroralabsmy.com'
+    - icon: 'fontawesome/brands/amazon'
+      link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
+    - icon: 'fontawesome/brands/github'
+      link: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Extensions
 markdown_extensions:
   - admonition
+  - tables
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
   - toc:
       permalink: true
   - pymdownx.details
   - pymdownx.inlinehilite
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.tabbed
+  # (old version style for material)
+  # - pymdownx.tabbed 
   - pymdownx.tasklist:
       custom_checkbox: false
 
