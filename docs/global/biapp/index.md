@@ -65,12 +65,12 @@ Scroll down to the **Secret value** section, and click **Retrieve secret value**
 
 You have now collected all the needed parameters for the primary region. Next you will be collecting the needed parameters for the **secondary region**.
 
-In the **secondary region**, open the <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks" target="_blank">Amazon CloudFormation service console</a>. Click on the stack named either `auroralab` or starting with `mod-`. 
+In the **secondary region**, open the <a href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks" target="_blank">Amazon CloudFormation service console</a>. Click on the stack that starts with  `StackSet-auroralab`. 
 
 !!! warning "Region Check"
     Ensure you are still working in the **secondary region**, especially if you are following the links above to open the service console at the right screen.
 
-<span class="image">![CFN List of Stacks](cfn-stacks-list.png?raw=true)</span>
+<span class="image">![CFN List of Stacks](cfn-stacks-list-secondary.png?raw=true)</span>
 
 Change to the **Outputs** tab, and find the values for the parameters, and make a note of them:
 
@@ -164,6 +164,10 @@ Next, you will create a new datasource for Apache Superset in order to connect t
 Near the top right, click on the green **+** icon to add a new database source.
 
 <span class="image">![Superset Source Databases](superset-list-sources.png)</span>
+
+Select the **MySQL** database engine in the following screen.
+
+<span class="image">![Superset Add Database](superset-dbconn-engine.png)</span>
 
 Provide the following values in the relevant form fields to add the data source, then click **Save**:
 
