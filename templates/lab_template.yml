@@ -59,6 +59,20 @@ Parameters:
       - "Yes"
       - "No"
     Description: If you plan to run the Backtrack lab, choose 'Yes', to deploy a cluster with Backtrack enabled.
+  deployAMS3:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Backtrack lab, choose 'Yes', to deploy a cluster with Backtrack enabled.
+  deployAMSv2:
+    Default: "No"
+    Type: String
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: If you plan to run the Backtrack lab, choose 'Yes', to deploy a cluster with Backtrack enabled.
   agreeTracking:
     Default: "Yes"
     Type: String
@@ -102,6 +116,11 @@ Metadata:
           - deployGDB
           - deployML
           - deployBacktrack
+          - deployAMSv2
+      - Label:
+          default: "Version Select"
+        Parameters:
+          - deployAMS3
       - Label:
           default: "Region Selection"
         Parameters:
@@ -130,6 +149,10 @@ Metadata:
         default: "Enable Aurora ML Labs?"
       deployBacktrack:
         default: "Enable Backtrack?"
+      deployAMS3:
+        default: "Use Aurora MySQL 3 for the labs? Selecting No  will use Aurora MySQL 2"
+      deployAMSv2:
+        default: "Enable Serverless V2 labs? (Creates a serveless v2 cluster)"
       agreeTracking:
         default: "Collect Usage Data?"
       isSecondary:
@@ -161,12 +184,20 @@ Conditions:
   condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
   # GDB and Backtrack are currently incompatible, don't enable backtrack if deployBacktrack = No, or EE module matches the 'global-cluster' or 'all-features' module id
   condEnableBacktrack: !And [ !Equals [ !Ref deployBacktrack, "Yes" ], !Not [ !Or [ !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ] ] ]
-  # Condition to skip creating multi region KMS key in the secondary region
+  # Condition to skip creating multi region KMS key in the secondary region (Deprecated)
   condIsNotSecondary: !Not [Condition: condIsSecondary]
+  # Condition to deploy Aurora MySQL 3 version
+  condDeployAMS3: !Equals [ !Ref deployAMS3, "Yes" ]
+  # Condition to deploy Aurora MySQL serverless v2 cluster and enable serverless v2 labs
+  condDeploySV2: !Equals [ !Ref deployAMSv2, "Yes" ]
   # Condition to create StackSet and related resources . Create global database stackset and roles only once from the primary region stack and only  if global database condition is true.
   condStackSet: !And 
     - !Condition condIsNotSecondary
     - !Condition condDeployGDBResources
+  #Condition to create a secret if either serverless v2 is selected ot deploy cluster is selected
+  condCreateSecret: !Or 
+    - !Condition condDeploySV2
+    - !Condition condDeployDBCluster
 
 
 ## Mappings
@@ -290,8 +321,10 @@ Mappings:
       dbSchema: mylab
       dbDriver: mysql
       dbVersion: 5.7.mysql_aurora.2.10.0
+      dbVersionAMS3: 8.0.mysql_aurora.3.02.0
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
+      dbFamilyAMS3: aurora-mysql8.0
     scaling:
       maxCapacity: 2
       minCapacity: 1
@@ -641,7 +674,7 @@ Resources:
 ## Create a random generated password and store it as a secret for the DB cluster
   secretClusterAdminUser:
     Type: "AWS::SecretsManager::Secret"
-    Condition: condDeployDBCluster
+    Condition: condCreateSecret
     Properties:
       Description: "Administrator user credentials for DB cluster 'auroralab-mysql-cluster'"
       GenerateSecretString:
@@ -885,6 +918,7 @@ Resources:
           inputs:
             runCommand:
             - "#!/bin/bash -xe"
+            - "exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1"
             - "echo \"$(date \"+%F %T\") * running as $(whoami)\" >> /bootstrap.log"
             - "yum install -y unzip jq"
             - "sudo pip3 uninstall awscli -y"
@@ -924,6 +958,7 @@ Resources:
             - "curl -O https://[[website]]/scripts/replicatekey.py"
             - "curl -O https://[[website]]/support/sagemaker_policy.json"
             - "curl -O https://[[website]]/support/peer_vpcs.py"
+            - "curl -O https://[[website]]/scripts/serverlessv2_demo.py"
             - "echo \"$(date \"+%F %T\") * downloaded lab assets\" >> /bootstrap.log"
             - "mkdir -p /home/ec2-user/.aws"
             - "touch /home/ec2-user/.aws/config"
@@ -949,15 +984,15 @@ Resources:
             - !Sub 'export DBCLUSTERPG="${cpgClusterParams}" && echo "export DBCLUSTERPG=\"$DBCLUSTERPG\"" >> /home/ec2-user/.bashrc'
             - "echo \"$(date \"+%F %T\") * environment vars initialized\" >> /bootstrap.log"
             - Fn::If:
-              - condDeployDBCluster
+              - condCreateSecret
               - !Sub "export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id \"${secretClusterAdminUser}\" --region ${AWS::Region} | jq -r '.SecretString'` && export DBPASS=`echo $SECRETSTRING | jq -r '.password'` && export DBUSER=`echo $SECRETSTRING | jq -r '.username'`"
               - ""
             - Fn::If:
-              - condDeployDBCluster
+              - condCreateSecret
               - 'echo "export DBPASS=\"$DBPASS\"" >> /home/ec2-user/.bashrc && echo "export DBUSER=$DBUSER" >> /home/ec2-user/.bashrc'
               - ""
             - Fn::If:
-              - condDeployDBCluster
+              - condCreateSecret
               - "echo \"$(date \"+%F %T\") * db credentials initialized\" >> /bootstrap.log"
               - "echo \"$(date \"+%F %T\") * skipped db credentials, no cluster\" >> /bootstrap.log"
             - "chown -R ec2-user:ec2-user /home/ec2-user/environment/*"
@@ -1031,7 +1066,7 @@ Resources:
                 echo "$(date "+%F %T") superset deployed" >> /debug.log
 
 
-## Create cluster parameter group
+## Create cluster parameter group for Aurora MySQL 2
   cpgClusterParams:
     Type: "AWS::RDS::DBClusterParameterGroup"
     Properties:
@@ -1047,82 +1082,23 @@ Resources:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-mysql-cluster-params", !Join ['-', ['auroralab-mysql-cluster-params', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
-## Create Primary region KMS key used for database cluster volume encryption
-## No longer needed. Glbal database creation does not need a pr-created key. aws/rds is automatically created in a new region.
-#   dbclusterkey:
-#     Type: AWS::KMS::Key
-#     Condition: condIsNotSecondary
-#     Properties: 
-#       Description: "Multi region key (primary) for Global DB labs."
-#       Enabled: true
-#       MultiRegion: true
-#       KeyPolicy:
-#         Version: '2012-10-17'
-#         Statement:
-#         - Sid: Enable IAM User Permissions
-#           Effect: Allow
-#           Principal:
-#             AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-#           Action: kms:*
-#           Resource: "*"
-#         - Sid: Allow access for Key TeamRole
-#           Effect: Allow
-#           Principal:
-#             AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
-#           Action:
-#           - kms:Create*
-#           - kms:Describe*
-#           - kms:Enable*
-#           - kms:List*
-#           - kms:Put*
-#           - kms:Update*
-#           - kms:Revoke*
-#           - kms:Disable*
-#           - kms:Get*
-#           - kms:Delete*
-#           - kms:ImportKeyMaterial
-#           - kms:TagResource
-#           - kms:UntagResource
-#           - kms:ScheduleKeyDeletion
-#           - kms:CancelKeyDeletion
-#           - kms:ReplicateKey
-#           - kms:UpdatePrimaryRegion
-#           Resource: "*"
-#         - Sid: Allow use of the key
-#           Effect: Allow
-#           Principal:
-#             AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
-#           Action:
-#           - kms:Encrypt
-#           - kms:Decrypt
-#           - kms:ReEncrypt*
-#           - kms:GenerateDataKey*
-#           - kms:DescribeKey
-#           Resource: "*"
-#         - Sid: Allow attachment of persistent resources
-#           Effect: Allow
-#           Principal:
-#             AWS: !If [ condEventEngine, !Sub "arn:aws:iam::${AWS::AccountId}:assumed-role/TeamRole/MasterKey", !Sub "arn:aws:iam::${AWS::AccountId}:root" ]
-#           Action:
-#           - kms:CreateGrant
-#           - kms:ListGrants
-#           - kms:RevokeGrant
-#           Resource: "*"
-#           Condition:
-#             Bool:
-#               kms:GrantIsForAWSResource: 'true'
-#       Tags:
-#         - Key: Name
-#           Value: "auroralab-mysql-mregion-key"
+## Create cluster parameter group for Aurora MySQL 3
+  cpgClusterParams3:
+    Type: "AWS::RDS::DBClusterParameterGroup"
+    Properties:
+      Description: !If [ condEventEngine, "auroralab-mysql3-cluster-params", !Join ['-', ['auroralab-mysql3-cluster-params', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
+      Family: !FindInMap [ ClusterSettings, global, dbFamilyAMS3 ]
+      Parameters:
+        aws_default_s3_role: !GetAtt roleServiceIntegration.Arn
+        innodb_stats_persistent_sample_pages: "256"
+        slow_query_log: "1"
+        long_query_time: "1"
+        log_output: FILE
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-mysql3-cluster-params", !Join ['-', ['auroralab-mysql3-cluster-params', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
 
-# ## Create KMS key alias in the primary region
-#   dbclusterkeyAlias:
-#     Type: AWS::KMS::Alias
-#     Condition: condIsNotSecondary
-#     DependsOn: dbclusterkey
-#     Properties:
-#       AliasName: "alias/auroralab-mysql-db-key"
-#       TargetKeyId: !Ref dbclusterkey
+
 
 
 ### !!!WARNING :  DO NOT DELETE THIS COMMENT BLOCK. It will affect stackset processing functionality.
@@ -1171,14 +1147,13 @@ Resources:
 ## Create Aurora cluster
   dbCluster:
     Type: "AWS::RDS::DBCluster"
-    #DependsOn: dbclusterkey
     Condition: condDeployDBCluster
     DeletionPolicy: Delete
     Properties:
       Engine: !FindInMap [ ClusterSettings, global, dbEngine ]
-      EngineVersion: !FindInMap [ ClusterSettings, global, dbVersion ]
+      EngineVersion: !If [ condDeployAMS3, !FindInMap [ ClusterSettings, global, dbVersionAMS3 ], !FindInMap [ ClusterSettings, global, dbVersion ]]
       DBSubnetGroupName: !Ref dbSubnets
-      DBClusterParameterGroupName: !Ref cpgClusterParams
+      DBClusterParameterGroupName: !If [ condDeployAMS3, !Ref cpgClusterParams3, !Ref cpgClusterParams]
       DBClusterIdentifier: !If [ condEventEngine, "auroralab-mysql-cluster", !Join ['-', ['auroralab-mysql-cluster', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
       BackupRetentionPeriod: 1
       MasterUsername: !Join ["", ["{{resolve:secretsmanager:", !Ref secretClusterAdminUser, ":SecretString:username}}" ]]
@@ -1187,7 +1162,7 @@ Resources:
       StorageEncrypted: true
       VpcSecurityGroupIds: [ !Ref dbClusterSecGroup ]
       EnableCloudwatchLogsExports: [ error, slowquery ]
-      BacktrackWindow: !If [ condEnableBacktrack, 86400, 0 ]
+      BacktrackWindow: !If [condDeployAMS3, Ref: AWS::NoValue, !If [ condEnableBacktrack, 86400, 0 ]]
       #KmsKeyId: !GetAtt dbclusterkey.Arn
       EnableIAMDatabaseAuthentication: true
       AssociatedRoles:
@@ -1200,6 +1175,7 @@ Resources:
   dbNode1:
     Type: "AWS::RDS::DBInstance"
     Condition: condDeployDBCluster
+    DeletionPolicy: Delete
     Properties:
       DBClusterIdentifier: !Ref dbCluster
       DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-1", !Join ['-', ['auroralab-mysql-node-1', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
@@ -1219,6 +1195,7 @@ Resources:
   dbNode2:
     Type: "AWS::RDS::DBInstance"
     Condition: condDeployDBCluster
+    DeletionPolicy: Delete
     Properties:
       DBClusterIdentifier: !Ref dbCluster
       DBInstanceIdentifier: !If [ condEventEngine, "auroralab-mysql-node-2", !Join ['-', ['auroralab-mysql-node-2', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
@@ -1464,6 +1441,9 @@ Resources:
                   - ec2:DisassociateIamInstanceProfile
                   - ec2:ModifyInstanceAttribute
                   - ec2:ReplaceIamInstanceProfileAssociation
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
                   - iam:ListInstanceProfiles
                   - iam:PassRole
                   - ssm:DescribeInstanceInformation
@@ -1472,6 +1452,9 @@ Resources:
                   - cloud9:UpdateEnvironmentSettings
                   - cloud9:DescribeEnvironments
                   - cloud9:ListEnvironments
+                  - cloudwatch:PutMetricData
+                  - cloudwatch:ListMetrics
+                  - cloudwatch:GetMetricData
                 Resource: "*"
       Tags:
         - Key: Name
@@ -1629,6 +1612,93 @@ Resources:
               response_status = cfnresponse.FAILED
             print("[INFO]", "Invocation end")
             return response_status
+
+  ## Create temp ec2 instace to deploy serverless v2 cluster. This is a temp workaround until cfn support for v2 becomes available.
+  amsv2customec2:
+    Type: "AWS::EC2::Instance"
+    Condition: condDeploySV2
+    Properties:
+      SubnetId: !Ref sub1Private
+      InstanceType: !FindInMap [ RegionalSettings, !Ref "AWS::Region", ideType ]
+      SecurityGroupIds: [ !Ref clientSecGroup ]
+      Tags:
+        - Key: Name
+          Value: !If [ condEventEngine, "auroralab-amsv2-custom", !Join ['-', ['auroralab-amsv2-custom', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: 80
+            VolumeType: gp2
+      ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref profileClientIDE
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - !Sub |
+                #!/bin/bash -xe
+                exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+                
+                cd /tmp
+                yum install -y yum-utils jq
+                yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+                yum -y install terraform
+                curl -O https://[[website]]/scripts/main.tf
+                sed -i "s/{AWS::region}/${AWS::Region}/g" ./main.tf
+              
+              - Fn::Join:
+                  - ""
+                  - - sed -i "s/{engine}/
+                    - !FindInMap [ ClusterSettings, global, dbEngine ]
+                    - /g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s/{engine_version}/
+                  - !FindInMap [ ClusterSettings, global, dbVersionAMS3 ]
+                  - /g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s/{db_cluster_parameter_group_name}/
+                  - !Ref cpgClusterParams3
+                  - /g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s/{db_subnet_group_name}/
+                  - !Ref dbSubnets
+                  - /g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s;{aurorlabrole};
+                  - !GetAtt roleServiceIntegration.Arn
+                  - ;g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s/{vpc_security_group_ids}/
+                  - !Ref dbClusterSecGroup
+                  - /g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s;{monitoring_role_arn};
+                  - !GetAtt roleEnhancedMonitoring.Arn
+                  - ;g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - !Sub "export SECRETSTRING=`aws secretsmanager get-secret-value --secret-id \"${secretClusterAdminUser}\" --region ${AWS::Region} | jq -r '.SecretString'` && export DBPASS=`echo $SECRETSTRING | jq -r '.password'` && export DBUSER=`echo $SECRETSTRING | jq -r '.username'`"
+              - Fn::Join:
+                - ""
+                - - sed -i "s;{master_username};
+                  - $DBUSER
+                  - ;g" ./main.tf
+              - Fn::Join:
+                - ""
+                - - sed -i "s;{master_password};
+                  - $DBPASS
+                  - ;g" ./main.tf
+              - Fn::Join:
+                - "\n"
+                - - terraform init
+                  - terraform apply -auto-approve
 
 ## Custom resource to assign cluster IAM role
   resLabSupport:
