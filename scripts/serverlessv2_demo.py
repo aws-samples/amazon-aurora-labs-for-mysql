@@ -7,6 +7,7 @@ none
 
 Initial release : 5/20/2022
 Written By      : ausamant
+Bug fix         : 5/26/2022 - ausamant - fixed thread crashing when posting cw metrics 
 
 License:
 This sample code is made available under the MIT-0 license. See the LICENSE file.
@@ -42,7 +43,8 @@ query_search_catalog1 = "SELECT sum(stock) FROM products WHERE category = \"shoe
 query_place_order = "INSERT INTO orders (product_name, quantity) values (\"comfy\", 1);SELECT COUNT(*) FROM orders;"
 query_update_order1 = "SELECT count(p.product_name), sum(p.stock - o.quantity) FROM products p INNER JOIN orders o ON o.product_name = p.product_name;"
 query_runonce_create ="CREATE TABLE IF NOT EXISTS products (product_id INT NOT NULL AUTO_INCREMENT, product_name VARCHAR(100), category VARCHAR(100), stock INT, PRIMARY KEY (product_id)); CREATE TABLE IF NOT EXISTS orders (customer_id INT NOT NULL AUTO_INCREMENT, product_name VARCHAR(100), quantity INT, PRIMARY KEY (customer_id));"
-query_runonce_insert ="TRUNCATE TABLE products; INSERT INTO products (category, product_name, stock) VALUES (\"shoes\", \"comfy\", 100), (\"shoes\", \"hi-top\", 100), (\"shoes\", \"clown\", 100); INSERT INTO products (category, product_name, stock) VALUES (\"lipstick\", \"high-gloss\", 100), (\"lipstick\", \"moist\", 100), (\"lipstick\", \"blush\", 100);"
+query_runonce_cleanup ="TRUNCATE TABLE products;TRUNCATE TABLE orders;"
+query_runonce_insert ="INSERT INTO products (category, product_name, stock) VALUES (\"shoes\", \"comfy\", 100), (\"shoes\", \"hi-top\", 100), (\"shoes\", \"clown\", 100); INSERT INTO products (category, product_name, stock) VALUES (\"lipstick\", \"high-gloss\", 100), (\"lipstick\", \"moist\", 100), (\"lipstick\", \"blush\", 100);"
 
 
 # Condition to quit. Initially set to false
@@ -135,13 +137,18 @@ def runonce (endpoint, username, password,schema):
     try:
         host = socket.gethostbyname(endpoint)
 
-        # Connect to the reader endpoint
+        # Connect to the db endpoint
         conn = pymysql.connect(host=host, user=username, password=password, database=schema, autocommit=True,client_flag= CLIENT.MULTI_STATEMENTS)
+        
         exec_sql(query_runonce_create,conn)
+        exec_sql(query_runonce_cleanup,conn)
 
         i=1
-        for i in range (1,10,1):
+        for i in range (1,8,1):
             exec_sql(query_runonce_insert,conn)
+        
+        # Close the connection
+        conn.close()
 
     except ClientError as e:
         print(e)
@@ -161,29 +168,32 @@ def worker_thread(endpoint, username, password, schema):
         # Resolve the endpoint
         host = socket.gethostbyname(endpoint)
 
-        # Connect to the reader endpoint
+        # Connect to the db endpoint
         conn = pymysql.connect(host=host, user=username, password=password, database=schema, autocommit=True,client_flag= CLIENT.MULTI_STATEMENTS)
       
         j=0
-        while  j<=100:
+        while  j<=50:
             # Execute query
             
-            # print("starting query:",j)
+            # publish_metric()
+            # time.sleep(1)
+            
             exec_sql(query_search_catalog1,conn)
             exec_sql(query_place_order,conn)
             exec_sql(query_update_order1,conn)
             
             #Sleep for a second so cloudwatch can catch up
-            time.sleep(2)
+            time.sleep(0.5)
             publish_metric()
             j+=1
 
-        #Close the cursor
+        # Close the connection
         conn.close()
-        # exitflag = True
+        
 
         with lock:
             total_thread_count=total_thread_count-1
+            
         
 
     # Trap keyboard interrupt, exit
@@ -238,7 +248,7 @@ def report_progress(endpoint, username, password):
                     spaces=(31-len(str(row)))*" "
                     result1= result1+spaces+str(row)+"|"
             
-            # thread_count  variable needs to be thread safe
+            # total_thread_count variable needs to be thread safe
             with lock:
                 spaces = (31-len(str(total_thread_count)))*" "
                 result1= result1+spaces+str(total_thread_count)+"|"
@@ -279,6 +289,8 @@ def main():
         
         # invoke analytics
         track_analytics()
+        
+        # Schema creation or cleanup
         runonce (args.endpoint, args.username, args.password, args.database)
 
         # Start the progress reporting  thread to display stats of the screen,
@@ -287,17 +299,44 @@ def main():
         y = threading.Thread(target=report_progress, args=(args.endpoint, args.username, args.password))
         y.start()
 
-        # Start the worker thread to scale ACUs
-        while thread_count<100:
-            
-            # Exit loop if we got a signal to do so
+        # Start the worker thread to scale up ACUs
+        for external_tc in range (1,8,1):
             if exitflag:
-                break
-            
-            x = threading.Thread(target=worker_thread, args=(args.endpoint, args.username, args.password, args.database) )
-            x.start()
-            thread_count+=1
-            time.sleep(2)
+                    break
+            thread_count = 1
+            while thread_count<external_tc*10:
+                
+                # Exit loop if we got a signal to do so
+                if exitflag:
+                    break
+                
+                x = threading.Thread(target=worker_thread, args=(args.endpoint, args.username, args.password, args.database) )
+                x.start()
+                thread_count+=1
+                time.sleep(0.5)
+            if exitflag:
+                    break
+            time.sleep(15)
+
+        # thread_count = 100
+        # # Start the worker thread to scale down ACUs
+        # for external_tc in range (10,-2,-2):
+        #     if exitflag:
+        #             break
+        #     thread_count = external_tc*10
+        #     while thread_count>=external_tc*10:
+                
+        #         # Exit loop if we got a signal to do so
+        #         if exitflag:
+        #             break
+                
+        #         x = threading.Thread(target=worker_thread, args=(args.endpoint, args.username, args.password, args.database) )
+        #         x.start()
+        #         thread_count-=1
+        #         time.sleep(0.5)
+        #     time.sleep(5)
+
+
 
     except ClientError as e:
         print(e)
