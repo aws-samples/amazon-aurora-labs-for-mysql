@@ -44,7 +44,7 @@ In the **Engine options** section:
 * [ ] Choose the `Amazon Aurora` engine type.
 * [ ] Choose the `Amazon Aurora with MySQL compatibility` edition.
 * [ ] Choose the **Capacity type** of `Provisioned`.
-* [ ] Select the `Aurora (MySQL 5.7) 2.10.0` version.
+* [ ] Select the `Aurora MySQL 3.02.0 (compatible with 8.0.23)` version.
 
 <span class="image">![Engine Options](1-engine-options.png?raw=true)</span>
 
@@ -98,8 +98,6 @@ Expand the **Additional configuration** section, and configure options as follow
 
 Continue in the **Additional configuration** section:
 
-* [ ] Check the box to **Enable Backtrack**.
-* [ ] Set a **Target backtrack window** of `24` hours.
 * [ ] Check the box to **Enable Performance Insights**.
 * [ ] Set a **Retention period** of `Default (7 days)`.
 * [ ] Set the **Master key** to `[default] aws/rds`.

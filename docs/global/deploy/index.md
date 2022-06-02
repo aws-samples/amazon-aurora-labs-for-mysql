@@ -81,6 +81,13 @@ Set the following options on the configuration screen for the secondary DB clust
 2. In the **AWS Region** section:
     * [ ] Choose the **Secondary region** of `US East (N. Virginia)`
 
+3. In the **Instance configuration** section:
+    * [ ] Choose **Memory optimized classes** as `db.r6.large`
+
+4. In the **Availability and durability** section:
+    * [ ] Choose `Don't create an Aurora Replica`
+
+
 <span class="image">![RDS Cluster Add Region](rds-add-region-name.png?raw=true)</span>
 
 Scroll down and set the following parameters:
@@ -102,9 +109,9 @@ Scroll down and set the following parameters:
 3. Expand the **Additional configuration** section, and configure the following options:
     * [ ] Set **DB instance identifier** to `auroralab-mysql-node-3`
     * [ ] Set **DB cluster identifier** to `auroralab-mysql-secondary`
-    * [ ] For **DB cluster parameter group** select the group with the stack name in the name (e.g. `auroralab-[...]`)
+    * [ ] For **DB cluster parameter group** select the group with the stack name in the name (e.g. `stackset-auroralab-[...]`)
     * [ ] Set **Backup retention period** to `1 day`
-    * [ ] **Check** the box for **Enable Performance Insights**
+    * [ ] **Check** the box for **Turn on  Performance Insights**
     * [ ] Set **Retention period** to `Default (7 days)`
     * [ ] Set **Master key** to `[default] aws/rds`
     * [ ] **Check** the box for **Enable Enhanced Monitoring**
