@@ -116,8 +116,11 @@ nav:
     - Use SageMaker with Aurora: 'ml/sagemaker/index.md'
     - Clean up Lab Resources: 'ml/cleanup/index.md'
   - Serverless v1:
-    - Create an Aurora Serverless DB Cluster: 'serverless/create/index.md'
+    - Create an Aurora Serverless v1 DB Cluster: 'serverless/create/index.md'
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
+  - Serverless v2:
+    - Create an Aurora Serverless v2 DB Cluster: 'serverlessv2/create/index.md'
+    - Run workload and observe scaling: 'serverlessv2/workload/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'

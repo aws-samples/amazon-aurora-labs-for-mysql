@@ -59,9 +59,14 @@ The following labs are currently available, click on the relevant tab to see the
 === "Serverless v1"
     # | Lab Module | Recommendation | Overview
     --- | --- | --- | ---
-    S1 | [**Create an Aurora Serverless DB Cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
+    S1 | [**Create an Aurora Serverless v1 DB Cluster**](/serverless/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
     S2 | [**Use Aurora Serverless with AWS Lambda Functions**](/serverless/dataapi/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
 
+=== "Serverless v2"
+    # | Lab Module | Recommendation | Overview
+    --- | --- | --- | ---
+    S1 | [**Create an Aurora Serverless v2 DB Cluster**](/serverlessv2/create/) | Required | Create a new Amazon Aurora Serverless MySQL DB cluster manually.
+    S2 | [**Run workload and observe scaling**](/serverlessv2/workload/) | Recommended | Connect to your DB cluster using the RDS Data API and Lambda functions.
 
 You can also discover other exercises, labs and workshops related to Amazon Aurora on the [Related Labs and Workshops](/related/labs/) page.
 

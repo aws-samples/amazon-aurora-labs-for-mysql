@@ -19,7 +19,7 @@ resource "aws_rds_cluster" "amsv2" {
     enabled_cloudwatch_logs_exports= ["error", "slowquery"]
     iam_database_authentication_enabled = true
     serverlessv2_scaling_configuration {
-    max_capacity = 6
+    max_capacity = 9
     min_capacity = 0.5
     }
     tags = {Key = "Name", Value = "auroralab-serverlessv2-cluster"}

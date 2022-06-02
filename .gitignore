@@ -204,4 +204,6 @@ temp/
 # Ignore all local history of files
 .history
 
+# other
+deletable\ scripts/
 # End of https://www.gitignore.io/api/macos,python,windows
