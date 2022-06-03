@@ -72,7 +72,7 @@ Parameters:
     AllowedValues:
       - "Yes"
       - "No"
-    Description: If you plan to run the Backtrack lab, choose 'Yes', to deploy a cluster with Backtrack enabled.
+    Description: If you plan to run the serverless v2 lab, choose 'Yes', to deploy a serverless v2 cluster.
   agreeTracking:
     Default: "Yes"
     Type: String
