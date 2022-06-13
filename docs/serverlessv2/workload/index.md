@@ -22,86 +22,148 @@ We will use a python script to generate load on the Aurora Serverless v2 cluster
 === "The DB cluster has been pre-created for me"
     If AWS CloudFormation has provisioned the DB cluster on your behalf, and you skipped the **Create an Aurora Serverless v2 DB Cluster** lab, please go to the <a href="https://console.aws.amazon.com/rds/" target="_blank">RDS Console</a> and use the name of the pre-created Serverless v2 cluster.
 
+    ```
+    python3 serverlessv2_demo.py -e[clusterEndpoint] -u$DBUSER -p$DBPASS -dmyshop
+    ```
 
-=== "I have created the DB cluster myself"
-    If you have completed the [Create an Aurora Serverless v2 DB Cluster](/serverlessv2/create/) lab, and created the Aurora Serverless v2 DB cluster manually replace the ==[clusterEndpoint]== placeholder with the cluster endpoint of your DB cluster.
+    The command will report the number of current connections, total threads started with the database and it will also show the Innodb Buffer Pool Size, InnoDB History List Length growing with the number of connections. 
 
-```
-python3 serverlessv2_demo.py -e[clusterEndpoint] -u$DBUSER -p$DBPASS -dmyshop
-```
+    <span class="image">![Cloud 9](python-script-run.png?raw=true)</span>
 
-<!---??? tip "What do all these parameters mean?"
-    Parameter | Description
-    --- | ---
-    --cluster endpoint | writer endpoint.
-    --DBUSER | User.
-    --DBPass | Additional command parameters.-->
+    ## 2. Create CloudWatch dashboard 
 
-The command will report the number of current connections, total threads started with the database and it will also show the Innodb Buffer Pool Size, InnoDB History List Length growing with the number of connections. 
+    While the command is running, open the <a href="https://console.aws.amazon.com/cloudwatch/" target="_blank">Amazon CloudWatch console</a> in a different browser tab.
 
-<span class="image">![Cloud 9](python-script-run.png?raw=true)</span>
+    !!! warning "Region Check"
+        Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
 
-## 2. Create CloudWatch dashboard 
+    In the navigation pane, choose **Dashboards**, and then choose **Create dashboard**. In the Create new dashboard dialog box, enter name `aurora-serverless-v2` for the dashboard, and then choose **Create dashboard**. 
 
-While the command is running, open the <a href="https://console.aws.amazon.com/cloudwatch/" target="_blank">Amazon CloudWatch console</a> in a different browser tab.
+    <span class="image">![Cloudwatch dashboard](cloudwatch-create-dash.png?raw=true)</span>
 
-!!! warning "Region Check"
-    Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+    In the **Add Widget** dialog box, select **Line**. 
 
-In the navigation pane, choose **Dashboards**, and then choose **Create dashboard**. In the Create new dashboard dialog box, enter name `aurora-serverless-v2` for the dashboard, and then choose **Create dashboard**. 
+    <span class="image">![Add Widget](line-widget.png?raw=true)</span>
 
-<span class="image">![Cloudwatch dashboard](cloudwatch-create-dash.png?raw=true)</span>
+    Next, in the **Add to this dashboard** dialog box, choose **Metrics**.
 
-In the **Add Widget** dialog box, select **Line**. 
+    <span class="image">![Add to this dashboard](select-metrics.png?raw=true)</span>
 
-<span class="image">![Add Widget](line-widget.png?raw=true)</span>
+    In the **Add metric graph** dialog box, choose **Source** and paste the following code (replace `auroralab-serverless-node-0` with the name of your writer instance). 
 
-Next, in the **Add to this dashboard** dialog box, choose **Metrics**.
+    !!! note
+        To find the name of your writer instance, go to the <a href="https://console.aws.amazon.com/rds/" target="_blank">RDS Console</a>, under **Databases** find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance details. 
 
-<span class="image">![Add to this dashboard](select-metrics.png?raw=true)</span>
+    <span class="image">![Writer Instance](writer-cpu-99.png?raw=true)</span>
 
-In the **Add metric graph** dialog box, choose **Source** and paste the following code (replace `auroralab-serverless-node-0` with the name of your writer instance). 
+    Replace `[regionname]` with your current region in the code below and paste the code under the **Source** tab.
 
-!!! note
-    To find the name of your writer instance, go to the <a href="https://console.aws.amazon.com/rds/" target="_blank">RDS Console</a>, under **Databases** find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance details. 
-
-<span class="image">![Writer Instance](writer-cpu-99.png?raw=true)</span>
-
-After identifying the name of writer instance of your Aurora Serverless v2 cluster, replace it with `auroralab-serverless-node-0` in the below code and paste the code in **Source**
-
-    {
-        "metrics": [
-            [ "AWS/RDS", "ServerlessDatabaseCapacity", "DBInstanceIdentifier", "auroralab-serverless-node-0", { "yAxis": "right" } ],
-            [ "MyFlashSale/Orders", "Orders", "OfferType", "FlashSale", { "stat": "Sum" } ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-2",
-        "stat": "Average",
-        "period": 1,
-        "yAxis": {
-            "left": {
-                "label": "Orders",
-                "min": 0,
-                "max": 100,
-                "showUnits": false
-            },
-            "right": {
-                "label": "ACU",
-                "min": 0,
-                "max": 10,
-                "showUnits": false
+        {
+            "metrics": [
+                [ "AWS/RDS", "ServerlessDatabaseCapacity", "DBInstanceIdentifier", "auroralab-serverless-node-0", { "yAxis": "right" } ],
+                [ "MyFlashSale/Orders", "Orders", "OfferType", "FlashSale", { "stat": "Sum" } ]
+            ],
+            "view": "timeSeries",
+            "stacked": false,
+            "region": "[regionname]",
+            "stat": "Average",
+            "period": 1,
+            "yAxis": {
+                "left": {
+                    "label": "Orders",
+                    "min": 0,
+                    "max": 100,
+                    "showUnits": false
+                },
+                "right": {
+                    "label": "ACU",
+                    "min": 0,
+                    "max": 10,
+                    "showUnits": false
+                }
             }
         }
-    }
 
-Click on **Update** and then choose **Create widget**. 
+    Click on **Update** and then choose **Create widget**. 
 
-<span class="image">![Create Widget](create-widget.png?raw=true)</span>
+    <span class="image">![Create Widget](create-widget.png?raw=true)</span>
 
-Finally, select **Save dashboard** on the top right corner. 
+    Finally, select **Save dashboard** on the top right corner. 
 
-<span class="image">![Save](save-dashboard.png?raw=true)</span>
+    <span class="image">![Save](save-dashboard.png?raw=true)</span>
+
+=== "I have created the DB cluster myself"
+    If you have completed the [Create an Aurora Serverless v2 DB Cluster](/serverlessv2/create/) lab, and created the Aurora Serverless v2 DB cluster manually replace the `[clusterEndpoint]` placeholder with the cluster endpoint of your DB cluster.
+
+    ```
+    python3 serverlessv2_demo.py -e[clusterEndpoint] -u$DBUSER -p$DBPASS -dmyshop
+    ```
+
+    The command will report the number of current connections, total threads started with the database and it will also show the Innodb Buffer Pool Size, InnoDB History List Length growing with the number of connections. 
+
+    <span class="image">![Cloud 9](python-script-run.png?raw=true)</span>
+
+    ## 2. Create CloudWatch dashboard 
+
+    While the command is running, open the <a href="https://console.aws.amazon.com/cloudwatch/" target="_blank">Amazon CloudWatch console</a> in a different browser tab.
+
+    !!! warning "Region Check"
+        Ensure you are still working in the correct region, especially if you are following the links above to open the service console at the right screen.
+
+    In the navigation pane, choose **Dashboards**, and then choose **Create dashboard**. In the Create new dashboard dialog box, enter name `aurora-serverless-v2` for the dashboard, and then choose **Create dashboard**. 
+
+    <span class="image">![Cloudwatch dashboard](cloudwatch-create-dash.png?raw=true)</span>
+
+    In the **Add Widget** dialog box, select **Line**. 
+
+    <span class="image">![Add Widget](line-widget.png?raw=true)</span>
+
+    Next, in the **Add to this dashboard** dialog box, choose **Metrics**.
+
+    <span class="image">![Add to this dashboard](select-metrics.png?raw=true)</span>
+
+    In the **Add metric graph** dialog box, choose **Source** and paste the following code (replace `auroralab-serverless-node-0` with the name of your writer instance). 
+
+    !!! note
+        To find the name of your writer instance, go to the <a href="https://console.aws.amazon.com/rds/" target="_blank">RDS Console</a>, under **Databases** find the DB instance in the cluster that has the **Writer** role and click on the name, to view the DB instance details. 
+
+    <span class="image">![Writer Instance](writer-cpu-99.png?raw=true)</span>
+
+    After identifying the name of writer instance of your Aurora Serverless v2 cluster, replace it with `auroralab-serverless-node-0` in the below code and paste the code under the **Source** tab.
+
+        {
+            "metrics": [
+                [ "AWS/RDS", "ServerlessDatabaseCapacity", "DBInstanceIdentifier", "auroralab-serverless-node-0", { "yAxis": "right" } ],
+                [ "MyFlashSale/Orders", "Orders", "OfferType", "FlashSale", { "stat": "Sum" } ]
+            ],
+            "view": "timeSeries",
+            "stacked": false,
+            "region": "[regionname]",
+            "stat": "Average",
+            "period": 1,
+            "yAxis": {
+                "left": {
+                    "label": "Orders",
+                    "min": 0,
+                    "max": 100,
+                    "showUnits": false
+                },
+                "right": {
+                    "label": "ACU",
+                    "min": 0,
+                    "max": 10,
+                    "showUnits": false
+                }
+            }
+        }
+
+    Click on **Update** and then choose **Create widget**. 
+
+    <span class="image">![Create Widget](create-widget.png?raw=true)</span>
+
+    Finally, select **Save dashboard** on the top right corner. 
+
+    <span class="image">![Save](save-dashboard.png?raw=true)</span>
 
 ## 3. Examine the scaling 
 
