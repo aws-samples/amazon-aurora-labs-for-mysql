@@ -175,21 +175,28 @@ Conditions:
   condEventEngine: !Not [ !Equals [ !Ref EEEventId, "" ] ]
   # EE doesn't allow us to customize parameters, so different EE modules launch different features
   # Condition to deploy Aurora MySQL serverless v2 cluster and enable serverless v2 labs. If deployAMSv2 = yes or EE module matches the 'serverless v2' pr 'all features' module id 
-  condDeploySV2: !Equals [ !Ref deployAMSv2, "Yes" ]
+  condDeploySV2: !Or 
+    - !Equals [ !Ref deployAMSv2, "Yes" ]
+    - !Equals [ !Ref EEModuleId, "bfc45be131d74f68a06df1d3fdffc2fe" ] 
+    - !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ]
   # the cluster is deployed only if parameter is yes, and the EE module doesn't match the 'base-only' module id
-  condDeployDBCluster: !Equals [ !Ref deployCluster, "Yes" ]
+  condDeployDBCluster: !And [ !Equals [ !Ref deployCluster, "Yes" ], !Not [ !Equals [ !Ref EEModuleId, "6ccc4506e8f04b81bc138bae806abe67" ] ] ]
   # the ML resources are only deployed if parameter is yes, or EE module matches the 'all-features' module id
-  condDeployMLResources: !Equals [ !Ref deployML, "Yes" ]
+  condDeployMLResources: !Or [ !Equals [ !Ref deployML, "Yes" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
   # the GDB resources are only deployed if parameter is yes, or EE module matches the 'global-cluster' or 'all-features' module id
-  condDeployGDBResources: !Equals [ !Ref deployGDB, "Yes" ]
+  condDeployGDBResources: !Or [ !Equals [ !Ref deployGDB, "Yes" ], !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ]
   # the bug fix for secondary region KMS is only deployed if parameter is yes
   condIsSecondary: !Equals [ !Ref isSecondary, "Yes" ]
   # GDB and Backtrack are currently incompatible, don't enable backtrack if deployBacktrack = No, or EE module matches the 'global-cluster' or 'all-features' module id
-  condEnableBacktrack: !Equals [ !Ref deployBacktrack, "Yes" ]
+  condEnableBacktrack: !And [ !Equals [ !Ref deployBacktrack, "Yes" ], !Not [ !Or [ !Equals [ !Ref EEModuleId, "df00a2bc0f5a498b88157da8ec40c0be" ], !Equals [ !Ref EEModuleId, "fbae3faaf87d4062b5dc7986cf93cc84" ] ] ] ]
   # Condition to skip creating multi region KMS key in the secondary region (Deprecated)
   condIsNotSecondary: !Not [Condition: condIsSecondary]
   # Condition to deploy Aurora MySQL 3 version if deployAMS3 = Yes or DeployDB is true, but not if backtrack is needed, since it's not supported with AMS 3 
-  condDeployAMS3: !Equals [ !Ref deployAMS3, "Yes" ]
+  condDeployAMS3: !And 
+    - !Or
+      - !Equals [ !Ref deployAMS3, "Yes" ]
+      - !Condition condDeployDBCluster
+    - !Not [!Condition condEnableBacktrack]
   # Condition to create StackSet and related resources . Create global database stackset and roles only once from the primary region stack and only  if global database condition is true.
   condStackSet: !And 
     - !Condition condIsNotSecondary
