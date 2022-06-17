@@ -120,6 +120,7 @@ nav:
     - Use Aurora Serverless with AWS Lambda Functions: 'serverless/dataapi/index.md'
   - Serverless v2:
     - Create an Aurora Serverless v2 DB Cluster: 'serverlessv2/create/index.md'
+    - Gather cluster details: 'serverlessv2/clusterdetails/index.md'
     - Run workload and observe scaling: 'serverlessv2/workload/index.md'
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
