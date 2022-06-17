@@ -17,15 +17,31 @@ This lab requires the following prerequisites:
 
 ## 1. Generate load on your DB cluster
 
-We will use a python script to generate load on the Aurora Serverless v2 cluster. If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [follow these instructions](/prereqs/connect/) to do so now. Once connected, run the load generation script from the terminal window, replacing the [clusterEndpoint] placeholder with your Aurora Serverless v2 **cluster endpoint** you noted down in the [previous section](/serverlessv2/clusterdetails/). 
+=== "The DB cluster was pre-created for me"
+    
+    We will use a python script to generate load on the Aurora Serverless v2 cluster. If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [follow these instructions](/prereqs/connect/) to do so now. Once connected, run the load generation script from the terminal window, replacing the [clusterEndpoint] placeholder with your Aurora Serverless v2 **cluster endpoint** you noted down in the [previous section](/serverlessv2/clusterdetails/). 
 
-```
-python3 serverlessv2_demo.py -e[clusterEndpoint] -u$DBUSER -p$DBPASS -dmyshop
-```
+    ```
+    python3 serverlessv2_demo.py -e[clusterEndpoint] -u$DBUSER -p$DBPASS -dmyshop
+    ```
 
-After the command is executed with the correct cluster endpoint, it will report the number of current connections, total threads initiated with the database and it will also show the Innodb Buffer Pool Size, InnoDB History List Length growing with the number of connections. 
+    After the command is executed with the correct cluster endpoint, it will report the number of current connections, total threads initiated with the database and it will also show the Innodb Buffer Pool Size, InnoDB History List Length growing with the number of connections. 
 
-<span class="image">![Cloud 9](python-script-run.png?raw=true)</span>
+    <span class="image">![Cloud 9](python-script-run.png?raw=true)</span>
+
+
+=== "I created the DB cluster myself"
+
+    We will use a python script to generate load on the Aurora Serverless v2 cluster. If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please [follow these instructions](/prereqs/connect/) to do so now. Once connected, run the load generation script from the terminal window, replacing the [clusterEndpoint] placeholder with your Aurora Serverless v2 **cluster endpoint** you noted down in the [previous section](/serverlessv2/clusterdetails/).   
+    You will also have to replace the **Username** and **Password** in the following command. You created username and password during the cluster creation.
+
+    ```
+    python3 serverlessv2_demo.py -e[clusterEndpoint] -uUsername -pPassword -dmyshop
+    ```
+
+    After the command is executed with the correct cluster endpoint, it will report the number of current connections, total threads initiated with the database and it will also show the Innodb Buffer Pool Size, InnoDB History List Length growing with the number of connections. 
+
+    <span class="image">![Cloud 9](myconsole.png?raw=true)</span>
 
 ## 2. Create CloudWatch dashboard 
 

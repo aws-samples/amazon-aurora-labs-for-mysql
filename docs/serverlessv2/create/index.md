@@ -36,11 +36,7 @@
 
     In the **Settings** section set the database cluster identifier to `auroralab-mysql-serverless-v2`. Configure the name and password of the master database user, with the most elevated permissions in the database. We recommend to use the user name `administrator` for consistency with subsequent labs and a password of your choosing. For simplicity ensure the check box **Auto generate a password** is **not checked**.
 
-    !!! error "Choose username and password carefully"
-        If you followed the [Create a New Aurora Cluster](provisioned/create/) earlier, please make sure you **choose the same username and password**, for consistency. If you choose a different password you may run into database connectivity issues, 
-        and the labs   may not function correctly .
-
-
+    
     <span class="image">![Database Settings](1.2-serverless-settings.png?raw=true)</span>
 
     In the **Instance Configuration** section, select **Serverless** under **DB instance class** which would populate **Serverless v2 - new** as the instance class. Under **Capacity range** choose **Minimum ACUs** of `0.5 (1GB RAM)` and a **Maximum ACUs** of `9 (18 GB RAM)`. Next, in the **Availability & Durability** section, select **Create an Aurora Replica or Reader node in a different AZ** (recommended for scaled availability).
