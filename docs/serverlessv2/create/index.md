@@ -5,7 +5,7 @@
 
 
 
-=== "I Want to create the serverless v2 cluster myself"
+=== "I want to create the serverless v2 cluster myself"
     
 
     This lab will walk you through the steps of creating an Amazon Aurora Serverless v2 database cluster manually, and configuring the scaling parameters of the cluster.
@@ -13,8 +13,7 @@
     This lab contains the following tasks:
 
     1. Create a serverless v2 DB cluster
-    <!-- 2. Create a secret to store the credentials -->
-
+    
     This lab requires the following lab modules to be completed first:
 
     * [Get Started](/prereqs/environment/)
@@ -68,41 +67,5 @@
         * Automatically getting backed up continuously, retaining backups for 1 day
         * Using data at rest encryption
 
-    Click **Create database** to provision the DB cluster.
+Click **Create database** to provision the DB cluster.
 
-    Once back to the list of databases, click the name of the new database in the listing. In the details view of the cluster, click on the **Configuration** tab. Note the value for **ARN**. Write this down, you will need it later.
-
-    <span class="image">![CLuster ARN](1.2-serverless-arn.png?raw=true)</span>
-
-
-<!-- ## 2. Create a secret to store the credentials
-
-    Open the <a href="https://console.aws.amazon.com/secretsmanager/home" target="_blank">AWS Secrets Manager service console</a>.
-
-    Click **Store a new secret** to start the configuration process.
-
-    <span class="image">![Create Secret](2-create-secret.png?raw=true)</span>
-
-    In the **Select secret type** section, choose **Credentials for RDS database**, then input the **User name** (e.g. `administrator`) and **Password** that you provided when you created the serverless DB cluster.
-
-    Next, in the **Select which RDS database this secret will access** section, choose the DB cluster identifier you assigned to your cluster (e.g. `auroralab-mysql-serverless-v2`). Click **Next**.
-
-    <span class="image">![Configure Secret](2.2-config-secret.png?raw=true)</span>
-
-    Name the secret `auroralab-mysql-serverless-v2-secret` and provide a relevant description for the secret, then click **Next**.
-
-    <span class="image">![Name Secret](2.2-name-secret.png?raw=true)</span>
-
-    Finally, in the **Configure automatic rotation** section, leave the option of **Disable automatic rotation** selected. In a production environment you will want to use database credentials that rotate automatically for additional security. Click **Next**.
-
-    <span class="image">![Rotate Secret](2-rotate-secret.png?raw=true)</span>
-
-    In the **Review** section you have the ability to check the configuration parameters for your secret, before it gets created. Additionally, you can retrieve sample code in popular programming languages, so you can easily retrieve secrets into your application. Click **Store** at the bottom of the screen.
-
-    Once created, identify the **ARN** of the newly created secret. This value will be needed in subsequent labs. In the list of **Secrets** in the console, click on the name of the newly created secret.
-
-    <span class="image">![List Secrets](2.2-list-secrets.png?raw=true)</span>
-
-    In the detail view of the secret, note the value for **Secret ARN**. Write this down, you will need it later.
-
-    <span class="image">![Secret ARN](2.2-arn-secret.png?raw=true)</span> -->

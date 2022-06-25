@@ -13,7 +13,7 @@ This lab requires the following prerequisites:
 * [Get Started](/prereqs/environment/)
 * [Connect to the Cloud9 Desktop](/prereqs/connect/)
 * [Create a new Aurora Serverless v2 DB Cluster](/serverlessv2/create/) (optional, only if you plan to create a cluster manually)
-
+* [Gather cluster details](/serverlessv2/clusterdetails/)
 
 ## 1. Generate load on your DB cluster
 
