@@ -67,5 +67,5 @@
         * Automatically getting backed up continuously, retaining backups for 1 day
         * Using data at rest encryption
 
-Click **Create database** to provision the DB cluster.
+    Click **Create database** to provision the DB cluster.
 
