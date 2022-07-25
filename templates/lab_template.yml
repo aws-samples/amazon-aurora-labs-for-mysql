@@ -196,6 +196,7 @@ Conditions:
     - !Or
       - !Equals [ !Ref deployAMS3, "Yes" ]
       - !Condition condDeployDBCluster
+      - !Condition condDeployGDBResources
     - !Not [!Condition condEnableBacktrack]
   # Condition to create StackSet and related resources . Create global database stackset and roles only once from the primary region stack and only  if global database condition is true.
   condStackSet: !And 
@@ -689,7 +690,7 @@ Resources:
         SecretStringTemplate: '{"username": "administrator"}'
         GenerateStringKey: 'password'
         PasswordLength: 10
-        ExcludeCharacters: '="@/\$`&:{}()[]'
+        ExcludeCharacters: '="@/\$`&:{}()[];'
       Tags:
         - Key: Name
           Value: !If [ condEventEngine, "auroralab-cluster-secret", !Join ['-', ['auroralab-cluster-secret', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]]
