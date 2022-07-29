@@ -97,7 +97,7 @@ Scroll down and set the following parameters:
     * [ ] Ensure the correct **Subnet Group** was selected automatically, it should be named `auroralab-db-subnet-group`.
     * [ ] Make sure the **Publicly accessible** option is set to `No`.
     * [ ] For **VPC security group** select **Choose existing** and pick the security group named `auroralab-database-sg`, remove any other security groups, such as `default` from the selection.
-    * [ ] For **Encryption Key** use **AWS KMS Key** dropdown and select `auroralab-mysql-db-key` from the selection.
+    * [ ] For **Encryption Key** use **AWS KMS Key** dropdown and select `(default) aws/rds` from the selection.
 
 2. In the **Read replica write forwarding** section:
     * [ ] **Check** the box for **Enable read replica write forwarding**
@@ -113,7 +113,7 @@ Scroll down and set the following parameters:
     * [ ] Set **Backup retention period** to `1 day`
     * [ ] **Check** the box for **Turn on  Performance Insights**
     * [ ] Set **Retention period** to `Default (7 days)`
-    * [ ] Set **Master key** to `[default] aws/rds`
+    * [ ] Set **Master key** to `(default) aws/rds`
     * [ ] **Check** the box for **Enable Enhanced Monitoring**
     * [ ] Set **Granularity** to `1 second`
     * [ ] Set **Monitoring Role** to `auroralab-monitor-[secondary-region]`
