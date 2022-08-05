@@ -867,6 +867,8 @@ Resources:
                   - "ec2:DescribeVpcPeeringConnections"
                   - "ec2:AcceptVpcPeeringConnection"
                   - "ec2:DescribeRegions"
+                  - "lambda:UpdateFunctionCode"
+                  - "lambda:UpdateFunctionConfiguration"
                   - "iam:AttachRolePolicy"
                   - "iam:DetachRolePolicy"
                   - "iam:PutRolePolicy"

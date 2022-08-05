@@ -26,14 +26,16 @@ The following labs are currently available, click on the relevant tab to see the
     --- | --- | --- | ---
     R1 | [**Create a New DB Cluster**](/provisioned/create/) | Optional | Create a new Amazon Aurora MySQL DB cluster manually. This is optional, as you can also deploy the environment with a cluster provisioned automatically for you.
     R2 | [**Connect to the DB Cluster and Load Data**](/provisioned/interact/) | Recommended | Connect to the DB cluster and load an initial data set from S3. The initial data set may also be used in subsequent labs.
-    R3 | [**Auto Scale Read Replicas**](/provisioned/autoscale/) | Recommended | This lab will demonstrate how auto scaling read replicas work.
-    R4 | [**Clone a DB Cluster**](/provisioned/clone/) | Recommended | Clone an Aurora DB cluster and observing the divergence of the data set.
-    R5 | [**Backtrack a DB Cluster**](/provisioned/backtrack/) | Recommended | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
-    R6 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
-    R7 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
-    R8 | [**Set up Database Activity Streams**](/provisioned/das/) | Recommended | Monitor your database activity by using Database Activity Streams.
-    R9 | [**Observe and Identify SQL Performance Issues**](/provisioned/perf-observability/) | Recommended | Leverage Amazon Aurora MySQL ecosystem tools to detect performance issues.
-    R10 | [**Analyze SQL Query Performance**](/provisioned/perf-analysis/) | Recommended | Troubleshoot SQL query performance using Amazon Aurora MySQL ecosystem tools.
+    R3 | [**IAM Authentication to access the DB Cluster**](/provisioned/iam-authentication/) | Recommended | Connect to the DB cluster using IAM Authentication instead of a password.
+    R4 | [**Manage Database Credentials**](/provisioned/secrets-manager/) | Recommended | Using the Secrets Manager to manage your database credentials securely including rotation of secrets.
+    R5 | [**Auto Scale Read Replicas**](/provisioned/autoscale/) | Recommended | This lab will demonstrate how auto scaling read replicas work.
+    R6 | [**Clone a DB Cluster**](/provisioned/clone/) | Recommended | Clone an Aurora DB cluster and observing the divergence of the data set.
+    R7 | [**Backtrack a DB Cluster**](/provisioned/backtrack/) | Recommended | Backtrack an Aurora DB cluster to fix an accidental DDL operation.
+    R8 | [**Use Performance Insights**](/provisioned/perf-insights/) | Recommended | Examine the performance of your DB instances using RDS Performance Insights.
+    R9 | [**Test Fault Tolerance**](/provisioned/failover/) | Recommended | Examine the failover process in Amazon Aurora MySQL and how it can be optimized.
+    R10 | [**Set up Database Activity Streams**](/provisioned/das/) | Recommended | Monitor your database activity by using Database Activity Streams.
+    R11 | [**Observe and Identify SQL Performance Issues**](/provisioned/perf-observability/) | Recommended | Leverage Amazon Aurora MySQL ecosystem tools to detect performance issues.
+    R12 | [**Analyze SQL Query Performance**](/provisioned/perf-analysis/) | Recommended | Troubleshoot SQL query performance using Amazon Aurora MySQL ecosystem tools.
 
 
 === "Global Database"

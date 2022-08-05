@@ -95,6 +95,8 @@ nav:
   - DB Clusters:
     - Create a New DB Cluster: 'provisioned/create/index.md'
     - Connect to the DB Cluster and Load Data: 'provisioned/interact/index.md'
+    - IAM Authentication to connect to the DB Cluster: 'provisioned/iam-authentication/index.md'
+    - Manage Database Credentials: 'provisioned/secrets-manager/index.md'
     - Auto Scale Read Replicas: 'provisioned/autoscale/index.md'
     - Clone a DB Cluster: 'provisioned/clone/index.md'
     - Backtrack a DB Cluster: 'provisioned/backtrack/index.md'
