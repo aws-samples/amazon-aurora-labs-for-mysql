@@ -32,9 +32,10 @@ aws rds restore-db-cluster-to-point-in-time \
 --source-db-cluster-identifier auroralab-mysql-cluster \
 --db-cluster-identifier auroralab-mysql-clone \
 --vpc-security-group-ids [dbSecurityGroup] \
---db-subnet-group-name [dbSubnetGroup] \
---backtrack-window 0
+--db-subnet-group-name [dbSubnetGroup]
 ```
+ 
+<!-- --backtrack-window 0 -->
 
 Next, check the status of the creation of your clone, by using the following command. The cloning process can take several minutes to complete. See the example output below.
 
