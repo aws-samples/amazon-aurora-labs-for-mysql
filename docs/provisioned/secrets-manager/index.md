@@ -161,13 +161,13 @@ For **Name** enter a policy name, e.g. `auroralab-iam-access-secret` and click *
 This policy now can be attached to a user or role in order to allow accessing the secret to retrieve its values.
 
 ??? tip "How to improve the access of Secrets Manager Secret via the public internet?"
-    So, permissions are set, the secret information is encrypted and the traffic is encrypted as well. However, the traffic leaves the AWS network and traverses the public internet. In order to avoid that, we recommend to call the Secrets Manager API directly without having to leave your private network. This can be done using an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/vpc-endpoint-overview.html" target="_blank">interface VPC Endpoint for Secrets Manager</a>. In addition it allows you to deny any access to the secret information by requests that don't originate from you VPC.
+    So, permissions are set, the secret information is encrypted and the traffic is encrypted as well. However, the traffic leaves the AWS network and traverses the public internet. In order to avoid that, we recommend to call the Secrets Manager API directly without having to leave your private network. This can be done using an <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/vpc-endpoint-overview.html" target="_blank">interface VPC Endpoint for Secrets Manager</a>. In addition it allows you to deny any access to the secret information by requests that don't originate from your VPC.
 
 ## 4. Verify DB Cluster connection
 
 Now, that we have created the database user, the secret and a policy to give permission to access the secret, let us check accessing the database.
 
-For this verification, we will use the cloud9 environment. But it well could be any other Service running the desired application, like AWS Lambda function or container image running in Amazon ECS or EKS. However, the current role of the instance already has permissions to access secrets. For our verification, we will therefore use a different role.
+For this verification, we will use the Cloud9 environment. But it well could be any other Service running the desired application, like AWS Lambda function or container image running in Amazon ECS or EKS. However, the current role of the instance already has permissions to access secrets. For our verification, we will therefore use a different role.
 
 Let's create a role, that we can assign to the Cloud9 instance.
 
