@@ -217,97 +217,61 @@ Mappings:
       supersetType: m5.large
       nodeType: db.r6g.large
       name: N. Virginia
-      az1: us-east-1a
-      az2: us-east-1b
-      az3: us-east-1c
     us-east-2:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Ohio
-      az1: us-east-2c
-      az2: us-east-2a
-      az3: us-east-2b
     us-west-2:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Oregon
-      az1: us-west-2b
-      az2: us-west-2c
-      az3: us-west-2d
     ca-central-1:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Montreal
-      az1: ca-central-1c
-      az2: ca-central-1a
-      az3: ca-central-1b
     eu-central-1:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Frankfurt
-      az1: eu-central-1b
-      az2: eu-central-1a
-      az3: eu-central-1c
     eu-west-1:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Ireland
-      az1: eu-west-1a
-      az2: eu-west-1b
-      az3: eu-west-1c
     eu-west-2:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: London
-      az1: eu-west-2b
-      az2: eu-west-2a
-      az3: eu-west-2c
     ap-southeast-1:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Singapore
-      az1: ap-southeast-1c
-      az2: ap-southeast-1b
-      az3: ap-southeast-1a
     ap-southeast-2:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Sydney
-      az1: ap-southeast-2a
-      az2: ap-southeast-2b
-      az3: ap-southeast-2c
     ap-south-1:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Mumbai
-      az1: ap-south-1a
-      az2: ap-south-1b
-      az3: ap-south-1c
     ap-northeast-1:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Tokyo
-      az1: ap-northeast-1d
-      az2: ap-northeast-1a
-      az3: ap-northeast-1c
     ap-northeast-2:
       ideType: m5.large
       supersetType: m5.large
       nodeType: db.r6g.large
       name: Seoul
-      az1: ap-northeast-2a
-      az2: ap-northeast-2b
-      az3: ap-northeast-2c
   NetworkSettings:
     primary:
       vpcCidr: 172.30.0.0/16
@@ -387,7 +351,9 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPub1Cidr ], !FindInMap [ NetworkSettings, primary, subPub1Cidr ] ]
-      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -397,7 +363,9 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPub2Cidr ], !FindInMap [ NetworkSettings, primary, subPub2Cidr ] ]
-      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      AvailabilityZone: !Select 
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -407,7 +375,9 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPub3Cidr ], !FindInMap [ NetworkSettings, primary, subPub3Cidr ] ]
-      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      AvailabilityZone: !Select 
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -450,7 +420,9 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPrv1Cidr ], !FindInMap [ NetworkSettings, primary, subPrv1Cidr ] ]
-      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az1 ]
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -460,7 +432,9 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPrv2Cidr ], !FindInMap [ NetworkSettings, primary, subPrv2Cidr ] ]
-      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az2 ]
+      AvailabilityZone: !Select 
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
@@ -470,7 +444,9 @@ Resources:
     Properties:
       VpcId: !Ref vpc
       CidrBlock: !If [ condIsSecondary, !FindInMap [ NetworkSettings, secondary, subPrv3Cidr ], !FindInMap [ NetworkSettings, primary, subPrv3Cidr ] ]
-      AvailabilityZone: !FindInMap [ RegionalSettings, !Ref "AWS::Region", az3 ]
+      AvailabilityZone: !Select 
+        - 2
+        - Fn::GetAZs: !Ref 'AWS::Region'
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
