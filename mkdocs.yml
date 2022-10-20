@@ -39,7 +39,7 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
-    - scheme: darkaurora 
+    - scheme: darkaurora
       # primary: black
       # bg-color--lightest: #FFCC83;
       toggle:
@@ -74,7 +74,7 @@ markdown_extensions:
   - tables
   - pymdownx.superfences
   - pymdownx.tabbed:
-      alternate_style: true 
+      alternate_style: true
   - toc:
       permalink: true
   - pymdownx.details
@@ -82,7 +82,7 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.smartsymbols
   # (old version style for material)
-  # - pymdownx.tabbed 
+  # - pymdownx.tabbed
   - pymdownx.tasklist:
       custom_checkbox: false
 
@@ -122,6 +122,14 @@ nav:
     - Create an Aurora Serverless v2 DB Cluster: 'serverlessv2/create/index.md'
     - Gather cluster details: 'serverlessv2/clusterdetails/index.md'
     - Run workload and observe scaling: 'serverlessv2/workload/index.md'
+  - Graviton2 vs x86 Compared:
+    - Prerequisites:
+    - Add a new x86 based r5.large Aurora replica, then promote it to become the primary instance:
+    - Simulate an OLTP workload with sybench using the x86 based r5.large primary instance:
+    - Promote the Graviton2 based r6g.large Aurora replica to become the primary:
+    - Repeat simulated OLTP workload using pgbench, using the r6g.large primary instance:
+    - Compare results:
+
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
