@@ -19,7 +19,7 @@ repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
 repo_url: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Copyright
-copyright: '<a href="https://aws.amazon.com/privacy/">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://aws.amazon.com/terms/">Site terms</a>&nbsp;&nbsp;|&nbsp;&nbsp;&copy; 2022, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
+copyright: '<a href="https://aws.amazon.com/privacy/">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://aws.amazon.com/terms/">Site terms</a>&nbsp;&nbsp;|&nbsp;&nbsp;&copy; 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
 
 # Theme
 theme:
@@ -27,41 +27,20 @@ theme:
   logo: 'assets/images/aws_smile_logo.png'
   favicon: 'assets/images/aws-favicon.ico'
   features:
-    # - tabs
-    - navigation.tabs
-    - navigation.tabs.sticky
-    - toc.integrate
+    - tabs
   icon:
     repo: fontawesome/brands/github
   palette:
-    - scheme: default
-      # accent-fg: '#ff0000'
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-    - scheme: darkaurora
-      # primary: black
-      # bg-color--lightest: #FFCC83;
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
-
+    accent-fg: '#ff0000'
 
 # Customization
-# removed cloudflare dependency, moved highlighting syntax library to local assets dir
 extra_css:
-  #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css'
-  - 'assets/css/default.min.css'
   - 'assets/css/custom.css'
-extra_javascript:
-  #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js'
-  - 'assets/js/highlight.min.js'
-  - 'assets/js/highlight.js'
+#extra_javascript:
+#  - 'assets/js/custom.js'
 extra:
   social:
-    - icon: 'fontawesome/solid/house'
-    # Use home for older version of materials. Newer version uses house.svg
-    #- icon: 'fontawesome/solid/home'
+    - icon: 'fontawesome/solid/home'
       link: 'https://awsauroralabsmy.com'
     - icon: 'fontawesome/brands/amazon'
       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
@@ -71,18 +50,13 @@ extra:
 # Extensions
 markdown_extensions:
   - admonition
-  - tables
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
+  - codehilite
   - toc:
       permalink: true
   - pymdownx.details
-  - pymdownx.inlinehilite
   - pymdownx.mark
   - pymdownx.smartsymbols
-  # (old version style for material)
-  # - pymdownx.tabbed
+  - pymdownx.tabbed
   - pymdownx.tasklist:
       custom_checkbox: false
 
@@ -123,13 +97,12 @@ nav:
     - Gather cluster details: 'serverlessv2/clusterdetails/index.md'
     - Run workload and observe scaling: 'serverlessv2/workload/index.md'
   - Graviton2 vs x86 Compared:
-    - Prerequisites:
-    - Add a new x86 based r5.large Aurora replica, then promote it to become the primary instance:
-    - Simulate an OLTP workload with sybench using the x86 based r5.large primary instance:
-    - Promote the Graviton2 based r6g.large Aurora replica to become the primary:
-    - Repeat simulated OLTP workload using pgbench, using the r6g.large primary instance:
-    - Compare results:
-
+    - Prerequisites: 'serverlessv2/create/index.md'
+    - Add a new x86 based r5.large Aurora replica, then promote it to become the primary instance: 'serverlessv2/create/index.md'
+    - Simulate an OLTP workload with sybench using the x86 based r5.large primary instance: 'serverlessv2/create/index.md'
+    - Promote the Graviton2 based r6g.large Aurora replica to become the primary: 'serverlessv2/create/index.md'
+    - Repeat simulated OLTP workload using pgbench, using the r6g.large primary instance: 'serverlessv2/create/index.md'
+    - Compare results: ''
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
