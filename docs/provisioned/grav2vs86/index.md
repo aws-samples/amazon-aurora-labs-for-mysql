@@ -24,10 +24,21 @@ The lab environment that was provisioned automatically for you, already has an A
 
 Open the Amazon RDS Service console, if you don’t already have it open. Click the radio button for the Aurora cluster “auroralab-mysql-cluster” and click *Actions* then click *Add reader*
 
-[Image: add-x86-reader-instance.png]Provide “auroralab-mysql-x86-node-3” as the DB instance identifier and select db.r5.large x86 instance class in the Instance configuration section.
-[Image: x86-instance-config.png]Set failover priority tier to tier-0 to ensure that this instance is available as a failover target. Leave rest of the configurations to default.
-[Image: x86-instance-failover-priority.png]Click on “Add reader” button to x86 Aurora reader instance.
-[Image: x86-instance-click-add-reader.png]
+<span class="image">![Add Reader](add-x86-reader-instance.png?raw=true)</span>
+
+Provide “auroralab-mysql-x86-node-3” as the DB instance identifier and select db.r5.large x86 instance class in the Instance configuration section.
+
+<span class="image">![Create Database](x86-instance-config.png?raw=true)</span>
+
+Set failover priority tier to tier-0 to ensure that this instance is available as a failover target. Leave rest of the configurations to default.
+
+<span class="image">![Create Database](x86-instance-failover-priority.png?raw=true)</span>
+
+Click on “Add reader” button to x86 Aurora reader instance.
+
+<span class="image">![Create Database](x86-instance-click-add-reader.png?raw=true)</span>
+
+
 2. Simulate an OLTP workload with sysbench in r6g.large (Graviton2) instance.
 
 If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please following these instructions(add hyperlink) to do so now. Once connected, run the command below to create database to test the workload.
