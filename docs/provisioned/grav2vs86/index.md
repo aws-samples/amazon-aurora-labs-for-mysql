@@ -125,20 +125,22 @@ Let's compare our sample OLTP workload results agains x86 based db.r5.large and 
 
 *SQL Statistics for Simulated Online Transaction Processing (OLTP) Workload using sysbench*
 
-**Results from Graviton2 based instance**
-Results from Performance Insights metrics
-
-<span class="image">![Add Reader](Graviton2_PI_counter_results.png?raw=true)</span>
-
-SQL Statistics results from Sysbench
-<span class="image">![Add Reader](Graviton2_SQL_statistics.png?raw=true)</span>
-
-**Results from x86 based instance**
+#### **Results from Graviton2 based instance**
 
 Results from Performance Insights metrics
-<span class="image">![Add Reader](x86_PI_counter_results.png?raw=true)</span>
+
+<span class="image">![Grav2 PI](Graviton2_PI_counter_results.png?raw=true)</span>
 
 SQL Statistics results from Sysbench
+<span class="image">![Graviton SQL stats](Graviton2_SQL_statistics.png?raw=true)</span>
+
+#### **Results from x86 based instance**
+
+Results from Performance Insights metrics
+<span class="image">![X86 PI](x86_PI_counter_results.png?raw=true)</span>
+
+SQL Statistics results from Sysbench
+
 <span class="image">![Add Reader](x86_SQL_statistics.png?raw=true)</span>
 
 Lets compare the results:
@@ -170,7 +172,7 @@ Based on the above comparison Graviton2 instance is 10% cheaper with 33% more TP
 
 #### **Conclusion:**
 
-*Were your results similar to those presented here?* 
+*Were your results similar to those presented here?*
 
 Each workload is a little different, and using data and a repeatable methodology is key to evaluating which processor architecture will achieve the best results for a given workload. As you saw here, choosing the best Aurora PostgreSQL instance type for your workloads can enable meaningful cost savings with increased performance.
 
