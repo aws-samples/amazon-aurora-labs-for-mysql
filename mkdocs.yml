@@ -77,6 +77,7 @@ nav:
     - Set up Database Activity Streams: 'provisioned/das/index.md'
     - Observe and Identify SQL Performance Issues: 'provisioned/perf-observability/index.md'
     - Analyze SQL Query Performance: 'provisioned/perf-analysis/index.md'
+    - Graviton2 vs x86 Compared: 'provisioned/grav2vs86/index.md'
   - Global Database:
     - Deploy a Global Database: 'global/deploy/index.md'
     - Connect an Application: 'global/biapp/index.md'
@@ -96,13 +97,6 @@ nav:
     - Create an Aurora Serverless v2 DB Cluster: 'serverlessv2/create/index.md'
     - Gather cluster details: 'serverlessv2/clusterdetails/index.md'
     - Run workload and observe scaling: 'serverlessv2/workload/index.md'
-  - Graviton2 vs x86 Compared:
-    - Prerequisites: 'serverlessv2/create/index.md'
-    - Add a new x86 based r5.large Aurora replica, then promote it to become the primary instance: 'serverlessv2/create/index.md'
-    - Simulate an OLTP workload with sybench using the x86 based r5.large primary instance: 'serverlessv2/create/index.md'
-    - Promote the Graviton2 based r6g.large Aurora replica to become the primary: 'serverlessv2/create/index.md'
-    - Repeat simulated OLTP workload using pgbench, using the r6g.large primary instance: 'serverlessv2/create/index.md'
-    - Compare results: ''
   - Related:
     - Labs and Workshops: 'related/labs/index.md'
   - Contributing: 'contribute.md'
