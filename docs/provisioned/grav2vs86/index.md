@@ -155,7 +155,7 @@ Lets compare the results:
 
 
 
-*Price Comparison*
+#### **Price Comparison**
 Taking these metrics into consideration, lets examine the cost efficiency of the tested instances for the given sample workload.
 
 
