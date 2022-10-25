@@ -171,7 +171,7 @@ Based on the above comparison Graviton2 instance is 10% cheaper with 33% more TP
 !!! note
       Cost based on Provisioned on-demand instance <a href="https://aws.amazon.com/rds/aurora/pricing/" target="_blank"> cost </a> of Aurora MySQL  in us-west-2 AWS region*
 
-#### **Conclusion:**
+#### **Conclusion**
 
 *Were your results similar to those presented here?*
 
