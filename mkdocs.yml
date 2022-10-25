@@ -19,7 +19,7 @@ repo_name: 'aws-samples/amazon-aurora-labs-for-mysql'
 repo_url: 'https://github.com/aws-samples/amazon-aurora-labs-for-mysql'
 
 # Copyright
-copyright: '<a href="https://aws.amazon.com/privacy/">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://aws.amazon.com/terms/">Site terms</a>&nbsp;&nbsp;|&nbsp;&nbsp;&copy; 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
+copyright: '<a href="https://aws.amazon.com/privacy/">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://aws.amazon.com/terms/">Site terms</a>&nbsp;&nbsp;|&nbsp;&nbsp;&copy; 2022, Amazon Web Services, Inc. or its affiliates. All rights reserved.'
 
 # Theme
 theme:
@@ -27,20 +27,41 @@ theme:
   logo: 'assets/images/aws_smile_logo.png'
   favicon: 'assets/images/aws-favicon.ico'
   features:
-    - tabs
+    # - tabs
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - toc.integrate
   icon:
     repo: fontawesome/brands/github
   palette:
-    accent-fg: '#ff0000'
+    - scheme: default
+      # accent-fg: '#ff0000'
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: darkaurora
+      # primary: black
+      # bg-color--lightest: #FFCC83;
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
 
 # Customization
+# removed cloudflare dependency, moved highlighting syntax library to local assets dir
 extra_css:
+  #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css'
+  - 'assets/css/default.min.css'
   - 'assets/css/custom.css'
-#extra_javascript:
-#  - 'assets/js/custom.js'
+extra_javascript:
+  #- 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js'
+  - 'assets/js/highlight.min.js'
+  - 'assets/js/highlight.js'
 extra:
   social:
-    - icon: 'fontawesome/solid/home'
+    - icon: 'fontawesome/solid/house'
+    # Use home for older version of materials. Newer version uses house.svg
+    #- icon: 'fontawesome/solid/home'
       link: 'https://awsauroralabsmy.com'
     - icon: 'fontawesome/brands/amazon'
       link: 'https://aws.amazon.com/rds/aurora/details/mysql-details/'
@@ -50,13 +71,18 @@ extra:
 # Extensions
 markdown_extensions:
   - admonition
-  - codehilite
+  - tables
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - toc:
       permalink: true
   - pymdownx.details
+  - pymdownx.inlinehilite
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.tabbed
+  # (old version style for material)
+  # - pymdownx.tabbed
   - pymdownx.tasklist:
       custom_checkbox: false
 
@@ -78,6 +104,7 @@ nav:
     - Observe and Identify SQL Performance Issues: 'provisioned/perf-observability/index.md'
     - Analyze SQL Query Performance: 'provisioned/perf-analysis/index.md'
     - Graviton2 vs x86 Compared: 'provisioned/grav2vs86/index.md'
+
   - Global Database:
     - Deploy a Global Database: 'global/deploy/index.md'
     - Connect an Application: 'global/biapp/index.md'
