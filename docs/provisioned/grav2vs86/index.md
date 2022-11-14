@@ -1,6 +1,7 @@
 Graviton2 vs x86 Comparison
 
-This lab will compare the performance between between X86 instance and Graviton2 based r6g instance class.
+
+This lab compares the performance between between X86 instance and Graviton2 based r6g instance class.
 
 This lab contains the following tasks:
 
@@ -22,11 +23,11 @@ This lab requires the following prerequisties:
 
 The lab environment that was provisioned automatically for you, already has an Aurora MySQL DB cluster with 2 instances (`1 Writer and 1 Reader`) running on r6g.large (Graviton2) instance class.
 
-Open the <a href="https://console.aws.amazon.com/rds/home#databases:" target="_blank">Amazon RDS Service console</a>, if you don’t already have it open. Click the radio button for the Aurora cluster “auroralab-mysql-cluster” and click *Actions* then click *Add reader*
+Open the <a href="https://console.aws.amazon.com/rds/home#databases:" target="_blank">Amazon RDS Service console</a>, if you don’t already have it open. Click the radio button for the Aurora cluster “auroralab-mysql-cluster” and click **Actions** then click **Add reader**
 
 <span class="image">![Add Reader](add-x86-reader-instance.png?raw=true)</span>
 
-Provide `auroralab-mysql-x86-node-3` as the DB instance identifier and select `db.r5.large` **x86** instance class in the Instance configuration section.
+Type `auroralab-mysql-x86-node-3` as the DB instance identifier and select `db.r5.large` **x86** instance class in the Instance configuration section.
 
 <span class="image">![x86 instance config](x86-instance-config.png?raw=true)</span>
 
@@ -41,34 +42,34 @@ Click on **Add reader** button to x86 Aurora reader instance.
 
 ## 2. Simulate an OLTP workload with sysbench in r6g.large (Graviton2) instance.
 
-If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please following these instructions(##add hyperlink) to do so now. Once connected, run the command below to create database to test the workload.
+If you have not already opened a terminal window in the Cloud9 desktop in a previous lab, please follow these [instructions](/prereqs/connect/#1-open-and-set-up-your-cloud9-desktop) to do so now. Once connected, run the command below to create database to test the workload.
 
 ```
-mysql -h[clusterEndpoint] -u$DBUSER -p"$DBPASS"
+mysql -h[ClusterEndpoint] -u$DBUSER -p"$DBPASS"
 create database graviton_test;
 quit;
 ```
-In the `Cloud9 desktop` run the following command to populate the tables with sample data. It will take approximately *10 minutes* to finish populating the data to the tables. Replace `[Cluster-endpoint]` with your cluster end-point.
+In the `Cloud9 terminal` run the following command to populate the tables with sample data. It will take approximately *10 minutes* to finish populating the data to the tables. Replace `[ClusterEndpoint]` with your cluster end-point.
 
 ```
-sysbench /usr/share/sysbench/oltp_read_write.lua --mysql-host=[Cluster-endpoint] --mysql-user=$DBUSER --mysql-password=$DBPASS --mysql-db=graviton_test --threads=16 --tables=25 --table-size=1000000 prepare
+sysbench /usr/share/sysbench/oltp_read_write.lua --mysql-host=[ClusterEndpoint] --mysql-user=$DBUSER --mysql-password=$DBPASS --mysql-db=graviton_test --threads=16 --tables=25 --table-size=1000000 prepare
 ```
 <span class="image">![Add Reader](sysbench_prepare_data.png?raw=true)</span>
 
-Once sysbench successfully populated the data. We can start the load test, run the following command to start the load test on x86  instance. Replace `[Cluster-endpoint]` with your cluster end-point.
+Once sysbench successfully populated the data. We can start the load test, run the following command to start the load test on x86  instance. Replace `[ClusterEndpoint]` with your cluster end-point.
 
 ```
-sysbench /usr/share/sysbench/oltp_read_write.lua --mysql-host=[Cluster-endpoint] --mysql-user=$DBUSER --mysql-password=$DBPASS --mysql-db=graviton_test --time=600 --threads=16 --tables=25 --table-size=1000000 --report-interval=1 run
+sysbench /usr/share/sysbench/oltp_read_write.lua --mysql-host=[ClusterEndpoint] --mysql-user=$DBUSER --mysql-password=$DBPASS --mysql-db=graviton_test --time=600 --threads=16 --tables=25 --table-size=1000000 --report-interval=1 run
 ```
 The above workload will run for **10 minutes**. After letting this test run for ~5 minutes, observe the CloudWatch metrics for *“auroralab-mysql-node-2”* instance by clicking on the *DB identifier* and going to the *Monitoring tab*.
 
 <span class="image">![Add Reader](Graviton2_metrics_monitoring.png?raw=true)</span>
 
-After reviewing the metrics, navigate to RDS Performance Insights in the RDS console. Select “auroralab-mysql-node-2” in the drop down menu, and click on *Manage Metrics.*
+After reviewing the metrics, navigate to RDS Performance Insights in the RDS console. Select “auroralab-mysql-node-2” in the drop down menu, and click on **Manage Metrics**.
 
 <span class="image">![Add Reader](Graviton2_PI_manage_metrics.png?raw=true)</span>
 
-Select “*Database metrics*” and select the following options under *SQL* and *Transactions* sections.
+Select **Database metrics** and select the following options under *SQL* and *Transactions* sections.
 
 * Innodb_rows_inserted
 * Innodb_rows_updated
@@ -89,23 +90,28 @@ After reviewing the Performance Insights metrics. Copy the results of the sysben
 
 ## 3. Promote x86 based r5.large Aurora replica to become the primary instance.
 
-Now, lets failover to x86 based r5.large Aurora MySQL instance. Select any instance of the Aurora cluster “auroralab-mysql-cluster” and then select *Failover* in the *Actions* menu.
+Now, lets failover to x86 based r5.large Aurora MySQL instance. Select any instance of the Aurora cluster “auroralab-mysql-cluster” and then select **Failover** in the **Actions** menu.  
 
-<span class="image">![Add Reader](Graviton2_to_x86_failover.png?raw=true)</span>
-Confirm the failover action on the next screen.
-<span class="image">![Add Reader](x86-confirm-failover.png?raw=true)</span>
-Wait for ~30 seconds and refresh your browser window to verify that the auroralab-mysql-x86-node-3 instance has become the new Writer instance.
-<span class="image">![Add Reader](x86_writer_instance.png?raw=true)</span>
+<span class="image">![Add Reader](Graviton2_to_x86_failover.png?raw=true)</span>  
+
+Confirm the failover action on the next screen.  
+
+<span class="image">![Add Reader](x86-confirm-failover.png?raw=true)</span>  
+
+Wait for about 30 seconds and refresh your browser window to verify that the auroralab-mysql-x86-node-3 instance has become the new Writer instance.  
+
+<span class="image">![Add Reader](x86_writer_instance.png?raw=true)</span>  
+
 We are going to simulate the same OLTP workload in x86 instance.
 
 ## 4. Repeat simulated OLTP workload using sysbench in r5.large instance.
 
-Run the sample OLTP workload by running the following command in your Cloud9 environment. Replace `[Cluster-endpoint]` with your cluster end-point.
+Run the sample OLTP workload by running the following command in your Cloud9 environment. Replace `[ClusterEndpoint]` with your cluster end-point.
 
 ```
-sysbench /usr/share/sysbench/oltp_read_write.lua --mysql-host=[Cluster-endpoint] --mysql-user=$DBUSER --mysql-password=$DBPASS --mysql-db=graviton_test --time=600 --threads=16 --tables=25 --table-size=1000000 --report-interval=1 run
+sysbench /usr/share/sysbench/oltp_read_write.lua --mysql-host=[ClusterEndpoint] --mysql-user=$DBUSER --mysql-password=$DBPASS --mysql-db=graviton_test --time=600 --threads=16 --tables=25 --table-size=1000000 --report-interval=1 run
 ```
-The above workload will run for 10 minutes. After letting this test run for **~5 minutes**, observe the CloudWatch metrics for current Graviton2 writer instance by clicking on the **DB identifier** and going to the **Monitoring tab**.
+The above workload will run for 10 minutes. After letting this test run for **5 minutes**, observe the CloudWatch metrics for current Graviton2 writer instance by clicking on the **DB identifier** and going to the **Monitoring tab**.
 
 <span class="image">![Add Reader](x86_metrics_monitoring.png?raw=true)</span>
 
@@ -145,6 +151,7 @@ SQL Statistics results from Sysbench
 
 Lets compare the results:
 
+#### **Performance Comparison**
 
 |                     Stats                      | x86 based db.r5.large | Graviton2 based db.r6g.large | Performance difference |
 |------------------------------------------------|-----------------------|------------------------------|------------------------|
@@ -182,6 +189,5 @@ Each workload is a little different, and using data and a repeatable methodology
 
 By running this lab, you have created additional AWS resources. We recommend you run the commands below to remove these resources once you have completed this lab, to ensure you do not incur any unwanted charges for using these services.
 
-```
-aws rds delete-db-instance --db-instance-identifier auroralab-mysql-x86-node-3
+```aws rds delete-db-instance --db-instance-identifier auroralab-mysql-x86-node-3
 ```
