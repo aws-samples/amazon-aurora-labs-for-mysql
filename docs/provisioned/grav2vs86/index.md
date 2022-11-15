@@ -1,19 +1,17 @@
-Graviton2 vs x86 Comparison
-
 
 This lab compares the performance between between X86 instance and Graviton2 based r6g instance class.
 
 This lab contains the following tasks:
 
 
-1. Add a new x86 based r5.large Aurora replica
+1. Add a new x86 based **db.r5.large** (2 vCPU, 16 GiB Memory) Aurora replica
 2. Simulate an OLTP workload with sysbench, using the Graviton r6g.large instance.
-3. Promote the x86 based r6g.large Aurora replica to become the primary.
+3. Promote the x86 based **db.r6g.large** (2 vCPU, 16 GiB Memory) Aurora replica to become the primary.
 4. Repeat simulated OLTP workload using sysbench, using the r5.large primary instance.
 5. Compare results.
 6. Cleanup lab resources
 
-This lab requires the following prerequisties:
+This lab requires the following prerequisites:
 
 * [Get Started](/prereqs/environment/)
 * [Connect to the Cloud9 Desktop](/prereqs/connect/)
@@ -86,7 +84,7 @@ Once the sysbench workload completes, you should see results similar to the foll
 
 <span class="image">![Add Reader](Graviton2_PI_TopSQL.png?raw=true)</span>
 
-After reviewing the Performance Insights metrics. Copy the results of the sysbench SQL statistics from Cloud9 terminal to notepad, we will use it to compare the results at the end of this lab.
+After reviewing the Performance Insights metrics, copy the results of the sysbench SQL statistics from Cloud9 terminal to notepad, we will use it to compare the results at the end of this lab.
 
 ## 3. Promote x86 based r5.large Aurora replica to become the primary instance.
 
@@ -122,6 +120,8 @@ After reviewing the metrics, navigate to  <a href="https://docs.aws.amazon.com/A
 <span class="image">![Add Reader](x86_PI_DBLoad.png?raw=true)</span>
 
 <span class="image">![Add Reader](x86_PI_TopSQL.png?raw=true)</span>
+
+Please make sure to copy the results of the sysbench SQL statistics from Cloud9 terminal to notepad, we will use it in the next step.
 
 We have ran sample workload in both Graviton2 and x86 instance class. In the next section, we will compare the results.
 
@@ -182,7 +182,7 @@ Based on the above comparison Graviton2 instance is 10% cheaper with 33% more TP
 
 *Were your results similar to those presented here?*
 
-Each workload is a little different, and using data and a repeatable methodology is key to evaluating which processor architecture will achieve the best results for a given workload. As you saw here, choosing the best Aurora PostgreSQL instance type for your workloads can enable meaningful cost savings with increased performance.
+Each workload is a little different, and using data and a repeatable methodology is key to evaluating which processor architecture will achieve the best results for a given workload. As you saw here, choosing the best Aurora MySQL instance type for your workloads can enable meaningful cost savings with increased performance.
 
 
 ## 6. Cleanup lab resources
