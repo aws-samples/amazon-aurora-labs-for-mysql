@@ -329,8 +329,8 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.10.0
-      dbVersionAMS3: 8.0.mysql_aurora.3.02.0
+      dbVersion: 5.7.mysql_aurora.2.11.1
+      dbVersionAMS3: 8.0.mysql_aurora.3.03.0
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
       dbFamilyAMS3: aurora-mysql8.0
@@ -1984,3 +1984,4 @@ Outputs:
   supersetPassword:
     Description: "Apache Superset Password"
     Value: !If [ condDeployGDBResources, !FindInMap [ GDBSettings, superset, password ], "" ]
+  
