@@ -329,7 +329,7 @@ Mappings:
     global:
       dbSchema: mylab
       dbDriver: mysql
-      dbVersion: 5.7.mysql_aurora.2.10.0
+      dbVersion: 5.7.mysql_aurora.2.11.1
       dbVersionAMS3: 8.0.mysql_aurora.3.02.0
       dbEngine: aurora-mysql
       dbFamily: aurora-mysql5.7
