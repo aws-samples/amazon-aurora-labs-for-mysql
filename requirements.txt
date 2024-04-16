@@ -1,6 +1,0 @@
-jq
-mkdocs
-mkdocs-material
-pymdown-extensions
-awscli
-taskcat

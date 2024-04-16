@@ -1,4 +1,0 @@
-pymysql
-aws_encryption_sdk
-pycrypto
-prettytable

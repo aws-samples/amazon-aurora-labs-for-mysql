@@ -1,6 +1,0 @@
-[
-  {
-    "ParameterKey": "vpcAZs",
-    "ParameterValue": "$[taskcat_genaz_2]"
-  }
-]
